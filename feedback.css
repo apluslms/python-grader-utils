@@ -1,0 +1,22 @@
+/* Align all labels in grader result panels to the right side */
+span.feedback-label {
+  float: right;
+}
+/* Add space between different test suite types */
+div.grading-task {
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+/* Separate unittest output slightly from styled test results */
+div.full-test-output {
+  margin-top: 35px;
+}
+/* Bootstrap h3 bottom margins are by default a bit too small */
+h3.testsuite-header {
+  margin-bottom: 20px;
+}
+/* Make code more clear */
+pre, code {
+  font-size: inherit;
+  font-family: monospace;
+}

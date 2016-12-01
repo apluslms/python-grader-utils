@@ -1,0 +1,110 @@
+<style>
+{% include 'feedback.css' %}
+</style>
+
+<h1>Error in submitted file</h1>
+<h3>No tests were run, see details below.</h3>
+
+
+{% if errors.import_error %}
+
+<div class="grading-task">
+  <div class="panel panel-default">
+
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#import-error">Import error</a>
+        <span class="label feedback-label label-danger">Error</span>
+      </h4>
+    </div>
+
+      <div id="import-error" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <p>The submitted file could not be imported for execution, reason:</p>
+          <pre>{{ errors.import_error }}</pre>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+{% endif %}
+
+{% if errors.memory_error %}
+
+<div class="grading-task">
+  <div class="panel panel-default">
+
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#memory-error">Memory error</a>
+        <span class="label feedback-label label-danger">Error</span>
+      </h4>
+    </div>
+
+      <div id="memory-error" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <pre>{{ errors.memory_error }}</pre>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+{% endif %}
+
+
+{% for attr_error in errors.attribute_errors %}
+
+<div class="grading-task">
+  <div class="panel panel-default">
+
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#attr-error{{ loop.index }}">
+          Missing attribute</a>
+        <span class="label feedback-label label-danger">Error</span>
+      </h4>
+    </div>
+
+      <div id="attr-error{{ loop.index }}" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <p>The submitted file lacks a required <code>{{ attr_error.type }}</code>:
+          <code>{{ attr_error.attribute_name }}</code>.</p>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+{% endfor %}
+
+
+{% for forbidden_name in errors.forbidden_names %}
+
+<div class="grading-task">
+  <div class="panel panel-default">
+
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#name-error{{ loop.index }}">
+          Use of forbidden operation</a>
+        <span class="label feedback-label label-danger">Error</span>
+      </h4>
+    </div>
+
+      <div id="name-error{{ loop.index }}" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <p>The submitted file contains a forbidden operation <code>{{ forbidden_name.name }}</code>
+          at line number <code>{{ forbidden_name.lineno }}</code>:
+          <pre><code class="python">{{ forbidden_name.line_content }}</code></pre>
+          If you feel that this operation should be allowed in this exercise, please discuss about this with the course staff for example in Piazza.
+          </p>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+{% endfor %}
+

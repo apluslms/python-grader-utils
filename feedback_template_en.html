@@ -1,0 +1,170 @@
+<style>
+{% include 'feedback.css' %}
+</style>
+
+<style>
+.tree-graph-container .canvas-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+</style>
+
+
+{% macro title_or_default(title) -%}
+{% if title %}
+{{ title }}
+{% else %}
+Something weird happened at the server, this test has no title...
+{% endif %}
+{%- endmacro %}
+
+
+
+<div class="total-grading-results">
+  <h1>Total test points: {{ total_points }} of {{ total_max_points }}</h1>
+  <h1><small>Total tests run: {{ total_tests_run }}</small></h1>
+</div>
+
+
+  {% for testsuite_results in all_results %}
+  {% set all_results_loop = loop %}
+
+  <div class="grading-task">
+
+  <h3 class="testsuite-header">{{ testsuite_results.test_suite_name }} points: {{ testsuite_results.points }} of {{ testsuite_results.max_points }}</h3>
+
+  {% for result in testsuite_results.results %}
+  {% set testsuite_loop = loop %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+
+        <h4 class="panel-title">
+            <a data-toggle="collapse" href="#result{{ all_results_loop.index }}-{{ testsuite_loop.index }}">
+            {{ title_or_default(result.title) }}</a>
+
+
+        {% if result.outcome == "SUCCESS" %}
+
+          <span class="label feedback-label label-success">Success</span>
+        </h4>
+      </div>
+      <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse">
+        <div class="panel-body">
+            <p>Correct!</p>
+            {% if result.extra_data %}
+            <p>Total time: {{ "%.2f"|format(1000*result.extra_data.total_time) }} msec for {{ result.extra_data.test_count }} different lists.</p>
+            {% endif %}
+        </div>
+      </div>
+
+        {% elif result.outcome == "FAIL" %}
+
+          <span class="label feedback-label label-danger">Failed</span>
+        </h4>
+      </div>
+      <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
+        <div class="panel-body feedback-failed">
+          <p>The test failed, reason:</p>
+          <pre>{{ result.feedback|e }}</pre>
+
+          {% if result.extra_data|length > 2 %}
+          <script data-json-tree type="application/json">{{ result.extra_data }}</script>
+          <div class="tree-graph-container well">
+            <p class="error-msg">If this message does not disappear, something went wrong when attempting to draw the tree structure used in the tests.</p>
+            <div class="canvas-container">
+            </div>
+            <p class="info" style="display: none;">Drag canvas to move, scroll mouse to zoom.</p>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+
+        {% elif result.outcome == "ERROR" %}
+
+          {% if result.feedback|length == 0 %}
+          <span class="label feedback-label label-default">Server error</span>
+          {% else %}
+          <span class="label feedback-label label-danger">Error</span>
+          {% endif %}
+        </h4>
+      </div>
+      <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <p>Errors occurred during testing. Click 'Show full traceback' if you want to see the full traceback. </p>
+
+          {% if result.feedback|length == 0 %}
+          <pre>Error in grader server, please notify course staff.</pre>
+          {% else %}
+          <pre>{{ result.feedback|e }}</pre>
+          {% endif %}
+
+          <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#traceback{{ all_results_loop.index }}-{{ testsuite_loop.index }}">
+            Show full traceback</button>
+          <div id="traceback{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="collapse">
+            <p><pre>{{ result.full_traceback }}</pre></p>
+          </div>
+        </div>
+      </div>
+
+
+      {# ironically, this outcome is not yet implemented in the htmlgenerator.
+        {% elif result.outcome == "NOT-IMPLEMENTED" %}
+
+          <span class="label feedback-label label-warning">Not implemented</span>
+        </h4>
+      </div>
+      <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <p>You forgot to implement something:</p>
+          <pre>{{ result.feedback|e }}</pre>
+        </div>
+      </div>
+      #}
+
+
+        {% else %}
+
+          <span class="label feedback-label label-default">Unknown test result</span>
+        </h4>
+        <b>Error in feedback template, please notify course staff.</b>
+        <p>The test result output from the server tests should still be visible below.</p>
+      </div>
+
+        {% endif %}
+
+      </div>
+  {% endfor %}
+
+    <div class="panel panel-default full-test-output">
+      <div class="panel-heading">
+
+        <h5 class="panel-title">
+          <a data-toggle="collapse" href="#full-test-output{{ all_results_loop.index }}">
+              Full console output for {{ testsuite_results.test_suite_name|lower }}</a>
+          <span class="label feedback-label label-info">Info</span>
+        </h5>
+      </div>
+
+      <div id="full-test-output{{ all_results_loop.index }}" class="panel-body collapse">
+        <p><pre>{{ testsuite_results.unittest_output|e }}</pre></p>
+      </div>
+    </div>
+
+  </div>
+
+  {% endfor %}
+
+
+<!-- js functions for drawing graphs into the feedback divs -->
+<!-- <script> -->
+<!-- {% include 'feedback.js' %} -->
+<!-- </script> -->
+
+<script>
+// Check if the page contains JSON data for trees and then draw them
+main();
+</script>

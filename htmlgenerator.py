@@ -100,12 +100,13 @@ def data_from_string_or_empty_json(string, data_tag):
     return suffix_after(string, data_tag)
 
 
-def time_data_from_test_case_or_none(test_case):
+def extra_data_or_none(test_case):
     """Return average execution time data from TimedGraderTestCase instance or None if no time was measured."""
-    if not (hasattr(test_case, "total_running_time") or hasattr(test_case, "test_count")):
-        return None
-    return {"total_time": test_case.total_running_time,
-            "test_count": test_case.test_count}
+    if hasattr(test_case, "total_running_time") and hasattr(test_case, "test_count"):
+        return {"total_time": test_case.total_running_time,
+                "test_count": test_case.test_count}
+    if hasattr(test_case, "preformatted_feedback"):
+        return {"preformatted_feedback": test_case.preformatted_feedback}
 
 
 def test_result_as_template_context(result_object):
@@ -135,7 +136,7 @@ def test_result_as_template_context(result_object):
     successes = (("SUCCESS", # Test outcome
                   test_case.shortDescription(), # Test title
                   "", # Test feedback
-                  time_data_from_test_case_or_none(test_case), # Extra data, for example JSON
+                  extra_data_or_none(test_case), # Extra data, for example JSON
                   "") # Full traceback
                  for test_case in result_object.successes)
 

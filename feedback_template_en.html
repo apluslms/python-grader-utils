@@ -50,11 +50,12 @@ Something weird happened at the server, this test has no title...
           <span class="label feedback-label label-success">Success</span>
         </h4>
       </div>
-      <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse">
+      <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
         <div class="panel-body">
-            <p>Correct!</p>
-            {% if result.extra_data %}
+            {% if result.extra_data.total_time %}
             <p>Total time: {{ "%.2f"|format(1000*result.extra_data.total_time) }} msec for {{ result.extra_data.test_count }} different lists.</p>
+            {% elif result.extra_data.preformatted_feedback %}
+            <pre>{{ result.extra_data.preformatted_feedback|e }}</pre>
             {% endif %}
         </div>
       </div>

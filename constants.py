@@ -42,6 +42,9 @@ GRAMMAR_NAMES = {
     "min_function": {
         "Call:min"
     },
+    "sum_builtin": {
+        "Call:sum"
+    },
     "import_collections_module": {
         "Import:collections",          # import module, ... , collections
         "ImportFrom:collections",      # from collections imp...

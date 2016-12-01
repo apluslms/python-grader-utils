@@ -1,3 +1,6 @@
+# Original from
+# https://github.com/Aalto-LeTech/mooc-grader-course/blob/master/exercises/hello_python/graderunittest.py
+
 import unittest
 import re
 import signal

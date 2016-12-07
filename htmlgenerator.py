@@ -196,7 +196,7 @@ def results_as_html(results):
 
     # Load feedback template from same directory as tests
     env = jinja2.Environment(loader=jinja2.FileSystemLoader("./"))
-    template = env.get_template("feedback_template_en.html")
+    template = env.get_template("feedback_template.html")
 
     result_context_dicts = []
     total_points = total_max_points = total_tests_run = 0

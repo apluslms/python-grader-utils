@@ -33,7 +33,8 @@ GRAMMAR_NAMES = {
     "sequence_reversing": {
         "Call:reversed",     # reversed(<anything>)
         "Call::reverse",     # lst.reverse()
-        "SliceReverse"       # sequence[::-a], where a is an positive integer
+        # Not implemented
+        #"SliceReverse"       # sequence[::-a], where a is an positive integer
     },
     "sorting": {
         "Call:sorted",

@@ -1,11 +1,11 @@
 import unittest
 import graderunittest
-
+import argparse
 import io
 import htmlgenerator
 import sys
 
-import test_config
+# import test_config
 
 from collections import OrderedDict
 
@@ -31,11 +31,18 @@ def run_points_test(test_name_pattern):
         pattern=test_name_pattern,
         top_level_dir="."
     )
+    # TODO instead of monkey patching, pass state during test loading
+    import pprint
+    for case in suite._tests:
+        case.SQLMODEL = "SELECT * FROM WORLD"
+        print(case)
+        pprint.pprint(dir(case))
+        print()
     result = runner.run(suite)
     return result
 
 
-def run_tests_and_get_results(test_names):
+def run_tests_and_get_results(test_names, extra_state):
     """Iterate test_names, running tests for all its keys and return a dictionary containing a list of result objects, total points and max points for all tests.
     Note that this function adds to attributes to the test objects: test_type_name and module_filename (val-key in test_names).
     @param (dict) test_names: Dictionary with keys being filenames
@@ -52,10 +59,11 @@ def run_tests_and_get_results(test_names):
 
     # Name of the submitted module, for example primes.py
     # Used for formatting traceback messages
-    submit_module_name = test_config.MODULE["name"] + ".py"
+    # submit_module_name = test_config.MODULE["name"] + ".py"
+    submit_module_name = "asd"
 
     for test_filename, test_type_name in test_names.items():
-        result = run_points_test(test_filename)
+        result = run_points_test(test_filename) # TODO extra_state
 
         result.test_type_name = test_type_name
         result.submit_module_name = submit_module_name
@@ -68,11 +76,18 @@ def run_tests_and_get_results(test_names):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--extra_state")
+    args = parser.parse_args()
+
+    extra_state = args.extra_state
+
     #TODO argparse to accept print nulling by wrapping stdout and stderr into os.devnull
+
     # Run tests with the custom test runner which gathers points.
     import gc
     try:
-        results = run_tests_and_get_results(TEST_NAMES)
+        results = run_tests_and_get_results(TEST_NAMES, extra_state)
     except MemoryError:
         # Running the tests used up all memory allocated for the sandbox,
         # cleanup everything that caused the error,

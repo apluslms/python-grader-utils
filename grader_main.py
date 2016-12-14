@@ -1,11 +1,8 @@
 import unittest
 import graderunittest
-
 import argparse
-
+import ast
 import importlib
-import io
-import htmlgenerator
 import io
 import htmlgenerator
 import sys
@@ -21,20 +18,22 @@ TEST_NAMES = OrderedDict([
 ])
 
 
-def run_points_test(module_name, params=None):
+def run_points_test(module_name, test_parameters=None):
     """Import 'module_name' which contains TestCase instances to be run.
-    If params is defined, create all test cases with params as their instance variable.
-    Run all tests and return a TestResult object.
+    If test_parameters is defined, parse it using ast.literal_eval and
+    create all test cases with the parsed test_parameters as their instance variable.
+    Finally, run all tests and return a TestResult object.
 
     @param (str) test_name_pattern: Filename of a module containing tests.
-    @param params: optional, arbitrary parameters which should be available
+    @param test_parameters: optional, arbitrary parameters which should be available
         as instance variables of every test_case instantiated from 'module_name' tests.
     @return (TextTestResult): A TestResult object after tests discovered
         with pattern test_name_pattern have been run.
     """
     runner = graderunittest.PointsTestRunner(stream=io.StringIO(), verbosity=2)
-    if params:
-        loader = graderunittest.ParameterTestCaseLoader(params)
+    if test_parameters:
+        parsed_test_parameters = ast.literal_eval(test_parameters)
+        loader = graderunittest.ParameterTestCaseLoader(parsed_test_parameters)
     else:
         loader = unittest.defaultTestLoader
     suite = unittest.TestSuite()
@@ -47,7 +46,7 @@ def run_points_test(module_name, params=None):
     return result
 
 
-def run_tests_and_get_results(test_names, extra_state):
+def run_tests_and_get_results(test_names, test_parameters):
     """Iterate test_names, running tests for all its keys and return a dictionary containing a list of result objects, total points and max points for all tests.
     Note that this function adds to attributes to the test objects: test_type_name and module_filename (val-key in test_names).
     @param (dict) test_names: Dictionary with keys being filenames
@@ -67,7 +66,7 @@ def run_tests_and_get_results(test_names, extra_state):
     submit_module_name = test_config.MODULE["name"] + ".py"
 
     for test_filename, test_type_name in test_names.items():
-        result = run_points_test(test_filename, extra_state) # TODO extra_state
+        result = run_points_test(test_filename, test_parameters)
 
         result.test_type_name = test_type_name
         result.submit_module_name = submit_module_name
@@ -81,17 +80,17 @@ def run_tests_and_get_results(test_names, extra_state):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--extra_state")
+    parser.add_argument("--test_parameters")
     args = parser.parse_args()
 
-    extra_state = args.extra_state
+    test_parameters = args.test_parameters
 
     #TODO argparse to accept print nulling by wrapping stdout and stderr into os.devnull
 
     # Run tests with the custom test runner which gathers points.
     import gc
     try:
-        results = run_tests_and_get_results(TEST_NAMES, extra_state)
+        results = run_tests_and_get_results(TEST_NAMES, test_parameters)
     except MemoryError:
         # Running the tests used up all memory allocated for the sandbox,
         # cleanup everything that caused the error,

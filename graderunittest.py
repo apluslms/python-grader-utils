@@ -21,6 +21,27 @@ class _PointsTestResult(unittest.TextTestResult):
         self.successes.append(test)
 
 
+class ParameterTestCaseLoader(unittest.TestLoader):
+    """
+    Initializes test cases with arbitrary extra parameters.
+    """
+
+    def __init__(self, test_parameters):
+        super().__init__()
+        self.test_parameters = test_parameters
+
+    def loadTestsFromTestCase(self, parameterTestCaseClass):
+        if issubclass(parameterTestCaseClass, unittest.suite.TestSuite):
+            raise TypeError("Test cases should not be derived from "
+                            "TestSuite. Maybe you meant to derive from "
+                            "TestCase?")
+        testCaseNames = self.getTestCaseNames(parameterTestCaseClass)
+        if not testCaseNames and hasattr(parameterTestCaseClass, 'runTest'):
+            testCaseNames = ['runTest']
+        test_instances = (parameterTestCaseClass(name, params=self.test_parameters) for name in testCaseNames)
+        loaded_suite = self.suiteClass(test_instances)
+        return loaded_suite
+
 
 class PointsTestRunner(unittest.TextTestRunner):
     """

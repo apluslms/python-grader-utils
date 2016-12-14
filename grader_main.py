@@ -1,6 +1,7 @@
 import unittest
 import graderunittest
 
+import importlib
 import io
 import htmlgenerator
 import sys
@@ -11,27 +12,34 @@ from collections import OrderedDict
 
 # OrderedDict instead of dict to ensure public tests are executed first
 TEST_NAMES = OrderedDict([
-    ("public_tests.py", "Local tests"),
-    ("grader_tests.py", "Grader tests")
+    ("public_tests", "Local tests"),
+    ("grader_tests", "Grader tests")
 ])
 
 
-def run_points_test(test_name_pattern):
-    """Discover test with exact filename test_name_pattern and run tests collecting points.
+def run_points_test(module_name, params=None):
+    """Import 'module_name' which contains TestCase instances to be run.
+    If params is defined, create all test cases with params as their instance variable.
+    Run all tests and return a TestResult object.
 
     @param (str) test_name_pattern: Filename of a module containing tests.
+    @param params: optional, arbitrary parameters which should be available
+        as instance variables of every test_case instantiated from 'module_name' tests.
     @return (TextTestResult): A TestResult object after tests discovered
         with pattern test_name_pattern have been run.
     """
+    runner = graderunittest.PointsTestRunner(stream=io.StringIO(), verbosity=2)
+    if params:
+        loader = graderunittest.ParameterTestCaseLoader(params)
+    else:
+        loader = unittest.defaultTestLoader
+    suite = unittest.TestSuite()
 
-    stream = io.StringIO()
-    runner = graderunittest.PointsTestRunner(stream=stream, verbosity=2)
-    suite = unittest.defaultTestLoader.discover(
-        start_dir=".",
-        pattern=test_name_pattern,
-        top_level_dir="."
-    )
+    test_module = importlib.import_module(module_name)
+    suite = loader.loadTestsFromModule(test_module)
+
     result = runner.run(suite)
+
     return result
 
 

@@ -101,12 +101,14 @@ def data_from_string_or_empty_json(string, data_tag):
 
 
 def extra_data_or_none(test_case):
-    """Return average execution time data from TimedGraderTestCase instance or None if no time was measured."""
+    """Return dict with extra feedback data, if available."""
     if hasattr(test_case, "total_running_time") and hasattr(test_case, "test_count"):
         return {"total_time": test_case.total_running_time,
                 "test_count": test_case.test_count}
     if hasattr(test_case, "preformatted_feedback"):
         return {"preformatted_feedback": test_case.preformatted_feedback}
+    if hasattr(test_case, "html_feedback"):
+        return {"html_feedback": test_case.html_feedback}
 
 
 def test_result_as_template_context(result_object):
@@ -144,7 +146,7 @@ def test_result_as_template_context(result_object):
     failures = (("FAIL",
                  test_case.shortDescription(),
                  parsed_assertion_message(full_assert_msg, "#TREE"),
-                 data_from_string_or_empty_json(full_assert_msg, "#TREE"),
+                 extra_data_or_none(test_case),
                  "")
                 for test_case, full_assert_msg in result_object.failures)
 

@@ -84,14 +84,13 @@ class PointsTestRunner(unittest.TextTestRunner):
 
 class TimeoutError(Exception): pass
 
-def result_or_timeout(timed_function, args=None, kwargs=None, timeout=1, timer=time.perf_counter):
+def result_or_timeout(timed_function, args=(), kwargs=None, timeout=1, timer=time.perf_counter):
     """
     Call timed_function with args and kwargs and benchmark the execution time with timer.
     If resulting time was less than timeout, return the resulting time and the value returned by timed_function.
     If the resulting time was larger or equal to timeout, terminate execution of timed_function and return timeout and None.
+    Adapted from: http://stackoverflow.com/a/13821695
     """
-    if args is None:
-        args = list()
     if kwargs is None:
         kwargs = dict()
 

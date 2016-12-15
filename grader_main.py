@@ -6,14 +6,18 @@ import importlib
 import io
 import htmlgenerator
 import sys
+import settings
 
-import test_config
+if settings.HTML_TRACEBACK:
+    import cgitb
+    sys.excepthook = cgitb.Hook(file=sys.stderr, format="html", display=1, context=5)
 
 from collections import OrderedDict
 
+# TODO should be retrieved from a conf file
 # OrderedDict instead of dict to ensure public tests are executed first
 TEST_NAMES = OrderedDict([
-    ("public_tests", "Local tests"),
+    # ("public_tests", "Local tests"),
     ("grader_tests", "Grader tests")
 ])
 
@@ -32,8 +36,7 @@ def run_points_test(module_name, test_parameters=None):
     """
     runner = graderunittest.PointsTestRunner(stream=io.StringIO(), verbosity=2)
     if test_parameters:
-        parsed_test_parameters = ast.literal_eval(test_parameters)
-        loader = graderunittest.ParameterTestCaseLoader(parsed_test_parameters)
+        loader = graderunittest.ParameterTestCaseLoader(test_parameters)
     else:
         loader = unittest.defaultTestLoader
     suite = unittest.TestSuite()
@@ -61,9 +64,15 @@ def run_tests_and_get_results(test_names, test_parameters):
         "total_max_points": 0
     }
 
-    # Name of the submitted module, for example primes.py
-    # Used for formatting traceback messages
-    submit_module_name = test_config.MODULE["name"] + ".py"
+    # TODO cleanup try-except chewing gum by moving obsolete
+    # test_config functionality into a rst directive
+    try:
+        import test_config
+        # Name of the submitted module, for example primes.py
+        # Used for formatting traceback messages
+        submit_module_name = test_config.MODULE["name"] + ".py"
+    except ImportError:
+        submit_module_name = None
 
     for test_filename, test_type_name in test_names.items():
         result = run_points_test(test_filename, test_parameters)
@@ -85,8 +94,6 @@ if __name__ == "__main__":
 
     test_parameters = args.test_parameters
 
-    #TODO argparse to accept print nulling by wrapping stdout and stderr into os.devnull
-
     # Run tests with the custom test runner which gathers points.
     import gc
     try:
@@ -96,7 +103,7 @@ if __name__ == "__main__":
         # cleanup everything that caused the error,
         # print error feedback and mark the solution as an error.
         gc.collect()
-        errors = {"memory_error": "Too much memory was used during testing.\n\nDoes your solution use data structures in an inefficient way or where they are not needed?"}
+        errors = {"memory_error": "Too much memory was used during testing"}
         html_errors = htmlgenerator.errors_as_html(errors)
         print(html_errors, file=sys.stderr)
         sys.exit(1)

@@ -1,35 +1,22 @@
 import sys
 import re
+import yaml
+import io
+import argparse
 import htmlgenerator
-import test_config
 
-
-def validate_plain_text(file_data, blacklist, missing_attribute_name):
+def validate_plain_text(contents, forbidden_names):
     """
-    Validates the contents of a plain text file.
+    Return a dict with key 'forbidden_name' containing the list of strings
+    which exist in both iterables forbidden_names and contents.
     """
-    with open(file_data["name"]) as f:
-        content = [line.strip().lower() for line in f.readlines()]
-
     errors = dict()
-    missing_required_names = []
     used_forbidden_names = []
 
-    for required_name in map(str.lower, file_data.get("required", set())):
-        pattern = re.compile(required_name)
-        if not re.findall(pattern, "".join(content)):
-            missing_required_names.append({
-                "type": missing_attribute_name,
-                "attribute_name": required_name
-            })
-
-    if missing_required_names:
-        errors["attribute_errors"] = missing_required_names
-
-    for forbidden_name in map(str.lower, blacklist):
+    for forbidden_name in map(str.lower, forbidden_names):
         pattern = re.compile(forbidden_name)
-        for line_no, line in enumerate(content):
-            matches = re.findall(pattern, line)
+        for line_no, line in enumerate(contents):
+            matches = re.findall(pattern, line.lower())
             if matches:
                 used_forbidden_names.append({
                     "name": forbidden_name,
@@ -43,23 +30,38 @@ def validate_plain_text(file_data, blacklist, missing_attribute_name):
     return errors
 
 
-def get_validation_errors():
-    if not hasattr(test_config, "MODULE"):
-        raise RuntimeError("ERROR: No module name and/or module attributes defined in test_config.py.")
+# Copied from a-plus-rst-tools yaml_writer.py
+def read_yaml(file_path):
+    ''' Reads dictionary from a yaml file '''
+    with io.open(file_path, 'r', encoding='utf-8') as f:
+        return yaml.load(f.read())
 
-    MODULE = test_config.MODULE
 
-    # Get set of blacklisted names or an empty set if there are none in test_config
-    BLACKLIST = getattr(test_config, "BLACKLIST", set())
+def get_validation_errors(test_config_file):
 
-    validation_errors = validate_plain_text(MODULE, BLACKLIST, "SQL statement")
+    config_data = read_yaml(test_config_file)
 
+    forbidden_names = []
+    if u'forbidden' in config_data:
+        forbidden_string = config_data[u'forbidden']
+        forbidden_names = map(str.strip, forbidden_string.split(","))
+
+    submitted_name = config_data[u'submitted_name']
+    with open(submitted_name) as f:
+        submitted = map(str.strip, f.readlines())
+
+    validation_errors = validate_plain_text(submitted, forbidden_names)
     return validation_errors
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--test_parameters")
+    args = parser.parse_args()
 
-    validation_errors = get_validation_errors()
+    test_config_file = args.test_parameters
+
+    validation_errors = get_validation_errors(test_config_file)
 
     if validation_errors:
         # Render dict with html template

@@ -46,11 +46,14 @@ def collapse_max_recursion_exception(string, repeat_threshold=20):
             continue
         if is_repeating:
             is_repeating = False
-            result.append(2*"\n   .    ")
-            result.append("\n   .    \n")
-            result.append("\n  and {0} more hidden lines\n".format(previous_repeat_count))
-            result.append(2*"\n   .    ")
-            result.append("\n   .    \n\n")
+            msg = (
+                2*"\n   .    " +
+                "\n   .    \n"
+                "\n  and {0} more hidden lines\n".format(previous_repeat_count) +
+                2*"\n   .    " +
+                "\n   .    \n\n"
+            )
+            result.append(msg)
         result.append(line + '\n')
     return ''.join(result)
 
@@ -80,7 +83,7 @@ def shortened_traceback(filename, traceback_string):
     if re.search(r"RecursionError|MemoryError", traceback_string):
         traceback_string = collapse_max_recursion_exception(traceback_string)
 
-    if not re.search(filename, traceback_string):
+    if not filename or not re.search(filename, traceback_string):
         return traceback_string
 
     # Suffix of traceback_string starting after the first occurrence of `filename`
@@ -107,13 +110,19 @@ def data_from_string_or_empty_json(string, data_tag):
 
 def extra_data_or_none(test_case):
     """Return dict with extra feedback data, if available."""
-    if hasattr(test_case, "total_running_time") and hasattr(test_case, "test_count"):
-        return {"total_time": test_case.total_running_time,
-                "test_count": test_case.test_count}
-    if hasattr(test_case, "preformatted_feedback"):
-        return {"preformatted_feedback": test_case.preformatted_feedback}
-    if hasattr(test_case, "html_feedback"):
-        return {"html_feedback": test_case.html_feedback}
+    EXTRA_FEEDBACK_ATTRS = (
+        "total_time",
+        "test_count",
+        "preformatted_feedback",
+        "html_feedback",
+        "image",
+    )
+    feedback_data = {}
+    for attribute in EXTRA_FEEDBACK_ATTRS:
+        if hasattr(test_case, attribute):
+            feedback_data[attribute] = getattr(test_case, attribute)
+
+    return feedback_data if feedback_data else None
 
 
 def test_result_as_template_context(result_object):

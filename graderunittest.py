@@ -38,7 +38,7 @@ class ParameterTestCaseLoader(unittest.TestLoader):
         testCaseNames = self.getTestCaseNames(parameterTestCaseClass)
         if not testCaseNames and hasattr(parameterTestCaseClass, 'runTest'):
             testCaseNames = ['runTest']
-        test_instances = (parameterTestCaseClass(name, params=self.test_parameters) for name in testCaseNames)
+        test_instances = (parameterTestCaseClass(name, self.test_parameters) for name in testCaseNames)
         loaded_suite = self.suiteClass(test_instances)
         return loaded_suite
 

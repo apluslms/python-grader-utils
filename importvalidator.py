@@ -9,8 +9,7 @@ import astparser
 import htmlgenerator
 from constants import GRAMMAR_NAMES
 
-import test_config
-
+TEST_CONFIG_NAME = "test_config"
 
 class ImportValidationError(Exception): pass
 
@@ -225,28 +224,31 @@ def validate_module(module_data, blacklist):
     return errors
 
 
-#TODO test module as string parameter
-def get_validation_errors():
-    if not hasattr(test_config, "MODULE"):
-        raise ImportValidationError("ERROR: No module name and/or module attributes defined in test_config.")
+def get_validation_errors(config_module):
 
-    MODULE = test_config.MODULE
+    module_data = getattr(config_module, "MODULE", None)
 
-    # Get set of blacklisted names or an empty set if there are none in test_config
-    BLACKLIST = getattr(test_config, "BLACKLIST", set())
+    if not module_data:
+        return None
+
+    # Get set of blacklisted names or an empty set if there are none in config_module
+    blacklist = getattr(config_module, "BLACKLIST", set())
 
     # By default, prevent inspecting of anything in the util directory
-    BLACKLIST.add("inspecting_grader_tests")
+    blacklist.add("inspecting_grader_tests")
 
     # Get dict with error messages
-    validation_errors = validate_module(MODULE, BLACKLIST)
+    validation_errors = validate_module(module_data, blacklist)
 
     return validation_errors
 
 
 if __name__ == "__main__":
+    test_config = None
+    if import_util.find_spec(TEST_CONFIG_NAME):
+        test_config = importlib.import_module(TEST_CONFIG_NAME)
 
-    validation_errors = get_validation_errors()
+    validation_errors = get_validation_errors(test_config)
 
     if validation_errors:
         # Render dict with html template

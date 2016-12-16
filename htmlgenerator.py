@@ -116,6 +116,7 @@ def extra_data_or_none(test_case):
         "preformatted_feedback",
         "html_feedback",
         "image_path",
+        "svg_xml",
     )
     feedback_data = {}
     for attribute in EXTRA_FEEDBACK_ATTRS:

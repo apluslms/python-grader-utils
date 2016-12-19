@@ -76,7 +76,11 @@ def run_tests_and_get_results(test_names, test_parameters):
         submit_module_name = None
 
     for test_filename, test_type_name in test_names.items():
-        result = run_points_test(test_filename, test_parameters)
+        try:
+            result = run_points_test(test_filename, test_parameters)
+        except ImportError:
+            #This test isn't configured for this exercise, skip
+            continue
 
         result.test_type_name = test_type_name
         result.submit_module_name = submit_module_name

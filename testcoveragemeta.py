@@ -51,7 +51,7 @@ class TestCoverageMeta(type):
             """Check if students tests pass"""
             if not result.wasSuccessful():
                 self.fail("Your tests didn't pass. Coverage tests won't be run.\n\n{}".format(stream.getvalue()))
-            print("Run results: \n{}".format(stream.getvalue()))
+            self.preformatted_feedback = "Run results: \n{}".format(stream.getvalue())
         setattr(newclass, 'test_code', user_tests_pass)
 
         def generate_test(percentage, test_num, points):

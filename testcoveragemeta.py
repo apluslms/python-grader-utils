@@ -1,6 +1,8 @@
 import unittest
 import coverage
+import importlib
 from io import StringIO
+import imp
 
 class TestCoverageMeta(type):
     """
@@ -13,10 +15,10 @@ class TestCoverageMeta(type):
 
 
     To create a new coverage-test create coverage_tests.py with necessary imports and
-    class TestCoverage(unittest.TestCase, metaclass=TestCoverageMeta, test=usertest, filename="userfile.py", points=[8, 10, 12]):
+    class TestCoverage(unittest.TestCase, metaclass=TestCoverageMeta, test="test", filename="userfile.py", points=[8, 10, 12]):
         pass
 
-    This example would run usertest (from test import Test as usertest) and check coverages for userfile.py.
+    This example would import test, run it and check coverages for userfile.py.
     It would give 8 points if 33.33% of userfile.py would be covered, 10 points more if 66.66% and 12 points if 100%
     totaling 30 points.
     If you give a list of 5 points it would check coverage in 20% intervals.
@@ -28,22 +30,28 @@ class TestCoverageMeta(type):
         return unittest.TestLoader().loadTestFromTestCase(TestCoverage)
     in coverage_tests.py 
     """
-    def __new__(cls, clsname, bases, dct, test, filename, points):
+    def __new__(cls, clsname, bases, dct, testmodule, filename, points):
         newclass = super(TestCoverageMeta, cls).__new__(cls, clsname, bases, dct)
         stream = StringIO()
         cov = coverage.Coverage()
         cov.start()
-        suite = unittest.TestLoader().loadTestsFromTestCase(test)
+        #we need to import the files here and make sure that
+        #the users file is reloaded so that coverage shows right
+        #lines as covered. It would miss function definitions otherwise 
+        test = importlib.import_module(testmodule)
+        mod = importlib.import_module(filename)
+        importlib.reload(mod)
+        suite = unittest.TestLoader().loadTestsFromModule(test)
         result = unittest.TextTestRunner(stream=stream, verbosity=0).run(suite)
         cov.stop()
-        covered = cov.report(include=filename, show_missing=True)
-        missing = cov.analysis(filename)[3]
+        covered = cov.report(include="{}.py".format(filename), show_missing=True)
+        missing = cov.analysis("{}.py".format(filename))[3]
 
         def user_tests_pass(self):
             """Check if students tests pass"""
             if not result.wasSuccessful():
                 self.fail("Your tests didn't pass. Coverage tests won't be run.\n\n{}".format(stream.getvalue()))
-
+            print("Run results: \n{}".format(stream.getvalue()))
         setattr(newclass, 'test_code', user_tests_pass)
 
         def generate_test(percentage, test_num, points):
@@ -62,5 +70,5 @@ class TestCoverageMeta(type):
             generate_test(100/iterations*(num), num, point)
 
         return newclass
-    def __init__(cls, clsname, bases, dct, test, filename, points):
+    def __init__(cls, clsname, bases, dct, testmodule, filename, points):
         super().__init__(cls, clsname, dct)

@@ -57,6 +57,7 @@ conforms to the specs defined in the ``test_config.py`` file for the exercise.
 Can be used to generate coverage-tests for user uploaded tests
 
 To create a new coverage-test create a ``coverage_tests.py`` with necessary imports and class TestCoverage with TestCoverageMeta as it's metaclass. Example:
+
 ```python
 class TestCoverage(unittest.TestCase, metaclass=TestCoverageMeta, test=usertest, filename="userfile.py", points=[8, 10, 12]):
     pass
@@ -76,6 +77,7 @@ If you give a list with 5 point amounts it would check coverage in 20% intervals
 It will give 0 points out of the total if all of the users tests won't succeed
 
 Because you don't want grader to run users tests as graded tests (because crafty users could add (1000p) to their tests and it shows up ugly) you should also add
+
 ```python
 def load_tests(*args, **kwargs):
     return unittest.TestLoader().loadTestFromTestCase(TestCoverage)

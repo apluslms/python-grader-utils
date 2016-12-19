@@ -59,16 +59,16 @@ Can be used to generate coverage-tests for user uploaded tests
 To create a new coverage-test create a ``coverage_tests.py`` with necessary imports and class TestCoverage with TestCoverageMeta as it's metaclass. Example:
 
 ```python
-class TestCoverage(unittest.TestCase, metaclass=TestCoverageMeta, test=usertest, filename="userfile.py", points=[8, 10, 12]):
+class TestCoverage(unittest.TestCase, metaclass=TestCoverageMeta, testmodule="usertest", filename="userfile", points=[8, 10, 12]):
     pass
 ```
 The keyword arguments are:
 
-Argument | Function
--------- | --------
-test     | the test class user uploaded
-filename | the name of the file that you check the coverage for
-points   | list of points for different coverage amounts
+Argument  | Function
+--------  | --------
+testmodule| the name of the test module user uploaded
+filename  | the name of the file that you check the coverage for
+points    | list of points for different coverage amounts
 
 This example would run usertest (from test import Test as usertest) and check coverages for userfile.py.
 It would give 8 points if 33.33% of userfile.py would be covered, 10 points more if 66.66% and 12 points if 100%

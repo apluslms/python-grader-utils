@@ -15,7 +15,7 @@ class TestCoverageMeta(type):
 
 
     To create a new coverage-test create coverage_tests.py with necessary imports and
-    class TestCoverage(unittest.TestCase, metaclass=TestCoverageMeta, test="test", filename="userfile.py", points=[8, 10, 12]):
+    class TestCoverage(unittest.TestCase, metaclass=TestCoverageMeta, testmodule="test", filename="userfile.py", points=[8, 10, 12]):
         pass
 
     This example would import test, run it and check coverages for userfile.py.

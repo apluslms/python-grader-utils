@@ -59,7 +59,7 @@ Can be used to generate coverage-tests for user uploaded tests
 To create a new coverage-test create a ``coverage_tests.py`` with necessary imports and class TestCoverage with TestCoverageMeta as it's metaclass. Example:
 
 ```python
-class TestCoverage(unittest.TestCase, metaclass=TestCoverageMeta, test="usertest", filename="userfile", points=[8, 10, 12]):
+class TestCoverage(unittest.TestCase, metaclass=TestCoverageMeta, testmodule="usertest", filename="userfile", points=[8, 10, 12]):
     pass
 ```
 The keyword arguments are:

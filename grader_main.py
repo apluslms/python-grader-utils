@@ -18,7 +18,8 @@ from collections import OrderedDict
 # OrderedDict instead of dict to ensure public tests are executed first
 TEST_NAMES = OrderedDict([
     # ("public_tests", "Local tests"),
-    ("grader_tests", "Grader tests")
+    ("grader_tests", "Grader tests"),
+    ("coverage_tests", "Coverage tests")
 ])
 
 

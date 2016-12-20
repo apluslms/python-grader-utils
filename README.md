@@ -52,3 +52,34 @@ Renders ``unittest`` test result objects as HTML using
 Checks that the submitted file does not contain invalid syntax and that it
 conforms to the specs defined in the ``test_config.py`` file for the exercise.
 
+## ``testcoveragemeta.py``
+
+Can be used to generate coverage-tests for user uploaded tests
+
+To create a new coverage-test create a ``coverage_tests.py`` with necessary imports and class TestCoverage with TestCoverageMeta as it's metaclass. Example:
+
+```python
+class TestCoverage(unittest.TestCase, metaclass=TestCoverageMeta, testmodule="usertest", filename="userfile", points=[8, 10, 12]):
+    pass
+```
+The keyword arguments are:
+
+Argument  | Function
+--------  | --------
+testmodule| the name of the test module user uploaded
+filename  | the name of the file that you check the coverage for
+points    | list of points for different coverage amounts
+
+This example would run usertest (from test import Test as usertest) and check coverages for userfile.py.
+It would give 8 points if 33.33% of userfile.py would be covered, 10 points more if 66.66% and 12 points if 100%
+totaling 30 points.
+If you give a list with 5 point amounts it would check coverage in 20% intervals.
+It will give 0 points out of the total if all of the users tests won't succeed
+
+Because you don't want grader to run users tests as graded tests (because crafty users could add (1000p) to their tests and it shows up ugly) you should also add
+
+```python
+def load_tests(*args, **kwargs):
+    return unittest.TestLoader().loadTestFromTestCase(TestCoverage)
+```
+in ``coverage_tests.py``

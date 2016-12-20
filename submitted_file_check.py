@@ -43,14 +43,14 @@ def get_import_errors(module):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--module")
+    parser.add_argument("--python")
     parser.add_argument("--image")
     args = parser.parse_args()
 
     errors = None
 
-    if args.module:
-        module_name = args.module.split(".py")[0]
+    if args.python:
+        module_name = args.python.split(".py")[0]
         errors = get_import_errors(module_name)
     elif args.image:
         image_file = args.image

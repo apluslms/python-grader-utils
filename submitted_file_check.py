@@ -40,11 +40,20 @@ def get_import_errors(module):
 
     return errors
 
+def get_labview_errors(filename):
+    errors = {}
+    with open(filename, "rb") as f:
+        header = f.read(16)
+        if header != b'RSRC\r\n\x00\x03LVINLBVW':
+            errors["file_type_error"] = "The file wasn't a proper labVIEW-file"
+    return errors
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--python")
     parser.add_argument("--image")
+    parser.add_argument("--labview")
     args = parser.parse_args()
 
     errors = None
@@ -56,6 +65,9 @@ if __name__ == "__main__":
         image_file = args.image
         image_type = image_file.split(".")[-1]
         errors = get_image_type_errors(image_file, image_type)
+    elif args.labview:
+        filename = args.labview
+        errors = get_labview_errors(filename)
 
     if errors:
         print(htmlgenerator.errors_as_html(errors), file=sys.stderr)

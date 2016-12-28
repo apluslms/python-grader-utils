@@ -4,12 +4,15 @@ Functions for generating result objects as HTML. Uses Jinja2 for rendering.
 import itertools
 import jinja2
 import re
-import settings
 
-if settings.HTML_TRACEBACK:
-    import sys
-    import cgitb
-    sys.excepthook = cgitb.Hook(file=sys.stderr, format="html", display=1, context=5)
+try:
+    import settings
+    if settings.HTML_TRACEBACK:
+        import sys
+        import cgitb
+        sys.excepthook = cgitb.Hook(file=sys.stderr, format="html", display=1, context=5)
+except:
+    pass
 
 class HTMLGeneratorError(Exception): pass
 

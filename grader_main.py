@@ -1,16 +1,18 @@
 import unittest
 import graderunittest
 import argparse
-import ast
 import importlib
 import io
 import htmlgenerator
 import sys
-import settings
 
-if settings.HTML_TRACEBACK:
-    import cgitb
-    sys.excepthook = cgitb.Hook(file=sys.stderr, format="html", display=1, context=5)
+try:
+    import settings
+    if settings.HTML_TRACEBACK:
+        import cgitb
+        sys.excepthook = cgitb.Hook(file=sys.stderr, format="html", display=1, context=5)
+except:
+    pass
 
 from collections import OrderedDict
 

@@ -5,7 +5,6 @@ import unittest
 import re
 import signal
 import time
-from plain_text_validator import read_yaml
 
 
 class _PointsTestResult(unittest.TextTestResult):
@@ -52,6 +51,7 @@ class ParameterTestCase(unittest.TestCase):
 
     def __init__(self, name, test_config_name):
         super().__init__(name)
+        from plain_text_validator import read_yaml
         self.test_config_data = read_yaml(test_config_name)
 
 

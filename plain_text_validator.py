@@ -13,10 +13,10 @@ def validate_plain_text(contents, forbidden_names):
     errors = dict()
     used_forbidden_names = []
 
-    for forbidden_name in map(str.lower, forbidden_names):
-        pattern = re.compile(forbidden_name)
+    for forbidden_name in forbidden_names:
+        pattern = re.compile(forbidden_name, re.IGNORECASE)
         for line_no, line in enumerate(contents):
-            matches = re.findall(pattern, line.lower())
+            matches = re.findall(pattern, line)
             if matches:
                 used_forbidden_names.append({
                     "name": forbidden_name,

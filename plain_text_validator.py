@@ -13,6 +13,8 @@ def validate_plain_text(contents, forbidden_names):
     errors = dict()
     used_forbidden_names = []
 
+    contents = list(contents)
+
     for forbidden_name in forbidden_names:
         pattern = re.compile(forbidden_name, re.IGNORECASE)
         for line_no, line in enumerate(contents):

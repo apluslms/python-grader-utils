@@ -9,6 +9,9 @@ import sys
 import argparse
 import imghdr
 
+# Non-interactive rendering to png
+MATPLOTLIB_RENDERER_BACKEND = "AGG"
+
 
 def get_image_type_errors(image, expected_type):
     errors = {}
@@ -59,6 +62,8 @@ if __name__ == "__main__":
     errors = None
 
     if args.python:
+        import matplotlib
+        matplotlib.use(MATPLOTLIB_RENDERER_BACKEND)
         module_name = args.python.split(".py")[0]
         errors = get_import_errors(module_name)
     elif args.image:

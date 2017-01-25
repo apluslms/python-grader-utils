@@ -12,6 +12,7 @@ class TestCoverageMeta(type):
     test     -- the test class student uploaded
     filename -- the name of the file that you check the coverage for
     points   -- list of points for different coverage amounts
+    minimum    -- The percentage from which the points are started
 
 
     To create a new coverage-test create coverage_tests.py with necessary imports and
@@ -30,7 +31,7 @@ class TestCoverageMeta(type):
         return unittest.TestLoader().loadTestFromTestCase(TestCoverage)
     in coverage_tests.py 
     """
-    def __new__(cls, clsname, bases, dct, testmodule, filename, points):
+    def __new__(cls, clsname, bases, dct, testmodule, filename, points, minimum=0):
         newclass = super(TestCoverageMeta, cls).__new__(cls, clsname, bases, dct)
         stream = StringIO()
         cov = coverage.Coverage()
@@ -67,8 +68,8 @@ class TestCoverageMeta(type):
             setattr(newclass, 'test_coverage_{}'.format(test_num), a_test)
         iterations = len(points)
         for num, point in enumerate(points, start=1):
-            generate_test(100/iterations*(num), num, point)
+            generate_test((100-minimum)/iterations*num+minimum, num, point)
 
         return newclass
-    def __init__(cls, clsname, bases, dct, testmodule, filename, points):
+    def __init__(cls, clsname, bases, dct, testmodule, filename, points, minimum=0):
         super().__init__(cls, clsname, dct)

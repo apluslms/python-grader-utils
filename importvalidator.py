@@ -225,21 +225,21 @@ def validate_module(module_data, blacklist):
 
 
 def get_validation_errors(config_module):
-
     module_data = getattr(config_module, "MODULE", None)
-
-    if not module_data:
-        return None
-
+    modules = getattr(config_module, "MODULES", None)
+    if not modules:
+        if not module_data:
+            return None
+        modules = [module_data]
+    validation_errors = dict()
     # Get set of blacklisted names or an empty set if there are none in config_module
     blacklist = getattr(config_module, "BLACKLIST", set())
 
     # By default, prevent inspecting of anything in the util directory
     blacklist.add("inspecting_grader_tests")
-
-    # Get dict with error messages
-    validation_errors = validate_module(module_data, blacklist)
-
+    for module in modules:
+        # Update dict with different modules error messages
+        validation_errors.update(validate_module(module, blacklist))
     return validation_errors
 
 

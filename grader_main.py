@@ -74,7 +74,7 @@ def run_tests_and_get_results(test_names, test_parameters):
         # Name of the submitted module, for example primes.py
         # Used for formatting traceback messages
         submit_module_name = test_config.MODULE["name"] + ".py"
-    except ImportError:
+    except (ImportError, AttributeError):
         submit_module_name = None
 
     for test_filename, test_type_name in test_names.items():

@@ -57,6 +57,8 @@ if __name__ == "__main__":
     parser.add_argument("--python")
     parser.add_argument("--image")
     parser.add_argument("--labview")
+    parser.add_argument("--html")
+    parser.add_argument("--css")
     args = parser.parse_args()
 
     errors = None
@@ -73,7 +75,13 @@ if __name__ == "__main__":
     elif args.labview:
         filename = args.labview
         errors = get_labview_errors(filename)
-
+    elif args.html:
+        filename = args.html
+        errors = {}
+    elif args.css:
+        filename = args.css
+        errors = {}
+                
     if errors:
         print(htmlgenerator.errors_as_html(errors), file=sys.stderr)
         sys.exit(1)

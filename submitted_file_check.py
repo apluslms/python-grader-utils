@@ -59,6 +59,7 @@ if __name__ == "__main__":
     parser.add_argument("--labview")
     parser.add_argument("--html")
     parser.add_argument("--css")
+    parser.add_argument("--xlsx")
     args = parser.parse_args()
 
     errors = None
@@ -81,7 +82,10 @@ if __name__ == "__main__":
     elif args.css:
         filename = args.css
         errors = {}
-                
+    elif args.xlsx:
+        filename = args.xlsx
+        errors = {}
+                        
     if errors:
         print(htmlgenerator.errors_as_html(errors), file=sys.stderr)
         sys.exit(1)

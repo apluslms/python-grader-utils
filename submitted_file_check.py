@@ -60,6 +60,7 @@ if __name__ == "__main__":
     parser.add_argument("--html")
     parser.add_argument("--css")
     parser.add_argument("--xlsx")
+    parser.add_argument("--pdf")
     args = parser.parse_args()
 
     errors = None
@@ -84,6 +85,9 @@ if __name__ == "__main__":
         errors = {}
     elif args.xlsx:
         filename = args.xlsx
+        errors = {}
+    elif args.pdf:
+        filename = args.pdf
         errors = {}
                         
     if errors:

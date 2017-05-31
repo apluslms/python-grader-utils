@@ -8,7 +8,7 @@ import htmlgenerator
 import sys
 import argparse
 import imghdr
-import pytidylib
+import tidylib
 
 # Non-interactive rendering to png
 MATPLOTLIB_RENDERER_BACKEND = "AGG"
@@ -53,9 +53,9 @@ def get_labview_errors(filename):
     return errors
 
 def get_html_errors(filename):
-    errors{}
+    errors = {}
     with open(filename, "r") as f:
-        doc, err = tidy_document(f)
+        doc, err = tidylib.tidy_document(f.read())
         if err:
             errors["html_style_error"] = err
     return errors

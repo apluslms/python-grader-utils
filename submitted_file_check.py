@@ -8,6 +8,7 @@ import htmlgenerator
 import sys
 import argparse
 import imghdr
+import pytidylib
 
 # Non-interactive rendering to png
 MATPLOTLIB_RENDERER_BACKEND = "AGG"
@@ -51,6 +52,14 @@ def get_labview_errors(filename):
             errors["file_type_error"] = "The file wasn't a proper labVIEW-file"
     return errors
 
+def get_html_errors(filename):
+    errors{}
+    with open(filename, "r") as f:
+        doc, err = tidy_document(f)
+        if err:
+            errors["html_style_error"] = err
+    return errors
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -79,7 +88,7 @@ if __name__ == "__main__":
         errors = get_labview_errors(filename)
     elif args.html:
         filename = args.html
-        errors = {}
+        errors = get_html_errors(filename)
     elif args.css:
         filename = args.css
         errors = {}
@@ -89,8 +98,7 @@ if __name__ == "__main__":
     elif args.pdf:
         filename = args.pdf
         errors = {}
-                        
+
     if errors:
         print(htmlgenerator.errors_as_html(errors), file=sys.stderr)
         sys.exit(1)
-

@@ -56,6 +56,8 @@ def get_html_errors(filename):
     errors = {}
     with open(filename, "r") as f:
         doc, err = tidylib.tidy_document(f.read())
+
+        #edit strings so that browser interprets html tags as a raw text
         err = err.replace("<", "&#60")
         err = err.replace(">", "&#62")
         if err:

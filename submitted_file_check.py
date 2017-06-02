@@ -4,11 +4,13 @@ TODO: This could be merged into importvalidator.
 """
 import importlib.util
 import importlib
+import json
 import htmlgenerator
 import sys
 import argparse
 import imghdr
-import tidylib
+import subprocess
+import urllib.parse as uparse
 
 # Non-interactive rendering to png
 MATPLOTLIB_RENDERER_BACKEND = "AGG"
@@ -52,10 +54,28 @@ def get_labview_errors(filename):
             errors["file_type_error"] = "The file wasn't a proper labVIEW-file"
     return errors
 
+def validate_html(filename):
+    '''
+    Validate file and return JSON result as dictionary.
+    'filename' can be a file name or an HTTP URL.
+    Return '' if the validator does not return valid JSON.
+    Raise OSError if curl command returns an error status.
+    '''
+    quoted_filename = uparse.quote(filename)
+    if filename.endswith('.css'):
+        cmd = ["curl", "-H", "Content-Type: text/css; charset=utf-8", "--data-binary", "@{}".format(quoted_filename), css_validator_url]
+    else:
+        cmd = ["curl", "-H", "Content-Type: text/html; charset=utf-8", "--data-binary", "@{}".format(quoted_filename), html_validator_url]
+
+    mystdout = subprocess.run(cmd, stdout=subprocess.PIPE)
+    output = mystdout.stdout.decode('utf-8')
+
+    return output
+
 def get_html_errors(filename):
     errors = {}
     with open(filename, "r") as f:
-        doc, err = tidylib.tidy_document(f.read())
+        err = validate_html(filename)
 
         #edit strings so that browser interprets html tags as a raw text
         err = err.replace("<", "&#60")

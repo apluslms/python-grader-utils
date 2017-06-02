@@ -61,6 +61,8 @@ def validate_html(filename):
     Return '' if the validator does not return valid JSON.
     Raise OSError if curl command returns an error status.
     '''
+    html_validator_url = 'https://validator.w3.org/nu/?out=json'
+    css_validator_url = 'https://jigsaw.w3.org/css-validator'
     quoted_filename = uparse.quote(filename)
     if filename.endswith('.css'):
         cmd = ["curl", "-H", "Content-Type: text/css; charset=utf-8", "--data-binary", "@{}".format(quoted_filename), css_validator_url]

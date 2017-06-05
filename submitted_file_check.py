@@ -61,7 +61,7 @@ def get_html_errors(filename):
         except:
             err = ""
             for e in parser.errors:
-                err += "Line {0}: {1}: {2} \n".format(e[0][0], e[1], e[2]["name"])
+                err += "Line {0}: {1}: {2} \n".format(e[0][0], e[1], e[2]['name'])
 
         errors["html_style_error"] = err
 

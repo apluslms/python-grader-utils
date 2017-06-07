@@ -181,9 +181,10 @@ def import_module_or_errors(module_name, discard_import_output=False):
 
         except SyntaxError as syntax_error:
             error_message = "The submitted file contains invalid Python syntax at line {:d}:\n".format(syntax_error.lineno) + syntax_error.text
-'''
+        '''
         except OSError:
-            error_message = "Could not get source of the submitted file, is it empty?"'''
+            error_message = "Could not get source of the submitted file, is it empty?"
+        '''
 
         #TODO add more errors here if needed
         except Exception as e:

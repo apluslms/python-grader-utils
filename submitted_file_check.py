@@ -56,10 +56,11 @@ def get_html_errors(filename):
     errors = {}
     with open(filename, "r") as f:
         parser = html5lib.HTMLParser(tree=html5lib.getTreeBuilder("dom"), strict=True)
+        err = ""
         try:
             document = parser.parse(f)
         except:
-            err = ""
+
             for e in parser.errors:
                 err += "Line {0}: {1}: {2} \n".format(e[0][0], e[1], e[2])
             err += "Tiedostosi sisälsi virheitä. Käytä oheisen linkin takaa löytyvää työkalua tutkimaan virheitä tarkemminen. http://validator.w3.org/#validate_by_input "

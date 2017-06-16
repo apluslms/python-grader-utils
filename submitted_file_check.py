@@ -64,7 +64,8 @@ def get_html_errors(filename):
                 err += "Line {0}: {1}: {2} \n".format(e[0][0], e[1], e[2])
             err += "Tiedostosi sisälsi virheitä. Käytä oheisen linkin takaa löytyvää työkalua tutkimaan virheitä tarkemminen. http://validator.w3.org/#validate_by_input "
 
-        errors["html_style_error"] = err
+        if err:
+            errors["html_style_error"] = err
 
     return errors
 

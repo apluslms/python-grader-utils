@@ -1,12 +1,10 @@
-<style>
-{% include 'feedback.css' %}
-</style>
-
+TODO style.css
+TODO other exceptions
 <h1>Error in submitted file</h1>
 <h3>No tests were run, see details below.</h3>
 
 
-{% if errors.import_error %}
+{% if error.type == "ImportError" %}
 
 <div class="grading-task">
   <div class="panel panel-default">
@@ -21,7 +19,7 @@
       <div id="import-error" class="panel-collapse collapse in">
         <div class="panel-body">
           <p>The submitted file could not be imported for execution, reason:</p>
-          <pre>{{ errors.import_error }}</pre>
+          <pre>{{ error.message }}</pre>
         </div>
       </div>
 
@@ -30,7 +28,7 @@
 
 {% endif %}
 
-{% if errors.memory_error %}
+{% if error.MemoryError %}
 
 <div class="grading-task">
   <div class="panel panel-default">
@@ -44,7 +42,7 @@
 
       <div id="memory-error" class="panel-collapse collapse in">
         <div class="panel-body">
-          <pre>{{ errors.memory_error }}</pre>
+          <pre>{{ error.MemoryError }}</pre>
         </div>
       </div>
 
@@ -54,7 +52,7 @@
 {% endif %}
 
 
-{% for attr_error in errors.attribute_errors %}
+{% for attr_error in error.attribute_errors %}
 
 <div class="grading-task">
   <div class="panel panel-default">
@@ -80,7 +78,7 @@
 {% endfor %}
 
 
-{% for forbidden_name in errors.forbidden_names %}
+{% for forbidden_name in error.forbidden_names %}
 
 <div class="grading-task">
   <div class="panel panel-default">
@@ -108,7 +106,7 @@
 
 {% endfor %}
 
-{% if errors.file_type_error %}
+{% if error.file_type_error %}
 <div class="grading-task">
   <div class="panel panel-default">
 
@@ -122,7 +120,7 @@
       <div id="import-error" class="panel-collapse collapse in">
         <div class="panel-body">
           <p>The submitted file could not be accepted, reason:</p>
-          <pre>{{ errors.file_type_error }}</pre>
+          <pre>{{ error.file_type_error }}</pre>
         </div>
       </div>
 
@@ -131,7 +129,7 @@
 
 {% endif %}
 
-{% if errors.html_style_error %}
+{% if error.html_style_error %}
 <div class="grading-task">
   <div class="panel panel-default">
 
@@ -145,7 +143,7 @@
       <div id="import-error" class="panel-collapse collapse in">
         <div class="panel-body">
           <p>The HTML file contained following errors:</p>
-          <pre>{{ errors.html_style_error }}</pre>
+          <pre>{{ error.html_style_error }}</pre>
         </div>
       </div>
 

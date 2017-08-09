@@ -5,14 +5,14 @@ import itertools
 import jinja2
 import re
 
-try:
-    import settings
-    if settings.HTML_TRACEBACK:
-        import sys
-        import cgitb
-        sys.excepthook = cgitb.Hook(file=sys.stderr, format="html", display=1, context=5)
-except:
-    pass
+# try:
+#     import settings
+#     if settings.HTML_TRACEBACK:
+#         import sys
+#         import cgitb
+#         sys.excepthook = cgitb.Hook(file=sys.stderr, format="html", display=1, context=5)
+# except:
+#     pass
 
 class HTMLGeneratorError(Exception): pass
 
@@ -60,6 +60,8 @@ def collapse_max_recursion_exception(string, repeat_threshold=20):
         result.append(line + '\n')
     return ''.join(result)
 
+# TODO this feature is probably a bit questionable as it modifies the expected traceback message
+# it can be argued whether a custom traceback message without infrastructure specific clutter really is better than a standard traceback message which is not modified
 def shortened_traceback(filename, traceback_string):
     """Strips traceback_string from all data unrelated to a file named filename.
 
@@ -113,6 +115,7 @@ def data_from_string_or_empty_json(string, data_tag):
 
 def extra_data_or_none(test_case):
     """Return dict with extra feedback data, if available."""
+    # TODO hardcoded
     EXTRA_FEEDBACK_ATTRS = (
         "total_time",
         "test_count",
@@ -163,6 +166,7 @@ def test_result_as_template_context(result_object):
     # Tests which failed, i.e. for which AssertionError was raised
     failures = (("FAIL",
                  test_case.shortDescription(),
+                 # TODO hardcoded #TREE
                  parsed_assertion_message(full_assert_msg, "#TREE"),
                  extra_data_or_none(test_case),
                  "")
@@ -208,15 +212,19 @@ def test_result_as_template_context(result_object):
     return context
 
 
-def results_as_html(results):
+def results_as_html(results, feedback_template=None):
     """Render the list of results as HTML and return the HTML as a string.
     @param results List of TestResult objects.
     @return Raw HTML as a string.
     """
+    if feedback_template is None:
+        feedback_template = "feedback_template.html"
+        template_loader = jinja2.PackageLoader("graderutils", "templates")
+    else:
+        template_loader = jinja2.FileSystemLoader("./")
 
-    # Load feedback template from same directory as tests
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader("./"))
-    template = env.get_template("feedback_template.html")
+    env = jinja2.Environment(loader=template_loader)
+    template = env.get_template(feedback_template)
 
     result_context_dicts = []
     total_points = total_max_points = total_tests_run = 0
@@ -239,14 +247,18 @@ def results_as_html(results):
     return template.render(context)
 
 
-#TODO: Refactoring: might be more modular to handle context building in this function
-def errors_as_html(errors):
-    """Renders the context dictionary errors as html and returns the raw html string."""
+def errors_as_html(error_data, error_template=None):
+    """
+    Renders the context dictionary errors as html using the given error template and returns the raw html string.
+    """
+    if error_template is None:
+        error_template = "error_template.html"
+        template_loader = jinja2.PackageLoader("graderutils", "templates")
+    else:
+        template_loader = jinja2.FileSystemLoader("./")
 
-    # Load error template from same directory as tests
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader("./"))
-    template = env.get_template("error_template.html")
-
-    return template.render({"errors": errors})
+    env = jinja2.Environment(loader=template_loader)
+    template = env.get_template(error_template)
+    return template.render({"error": error_data})
 
 

@@ -48,12 +48,6 @@ def _run_test_modules(modules_data):
 
 
 def main(settings):
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--test_parameters")
-    args = parser.parse_args()
-
-    test_parameters = args.test_parameters
-
     # TODO settings/parameters
     modules_data = None
     error_template = None

@@ -1,0 +1,6 @@
+include LICENSE
+include README.md
+
+recursive-include static *
+recursive-include graderutils *
+recursive-exclude * *.pyc __pycache__

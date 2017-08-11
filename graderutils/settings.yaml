@@ -1,0 +1,6 @@
+modules_data:
+  - ["grader_tests.py", "Grader tests"]
+# error_template: my_error_template.html
+# feedback_template: my_feedback_template.html
+# blacklist:
+# expected_names:

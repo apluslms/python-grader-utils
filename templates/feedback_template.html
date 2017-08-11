@@ -32,7 +32,7 @@ Something weird happened at the server, this test has no title...
 
   <div class="grading-task">
 
-  <h3 class="testsuite-header">{{ testsuite_results.test_suite_name }} points: {{ testsuite_results.points }} of {{ testsuite_results.max_points }}</h3>
+  <h3 class="testsuite-header">{{ testsuite_results.test_description }} points: {{ testsuite_results.points }} of {{ testsuite_results.max_points }}</h3>
 
   {% for result in testsuite_results.results %}
   {% set testsuite_loop = loop %}
@@ -145,7 +145,7 @@ Something weird happened at the server, this test has no title...
 
         <h5 class="panel-title">
           <a data-toggle="collapse" href="#full-test-output{{ all_results_loop.index }}">
-              Full console output for {{ testsuite_results.test_suite_name|lower }}</a>
+              Full console output for {{ testsuite_results.test_description|lower }}</a>
           <span class="label feedback-label label-info">Info</span>
         </h5>
       </div>

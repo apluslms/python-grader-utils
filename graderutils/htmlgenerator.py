@@ -219,7 +219,7 @@ def results_as_html(results, feedback_template=None):
     """
     if feedback_template is None:
         feedback_template = "feedback_template.html"
-        template_loader = jinja2.PackageLoader("graderutils", "templates")
+        template_loader = jinja2.PackageLoader("graderutils", "static")
     else:
         template_loader = jinja2.FileSystemLoader("./")
 
@@ -253,7 +253,7 @@ def errors_as_html(error_data, error_template=None):
     """
     if error_template is None:
         error_template = "error_template.html"
-        template_loader = jinja2.PackageLoader("graderutils", "templates")
+        template_loader = jinja2.PackageLoader("graderutils", "static")
     else:
         template_loader = jinja2.FileSystemLoader("./")
 

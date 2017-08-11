@@ -1,11 +1,14 @@
-import unittest
-import graderunittest
 import argparse
+import gc
 import importlib
 import io
-import htmlgenerator
 import sys
-import gc
+import unittest
+
+import yaml
+
+import graderunittest
+import htmlgenerator
 
 # try:
 #     import settings
@@ -47,11 +50,11 @@ def _run_test_modules(modules_data):
     return results
 
 
-def main(settings):
-    # TODO settings/parameters
-    modules_data = None
-    error_template = None
-    feedback_template = None
+def main(modules_data=None,
+         error_template=None,
+         feedback_template=None,
+         blacklist=None,
+         expected_names=None):
 
     # If there are any exceptions during running, render the traceback into HTML using the provided error_template.
     try:
@@ -80,5 +83,25 @@ def main(settings):
         }
         html_errors = htmlgenerator.errors_as_html(error_data, error_template)
         print(html_errors, file=sys.stderr)
-        sys.exit(1)
+        return 1
+
+    else:
+        return 0
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Python grader test runner with pregrade validation and postgrade feedback styling.")
+    parser.add_argument(
+            "--config_file",
+            type=str,
+            help="Path to a YAML-file containing grading settings. Defaults to 'settings.yaml' found in the package source.",
+    )
+    args = parser.parse_args()
+
+    settings_file_path = args.settings_file
+
+    with open(settings_file_path, encoding="utf-8") as settings_file:
+        settings = yaml.load(settings_file)
+
+    sys.exit(main(**settings))
 

@@ -59,6 +59,8 @@ setup(
 
     install_requires=[
         'Jinja2',
+        # Parse configuration files
+        'PyYAML',
     ],
 
 )

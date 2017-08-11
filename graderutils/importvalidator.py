@@ -1,3 +1,20 @@
+"""
+TODO
+minimum contents should be given as python modules, i.e. 'minimum skeletons'.
+for example a skeleton module with contents:
+
+    def function():
+        pass
+
+    class Widget:
+        def method(self):
+            pass
+
+should be used to validate that submitted files contain:
+    - a function at the module root named 'function'
+    - a class at the module root named 'Widget'
+    - a method 'Widget.method'
+"""
 import sys
 import os
 import inspect

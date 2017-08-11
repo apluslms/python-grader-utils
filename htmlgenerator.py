@@ -1,5 +1,5 @@
 """
-Functions for generating result objects as HTML. Uses Jinja2 for rendering.
+Functions for parsing TestResult objects into HTML. Uses Jinja2 for template rendering.
 """
 import itertools
 import jinja2
@@ -49,6 +49,7 @@ def collapse_max_recursion_exception(string, repeat_threshold=20):
             continue
         if is_repeating:
             is_repeating = False
+            # TODO localize message
             msg = (
                 2*"\n   .    " +
                 "\n   .    \n"
@@ -201,8 +202,7 @@ def test_result_as_template_context(result_object):
 
     context = {
         "results": results,
-        # test_type_name is expected to have been added manually
-        "test_suite_name": result_object.test_type_name,
+        "test_description": result_object.user_data["test_description"],
         "points": result_object.points,
         "max_points": result_object.max_points,
         "tests_run": result_object.testsRun,

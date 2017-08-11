@@ -40,8 +40,9 @@ def _run_test_modules(modules_data):
     """
     results = []
     for module_name, test_description in modules_data:
-        result = _run_suite(_load_tests_from_module_name(module_name))
-        result.test_description = test_description
+        suite = _load_tests_from_module_name(module_name)
+        result = _run_suite(suite)
+        result.user_data = {"test_description": test_description}
         results.append(result)
     return results
 
@@ -58,11 +59,13 @@ def main(settings):
     error_template = None
     feedback_template = None
 
+    # If there are any exceptions during running, render the traceback into HTML using the provided error_template.
     try:
         results = _run_test_modules(modules_data)
     except Exception as error:
         if isinstance(error, MemoryError):
-            # Attempt to clean up some room for rendering and showing the error as HTML.
+            # Testing used up all provided memory.
+            # Attempt to clean up some room for rendering HTML.
             # Not guaranteed to succeed as the memory limit set into the mooc grader sandbox might have been exceeded.
             gc.collect()
         error_data = {
@@ -80,9 +83,9 @@ def main(settings):
         total_points += result.points
         total_max_points += result.max_points
 
-    # The MOOC grader gives points to the student if these two lines are the last ones written to stdout when grading has finished
+    # A+ gives these points to the student if the two last lines written to stdout after grading are in the following format.
     print("TotalPoints: {}\nMaxPoints: {}".format(total_points, total_max_points))
 
-    # Using the MOOC grader action sandbox_python_test, stderr is shown as stdout, while stdout is hidden
+    # Show feedback.
     print(html_results, file=sys.stderr)
 

@@ -56,12 +56,23 @@ def main(settings):
     # If there are any exceptions during running, render the traceback into HTML using the provided error_template.
     try:
         results = _run_test_modules(modules_data)
+
+        total_points = total_max_points = 0
+        for result in results:
+            total_points += result.points
+            total_max_points += result.max_points
+
+        # A+ gives these points to the student if the two last lines written to stdout after grading are in the following format.
+        print("TotalPoints: {}\nMaxPoints: {}".format(total_points, total_max_points))
+
+        # Show feedback.
         html_results = htmlgenerator.results_as_html(results, feedback_template)
+        print(html_results, file=sys.stderr)
+
     except Exception as error:
         if isinstance(error, MemoryError):
             # Testing used up all provided memory.
-            # Attempt to clean up some room for rendering HTML.
-            # Not guaranteed to succeed as the memory limit set into the mooc grader sandbox might have been exceeded.
+            # Attempt to clean up some room for rendering errors as HTML.
             gc.collect()
         error_data = {
             "type": error.__class__.__name__,
@@ -70,15 +81,4 @@ def main(settings):
         html_errors = htmlgenerator.errors_as_html(error_data, error_template)
         print(html_errors, file=sys.stderr)
         sys.exit(1)
-
-    total_points = total_max_points = 0
-    for result in results:
-        total_points += result.points
-        total_max_points += result.max_points
-
-    # A+ gives these points to the student if the two last lines written to stdout after grading are in the following format.
-    print("TotalPoints: {}\nMaxPoints: {}".format(total_points, total_max_points))
-
-    # Show feedback.
-    print(html_results, file=sys.stderr)
 

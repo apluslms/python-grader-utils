@@ -83,3 +83,16 @@ def load_tests(*args, **kwargs):
     return unittest.TestLoader().loadTestFromTestCase(TestCoverage)
 ```
 in ``coverage_tests.py``
+
+
+TODO
+
+- Remove all hardcoded error messages which are shown to students when they submit incorrect files (maybe parametrize by moving them to an error html template)
+- Integrate test_config into the rst-directives
+- The settings-module is useless but some other config support might be handy
+
+
+Hard coded stuff or global constants:
+- Error messages: importvalidator.import_module_or_errors
+- Test names: grader_main.TEST_NAMES
+- MemoryError message: grader_main

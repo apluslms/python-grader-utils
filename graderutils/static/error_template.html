@@ -89,7 +89,7 @@
 
 {% endfor %}
 
-{% if error.file_type_error %} ## TODO new context dict
+{% if error.type == "filetype error" %}
 <div class="grading-task">
   <div class="panel panel-default">
 
@@ -103,7 +103,7 @@
       <div id="import-error" class="panel-collapse collapse in">
         <div class="panel-body">
           <p>The submitted file could not be accepted, reason:</p>
-          <pre>{{ error.file_type_error }}</pre>
+          <pre>{{ error.message }}</pre>
         </div>
       </div>
 
@@ -112,7 +112,7 @@
 
 {% endif %}
 
-{% if error.html_style_error %} ## TODO new context dict
+{% if error.type == "html style error" %}
 <div class="grading-task">
   <div class="panel panel-default">
 
@@ -127,6 +127,7 @@
         <div class="panel-body">
           <p>The HTML file contained following errors:</p>
           <pre>{{ error.html_style_error }}</pre>
+            Tiedostosi sisälsi virheitä. Käytä oheisen linkin takaa löytyvää työkalua tutkimaan virheitä tarkemminen. http://validator.w3.org/#validate_by_input
         </div>
       </div>
 

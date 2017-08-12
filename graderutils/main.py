@@ -115,9 +115,9 @@ def main(test_modules_data, error_template=None,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Python grader test runner with pregrade validation and postgrade feedback styling.")
     parser.add_argument(
-            "--config_file",
+            "config_file",
             type=str,
-            help="Path to a YAML-file containing grading settings. Defaults to 'settings.yaml' found in the package source.",
+            help="Path to a YAML-file containing grading settings.",
     )
     args = parser.parse_args()
 

@@ -1,5 +1,5 @@
 # List of pairs of test modules to be executed and their descriptions as shown to the user.
-modules_data:
+test_modules_data:
   - [validation_tests.py, Pre-grading validation tests]
   - [grader_tests.py, Grader tests]
 
@@ -29,4 +29,9 @@ blacklist:
   node_dumps:
     - ["Name(id='list', ctx=Load())", Loading list builtin]
     - ["ImportFrom(module='os', names=[alias(name='chdir', asname=None)], level=0)", Importing the chdir function from the os module]
-
+  # List of Python files that should be searched for blacklisted names.
+  check_files:
+    - my_solution.py
+  # True to exit with status 1 if blacklisted names are found, defaults to False.
+  # This makes it easier to control whether A+ should deduct one submission when blacklisted names are found.
+  expect_success: True

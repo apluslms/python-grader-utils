@@ -36,13 +36,13 @@ def _run_suite(test_suite):
     return runner.run(test_suite)
 
 
-def _run_test_modules(modules_data):
+def _run_test_modules(test_modules_data):
     """
     Load and run all test modules and their descriptions given as parameter.
     Return a list of TestResult objects.
     """
     results = []
-    for module_name, test_description in modules_data:
+    for module_name, test_description in test_modules_data:
         suite = _load_tests_from_module_name(module_name)
         result = _run_suite(suite)
         result.user_data = {"test_description": test_description}
@@ -50,15 +50,21 @@ def _run_test_modules(modules_data):
     return results
 
 
-def main(modules_data=None,
-         error_template=None,
-         feedback_template=None,
-         blacklist=None,
-         expected_names=None):
+# TODO: exceptions thrown during blacklist checks will be shown to the user
+def main(test_modules_data, error_template=None,
+         feedback_template=None, blacklist=None):
+    # Check for blacklisted names if a blacklist is supplied.
+    if blacklist is not None:
+        blacklist_matches = validation.get_blacklist_matches(blacklist)
+        # If matches are found, show feedback with the error template and return.
+        if blacklist_matches:
+            html_blacklist_matches = htmlgenerator.errors_as_html(blacklist_matches, error_template)
+            print(html_blacklist_matches, file=sys.stderr)
+            return 1 if blacklist.get("expect_success", False) else 0
 
     # If there are any exceptions during running, render the traceback into HTML using the provided error_template.
     try:
-        results = _run_test_modules(modules_data)
+        results = _run_test_modules(test_modules_data)
 
         total_points = total_max_points = 0
         for result in results:
@@ -89,6 +95,7 @@ def main(modules_data=None,
         return 0
 
 
+# TODO: wrap main runner into a try-except block with debug switch
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Python grader test runner with pregrade validation and postgrade feedback styling.")
     parser.add_argument(

@@ -125,7 +125,7 @@ if __name__ == "__main__":
     settings_file_path = args.settings_file
 
     with open(settings_file_path, encoding="utf-8") as settings_file:
-        settings = yaml.load(settings_file)
+        settings = yaml.safe_load(settings_file)
 
     sys.exit(main(**settings))
 

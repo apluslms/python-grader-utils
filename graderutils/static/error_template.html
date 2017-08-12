@@ -29,7 +29,7 @@
 
 {% endif %}
 
-{% if error.MemoryError %}
+{% if error.type == "MemoryError" %}
 
 <div class="grading-task">
   <div class="panel panel-default">
@@ -43,7 +43,7 @@
 
       <div id="memory-error" class="panel-collapse collapse in">
         <div class="panel-body">
-          <pre>{{ error.MemoryError }}</pre>
+          <pre>{{ error.message }}</pre>
         </div>
       </div>
 
@@ -53,33 +53,7 @@
 {% endif %}
 
 
-{% for attr_error in error.attribute_errors %}
-
-<div class="grading-task">
-  <div class="panel panel-default">
-
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" href="#attr-error{{ loop.index }}">
-          Missing attribute</a>
-        <span class="label feedback-label label-danger">Error</span>
-      </h4>
-    </div>
-
-      <div id="attr-error{{ loop.index }}" class="panel-collapse collapse in">
-        <div class="panel-body">
-          <p>The submitted file lacks a required <code>{{ attr_error.type }}</code>:
-          <code>{{ attr_error.attribute_name }}</code>.</p>
-        </div>
-      </div>
-
-  </div>
-</div>
-
-{% endfor %}
-
-
-{% for forbidden_name in error.forbidden_names %}
+{% for match in blacklist_matches %}
 
 <div class="grading-task">
   <div class="panel panel-default">
@@ -94,10 +68,18 @@
 
       <div id="name-error{{ loop.index }}" class="panel-collapse collapse in">
         <div class="panel-body">
-          <p>The submitted file contains a forbidden operation <code>{{ forbidden_name.name }}</code>
-          at line number <code>{{ forbidden_name.lineno }}</code>:
-          <pre><code class="python">{{ forbidden_name.line_content }}</code></pre>
-          If you feel that this operation should be allowed in this exercise, please discuss about this with the course staff for example in Piazza.
+          <p>
+          The submitted file {{ match.filename }}
+          contains a forbidden operation "{{ match.description }}"
+
+          {% if match.linenumber > 0 %}
+          at line number <code>{{ match.linenumber }}</code>:
+          <pre><code class="python">{{ match.line_content }}</code></pre>
+          {% else %}
+          .
+          {% endif %}
+
+          If you feel that this operation should be allowed in this exercise, please discuss about this with the course staff.
           </p>
         </div>
       </div>

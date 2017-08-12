@@ -1,6 +1,32 @@
+# List of pairs of test modules to be executed and their descriptions as shown to the user.
 modules_data:
-  - ["grader_tests.py", "Grader tests"]
-# error_template: my_error_template.html
-# feedback_template: my_feedback_template.html
-# blacklist:
-# expected_names:
+  - [validation_tests.py, Pre-grading validation tests]
+  - [grader_tests.py, Grader tests]
+
+# Optional
+# Paths to custom Jinja2 HTML templates to be used instead of the default ones.
+# In case of the MOOC grader, the easiest way to use these is probably to copy them into the sandboxed "user" directory with the "prepare" action.
+# error_template: ./my_error_template.html
+# feedback_template: ./my_feedback_template.html
+
+# Optional
+# List of pairs of Python abstract syntax tree (ast) nodes that should not be found in the submitted file and the descriptions shown to the user if a match is found.
+# Can be either the node name (i.e. node.__class__.__name__) or the string as returned by ast.dump.
+# The below snippet can be used to dump the full ast of a Python source string.
+
+# TODO: make this into cli utility
+# import ast
+# def dump(source):
+#     print('\n'.join(map(ast.dump, ast.walk(ast.parse(source)))))
+#
+
+# If commented out, all blacklist checks are skipped.
+blacklist:
+  node_names:
+    - [ListComp, List comprehensions]
+    - [For, For loops]
+  # TODO maybe add some regexp support so that the dump could be patterns
+  node_dumps:
+    - ["Name(id='list', ctx=Load())", Loading list builtin]
+    - ["ImportFrom(module='os', names=[alias(name='chdir', asname=None)], level=0)", Importing the chdir function from the os module]
+

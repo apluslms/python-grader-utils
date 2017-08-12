@@ -20,7 +20,7 @@ def get_blacklist_matches(blacklist):
     Matches are returned in a list of BlacklistMatch objects/namedtuples.
     If linenumbers are not valid for some node (e.g. function arguments node), -1 is used as the linenumber.
     """
-    assert blacklist["check_files"]
+    assert blacklist["check_files"] # TODO
 
     matches = []
     blacklisted_names = blacklist["node_names"].keys()

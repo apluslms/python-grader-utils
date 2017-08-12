@@ -53,6 +53,21 @@ def _run_test_modules(test_modules_data):
 # TODO: exceptions thrown during blacklist checks will be shown to the user
 def main(test_modules_data, error_template=None,
          feedback_template=None, blacklist=None):
+    """
+    Main runner that:
+        - (if blacklist is supplied) Checks for blacklisted matches.
+        - Runs each module in test_modules_data with unittest.
+        If there are no errors:
+            - Writes the total result of all test results into stdout for A+ to retrieve the points.
+            - Renders the test result objects as HTML using the feedback_template (or a default template if none is given).
+            - Writes the rendered HTML into stderr.
+            - Returns 0
+        If there are errors:
+            - Renders the errors as HTML using the error_template (or a default template if none is given).
+            - Writes the rendered HTML into stderr.
+            - Returns 1
+    """
+    # TODO remove from main
     # Check for blacklisted names if a blacklist is supplied.
     if blacklist is not None:
         blacklist_matches = validation.get_blacklist_matches(blacklist)

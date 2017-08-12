@@ -93,6 +93,7 @@ def main(test_modules_data, error_template=None,
         # Show feedback.
         html_results = htmlgenerator.results_as_html(results, feedback_template)
         print(html_results, file=sys.stderr)
+        return 0
 
     except Exception as error:
         if isinstance(error, MemoryError):
@@ -108,9 +109,6 @@ def main(test_modules_data, error_template=None,
         errors_html = htmlgenerator.errors_as_html(error_data, error_template)
         print(errors_html, file=sys.stderr)
         return 1
-
-    else:
-        return 0
 
 
 # TODO: wrap main runner into a try-except block with debug switch

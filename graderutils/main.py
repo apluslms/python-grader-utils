@@ -58,8 +58,9 @@ def main(test_modules_data, error_template=None,
         blacklist_matches = validation.get_blacklist_matches(blacklist)
         # If matches are found, show feedback with the error template and return.
         if blacklist_matches:
-            html_blacklist_matches = htmlgenerator.errors_as_html(blacklist_matches, error_template)
-            print(html_blacklist_matches, file=sys.stderr)
+            error_data = {"blacklist_matches": blacklist_matches}
+            errors_html = htmlgenerator.errors_as_html(error_data, error_template)
+            print(errors_html, file=sys.stderr)
             return 1 if blacklist.get("expect_success", False) else 0
 
     # If there are any exceptions during running, render the traceback into HTML using the provided error_template.
@@ -84,11 +85,13 @@ def main(test_modules_data, error_template=None,
             # Attempt to clean up some room for rendering errors as HTML.
             gc.collect()
         error_data = {
-            "type": error.__class__.__name__,
-            "message": str(error)
+            "error": {
+                "type": error.__class__.__name__,
+                "message": str(error)
+            }
         }
-        html_errors = htmlgenerator.errors_as_html(error_data, error_template)
-        print(html_errors, file=sys.stderr)
+        errors_html = htmlgenerator.errors_as_html(error_data, error_template)
+        print(errors_html, file=sys.stderr)
         return 1
 
     else:

@@ -259,6 +259,6 @@ def errors_as_html(error_data, error_template=None):
 
     env = jinja2.Environment(loader=template_loader)
     template = env.get_template(error_template)
-    return template.render({"error": error_data})
+    return template.render(error_data)
 
 

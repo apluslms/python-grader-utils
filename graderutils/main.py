@@ -9,6 +9,7 @@ import yaml
 
 import graderunittest
 import htmlgenerator
+import validation
 
 # try:
 #     import settings

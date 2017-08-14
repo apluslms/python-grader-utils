@@ -146,18 +146,16 @@ ParsedTestResult = collections.namedtuple("ParsedTestResult",
 def test_result_as_template_context(result_object):
     """Return the attribute values from result_object that are needed for HTML template rendering in a dictionary.
     @param (PointsResultObject) Result object from running PointsTestRunner. Expected to contain attributes:
-        successes,
         errors,
         failures,
+        testsRun,
+        successes,
         stream,
         points,
         max_points,
-        testsRun,
-        test_type_name,
-        module_filename
+        test_description,
     @return (dict) Context dictionary for HTML rendering.
     """
-
     # Create generators for all result types
 
     successes = (ParsedTestResult("SUCCESS",
@@ -190,7 +188,7 @@ def test_result_as_template_context(result_object):
 
     context = {
         "results": results,
-        "test_description": result_object.user_data["test_description"],
+        "test_description": result_object.test_description,
         "points": result_object.points,
         "max_points": result_object.max_points,
         "tests_run": result_object.testsRun,

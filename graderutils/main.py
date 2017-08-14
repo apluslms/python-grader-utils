@@ -46,7 +46,7 @@ def _run_test_modules(test_modules_data):
     for module_name, test_description in test_modules_data:
         suite = _load_tests_from_module_name(module_name)
         result = _run_suite(suite)
-        result.user_data = {"test_description": test_description}
+        result.test_description = test_description
         results.append(result)
     return results
 

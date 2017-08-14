@@ -1,10 +1,12 @@
 """
-Functions for parsing TestResult objects into HTML. Uses Jinja2 for template rendering.
+Functions for parsing TestResult objects into HTML.
+Uses Jinja2 for template rendering.
 """
 import collections
 import itertools
-import jinja2
 import re
+
+import jinja2
 
 # try:
 #     import settings

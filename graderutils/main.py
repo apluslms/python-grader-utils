@@ -104,7 +104,8 @@ def main(test_modules_data, error_template=None,
         error_data = {
             "error": {
                 "type": error.__class__.__name__,
-                "message": str(error)
+                "message": str(error),
+                "object": error
             }
         }
         errors_html = htmlgenerator.errors_as_html(error_data, error_template)

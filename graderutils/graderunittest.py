@@ -22,6 +22,7 @@ class _PointsTestResult(unittest.TextTestResult):
         self.successes.append(test)
 
 
+# TODO
 class ParameterTestCaseLoader(unittest.TestLoader):
     """
     Initializes test cases with arbitrary extra parameters.
@@ -44,6 +45,7 @@ class ParameterTestCaseLoader(unittest.TestLoader):
         return loaded_suite
 
 
+# TODO
 class ParameterTestCase(unittest.TestCase):
     """
     Inherit this to access the config data.
@@ -67,8 +69,7 @@ class PointsTestRunner(unittest.TextTestRunner):
 
 
     def get_points(self, result):
-        """Parse points as integers from the first lines of the docstrings of all test methods
-        and return the result as a tuple."""
+        """Parse points as integers from the first lines of the docstrings of all test methods and return the result as a tuple."""
 
         # Search for (Np), where N is an integer
         point_re = re.compile('.*\((\d+)p\)$')
@@ -94,8 +95,6 @@ class PointsTestRunner(unittest.TextTestRunner):
         return result
 
 
-class TimeoutError(Exception): pass
-
 def result_or_timeout(timed_function, args=(), kwargs=None, timeout=1, timer=time.perf_counter):
     """
     Call timed_function with args and kwargs and benchmark the execution time with timer.
@@ -106,11 +105,12 @@ def result_or_timeout(timed_function, args=(), kwargs=None, timeout=1, timer=tim
     if kwargs is None:
         kwargs = dict()
 
-    def handler(h, f):
+    def handler(*h_args, **h_kwargs):
         raise TimeoutError()
 
     signal.signal(signal.SIGALRM, handler)
     signal.alarm(timeout)
+
     try:
         start_time = timer()
         result = timed_function(*args, **kwargs)

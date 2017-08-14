@@ -1,6 +1,6 @@
 """
 Simple file validation for various file formats.
-Can be used for checking a file is valid before starting the grading.
+Can be used for checking a file is valid before starting the grading or used as a trivial grader to give points for submitting correct filetypes.
 """
 import ast
 import collections
@@ -30,12 +30,10 @@ def get_blacklist_matches(blacklist):
     blacklisted_dumps = blacklist["node_dumps"].keys()
 
     for filename in blacklist["check_files"]:
-        # TODO: OSErrors not catched
         with open(filename, encoding="utf-8") as submitted_file:
-            source = submitted_file.read()
+            source = submitted_file.read() # Note: may raise OSError
 
-        # TODO: SyntaxErrors not catched
-        submitted_ast = ast.parse(source)
+        submitted_ast = ast.parse(source) # Note: may raise SyntaxError
         submitted_lines = source.splitlines()
 
         # Walk once through the ast of the source of the submitted file, searching for blacklisted stuff.

@@ -1,6 +1,7 @@
 """
 Functions for parsing TestResult objects into HTML. Uses Jinja2 for template rendering.
 """
+import collections
 import itertools
 import jinja2
 import re
@@ -133,6 +134,12 @@ def extra_data_or_none(test_case):
     return feedback_data if feedback_data else None
 
 
+ParsedTestResult = collections.namedtuple("ParsedTestResult",
+        ("test_outcome", "method_name",
+         "assertion_message", "user_data",
+         "full_traceback"))
+
+
 def test_result_as_template_context(result_object):
     """Return the attribute values from result_object that are needed for HTML template rendering in a dictionary.
     @param (PointsResultObject) Result object from running PointsTestRunner. Expected to contain attributes:
@@ -149,56 +156,34 @@ def test_result_as_template_context(result_object):
     """
 
     # Create generators for all result types
-    # All results in the generators are represented as 5 element tuples:
-    # ( <test outcome>,
-    #   <test_method docstring>,
-    #   <assertion msg/feedback>,
-    #   <extra data, JSON for example>,
-    #   <full traceback> )
 
-    # Successful tests
-    successes = (("SUCCESS", # Test outcome
-                  test_case.shortDescription(), # Test title
-                  "", # Test feedback
-                  extra_data_or_none(test_case), # Extra data, for example JSON
-                  "") # Full traceback
+    successes = (ParsedTestResult("SUCCESS",
+                    test_case.shortDescription(),
+                    "",
+                    getattr(test_case, "user_data", None),
+                    "")
                  for test_case in result_object.successes)
 
-    # Tests which failed, i.e. for which AssertionError was raised
-    failures = (("FAIL",
-                 test_case.shortDescription(),
-                 # TODO hardcoded #TREE
-                 parsed_assertion_message(full_assert_msg, "#TREE"),
-                 extra_data_or_none(test_case),
-                 "")
+    failures = (ParsedTestResult("FAIL",
+                    test_case.shortDescription(),
+                    full_assert_msg,
+                    getattr(test_case, "user_data", None),
+                    "")
                 for test_case, full_assert_msg in result_object.failures)
 
     # Tests which had exceptions other than AssertionError
-    errors = (("ERROR",
-               test_case.shortDescription(),
-               # Shortened traceback has everything 'unrelated' to the file with name
-               # module_filename removed from the traceback. See shortened_traceback.
-               shortened_traceback(result_object.submit_module_name, full_traceback),
-               "",
-               full_traceback)
+    errors = (ParsedTestResult("ERROR",
+                   test_case.shortDescription(),
+                   shortened_traceback(full_traceback),
+                   getattr(test_case, "user_data", None),
+                   full_traceback)
               for test_case, full_traceback in result_object.errors)
 
-
-    # Generate a list of all results as dictionaries
-
-    results = [{"outcome": outcome,
-                "title": title,
-                "feedback": feedback,
-                "extra_data": extra_data,
-                "full_traceback": full_traceback}
-               for
-               outcome, title, feedback, extra_data, full_traceback
-               in
-               itertools.chain(successes, failures, errors)]
+    # Evaluate all generators into a single list
+    results = list(itertools.chain(successes, failures, errors))
 
     # Get unittest console output from the StringIO instance
     unittest_output = result_object.stream.getvalue()
-
 
     context = {
         "results": results,

@@ -92,13 +92,14 @@ def shortened_traceback(filename, traceback_string):
     if re.search(r"RecursionError|MemoryError", traceback_string):
         traceback_string = collapse_max_recursion_exception(traceback_string)
 
-    if not filename or not re.search(filename, traceback_string):
-        return traceback_string
+    # TODO
+    # if not filename or not re.search(filename, traceback_string):
+    #     return traceback_string
 
-    # Suffix of traceback_string starting after the first occurrence of `filename`
-    traceback_string = ''.join(suffix_after(traceback_string, filename))
-    traceback_string = "File \"{:s}".format(filename) + traceback_string
-    return traceback_string
+    # # Suffix of traceback_string starting after the first occurrence of `filename`
+    # traceback_string = ''.join(suffix_after(traceback_string, filename))
+    # traceback_string = "File \"{:s}".format(filename) + traceback_string
+    # return traceback_string
 
 
 def parsed_assertion_message(assertion_error_traceback, split_at=""):

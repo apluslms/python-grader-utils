@@ -42,25 +42,25 @@ Something weird happened at the server, this test has no title...
 
         <h4 class="panel-title">
             <a data-toggle="collapse" href="#result{{ all_results_loop.index }}-{{ testsuite_loop.index }}">
-            {{ title_or_default(result.title) }}</a>
+            {{ title_or_default(result.method_name) }}</a>
 
 
-        {% if result.outcome == "SUCCESS" %}
+        {% if result.test_outcome == "SUCCESS" %}
 
           <span class="label feedback-label label-success">Success</span>
         </h4>
       </div>
       <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
         <div class="panel-body">
-            {% if result.extra_data.total_time %}
-            <p>Total time: {{ "%.2f"|format(1000*result.extra_data.total_time) }} msec for {{ result.extra_data.test_count }} different lists.</p>
-            {% elif result.extra_data.preformatted_feedback %}
-            <pre>{{ result.extra_data.preformatted_feedback|e }}</pre>
+            {% if result.user_data.total_time %}
+            <p>Total time: {{ "%.2f"|format(1000*result.user_data.total_time) }} msec for {{ result.user_data.test_count }} different lists.</p>
+            {% elif result.user_data.preformatted_feedback %}
+            <pre>{{ result.user_data.preformatted_feedback|e }}</pre>
             {% endif %}
         </div>
       </div>
 
-        {% elif result.outcome == "FAIL" %}
+        {% elif result.test_outcome == "FAIL" %}
 
           <span class="label feedback-label label-danger">Failed</span>
         </h4>
@@ -68,10 +68,11 @@ Something weird happened at the server, this test has no title...
       <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
         <div class="panel-body feedback-failed">
           <p>The test failed, reason:</p>
-          <pre>{{ result.feedback|e }}</pre>
+          <pre>{{ result.assertion_message|e }}</pre>
 
-          {% if result.extra_data|length > 2 %}
-          <script data-json-tree type="application/json">{{ result.extra_data }}</script>
+          {# TODO: this should be in a custom template used only by the tests which use tree rendering #}
+          {% if result.user_data|length > 2 %}
+          <script data-json-tree type="application/json">{{ result.user_data }}</script>
           <div class="tree-graph-container well">
             <p class="error-msg">If this message does not disappear, something went wrong when attempting to draw the tree structure used in the tests.</p>
             <div class="canvas-container">
@@ -84,9 +85,9 @@ Something weird happened at the server, this test has no title...
       </div>
 
 
-        {% elif result.outcome == "ERROR" %}
+        {% elif result.test_outcome == "ERROR" %}
 
-          {% if result.feedback|length == 0 %}
+          {% if result.assertion_message|length == 0 %}
           <span class="label feedback-label label-default">Server error</span>
           {% else %}
           <span class="label feedback-label label-danger">Error</span>
@@ -97,10 +98,10 @@ Something weird happened at the server, this test has no title...
         <div class="panel-body">
           <p>Errors occurred during testing. Click 'Show full traceback' if you want to see the full traceback. </p>
 
-          {% if result.feedback|length == 0 %}
+          {% if result.assertion_message|length == 0 %}
           <pre>Error in grader server, please notify course staff.</pre>
           {% else %}
-          <pre>{{ result.feedback|e }}</pre>
+          <pre>{{ result.assertion_message|e }}</pre>
           {% endif %}
 
           <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#traceback{{ all_results_loop.index }}-{{ testsuite_loop.index }}">
@@ -110,22 +111,6 @@ Something weird happened at the server, this test has no title...
           </div>
         </div>
       </div>
-
-
-      {# ironically, this outcome is not yet implemented in the htmlgenerator.
-        {% elif result.outcome == "NOT-IMPLEMENTED" %}
-
-          <span class="label feedback-label label-warning">Not implemented</span>
-        </h4>
-      </div>
-      <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
-        <div class="panel-body">
-          <p>You forgot to implement something:</p>
-          <pre>{{ result.feedback|e }}</pre>
-        </div>
-      </div>
-      #}
-
 
         {% else %}
 

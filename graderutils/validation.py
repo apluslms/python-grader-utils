@@ -108,8 +108,8 @@ def get_html_errors(filename):
     return errors
 
 
-# Non-interactive rendering to png
-MATPLOTLIB_RENDERER_BACKEND = "AGG"
+# # Non-interactive rendering to png
+# MATPLOTLIB_RENDERER_BACKEND = "AGG"
 
 
 if __name__ == "__main__":
@@ -126,8 +126,8 @@ if __name__ == "__main__":
     errors = {}
 
     if args.python:
-        import matplotlib
-        matplotlib.use(MATPLOTLIB_RENDERER_BACKEND)
+        # import matplotlib
+        # matplotlib.use(MATPLOTLIB_RENDERER_BACKEND)
         module_name = args.python.split(".py")[0]
         errors = get_import_errors(module_name)
     elif args.image:

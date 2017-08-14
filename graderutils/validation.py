@@ -1,6 +1,7 @@
 """
 Simple file validation for various file formats.
-Can be used for checking a file is valid before starting the grading or used as a trivial grader to give points for submitting correct filetypes.
+Can be used for checking if a file is valid before starting the grading.
+May also be useful as a trivial grader to give points for submitting correct filetypes.
 """
 import argparse
 import ast
@@ -73,12 +74,12 @@ def get_plain_text_blacklist_matches(blacklist):
         pattern_string = "(" + "|".join(blacklisted_strings) + ")"
         pattern = re.compile(pattern_string, re.IGNORECASE if ignorecase else 0)
 
-        for line_no, line in enumerate(source, start=1):
+        for line_number, line in enumerate(source, start=1):
             for line_match in re.findall(pattern, line):
                 key = line_match if not ignorecase else line_match.lower()
                 description = blacklist["strings"][key]
                 matches.append(BlacklistMatch(
-                    line_match, line_no,
+                    line_match, line_number,
                     line, description))
 
     return matches
@@ -121,7 +122,6 @@ def get_html_errors(filename):
         try:
             document = parser.parse(f)
         except:
-
             for e in parser.errors:
                 err += "Line {0}: {1}: {2} \n".format(e[0][0], e[1], e[2])
 
@@ -135,16 +135,13 @@ def get_html_errors(filename):
 # # Non-interactive rendering to png
 # MATPLOTLIB_RENDERER_BACKEND = "AGG"
 
+SUPPORTED_ARGS = ("python", "image", "labview", "html")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--python")
-    parser.add_argument("--image")
-    parser.add_argument("--labview")
-    parser.add_argument("--html")
-    parser.add_argument("--css")
-    parser.add_argument("--xlsx")
-    parser.add_argument("--pdf")
+    parser = argparse.ArgumentParser(description=__doc__)
+    for flag in SUPPORTED_ARGS:
+        parser.add_argument("--{}".format(flag))
+
     args = parser.parse_args()
 
     errors = {}
@@ -164,15 +161,16 @@ if __name__ == "__main__":
     elif args.html:
         filename = args.html
         errors = get_html_errors(filename)
-    elif args.css:
-        filename = args.css
-        raise NotImplementedError("css validation not available")
-    elif args.xlsx:
-        filename = args.xlsx
-        raise NotImplementedError("xlsx validation not available")
-    elif args.pdf:
-        filename = args.pdf
-        raise NotImplementedError("pdf validation not available")
+
+    # elif args.css:
+    #     filename = args.css
+    #     raise NotImplementedError("css validation not available")
+    # elif args.xlsx:
+    #     filename = args.xlsx
+    #     raise NotImplementedError("xlsx validation not available")
+    # elif args.pdf:
+    #     filename = args.pdf
+    #     raise NotImplementedError("pdf validation not available")
 
     if errors:
         print(htmlgenerator.errors_as_html(errors), file=sys.stderr)

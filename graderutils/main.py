@@ -1,3 +1,6 @@
+"""
+Python grader test runner with pre-grade validation and post-grade feedback styling.
+"""
 import argparse
 import gc
 import importlib
@@ -137,7 +140,7 @@ def main(test_modules_data, error_template=None,
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Python grader test runner with pregrade validation and postgrade feedback styling.")
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
             "config_file",
             type=str,

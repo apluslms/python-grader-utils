@@ -68,7 +68,6 @@ def main(test_modules_data, error_template=None,
             - Writes the rendered HTML into stderr.
             - Returns 1
     """
-    # TODO remove from main
     # Check for blacklisted names if a blacklist is supplied.
     if blacklist is not None:
         blacklist_matches = validation.get_blacklist_matches(blacklist)
@@ -113,7 +112,6 @@ def main(test_modules_data, error_template=None,
         return 1
 
 
-# TODO: wrap main runner into a try-except block with debug switch
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Python grader test runner with pregrade validation and postgrade feedback styling.")
     parser.add_argument(
@@ -121,12 +119,27 @@ if __name__ == "__main__":
             type=str,
             help="Path to a YAML-file containing grading settings.",
     )
+    parser.add_argument(
+            "--debug",
+            type=bool,
+            default=False,
+            help="By default, exceptions related to improperly configured tests are catched and hidden to prevent course information to be shown to the user. Using this flag will let all such exceptions through."
+    )
     args = parser.parse_args()
 
+    if args.debug:
+        print("<h1>Warning: Graderutils is running in debug mode, all configuration related exceptions will be shown to the user!</h1>", file=sys.stderr)
     settings_file_path = args.settings_file
 
-    with open(settings_file_path, encoding="utf-8") as settings_file:
-        settings = yaml.safe_load(settings_file)
+    try:
+        with open(settings_file_path, encoding="utf-8") as settings_file:
+            settings = yaml.safe_load(settings_file)
+        sys.exit(main(**settings))
 
-    sys.exit(main(**settings))
+    except:
+        if args.debug:
+            raise
+        else:
+            print("<h1>Something went wrong in the grader...</h1>", file=sys.stderr)
+            sys.exit(1)
 

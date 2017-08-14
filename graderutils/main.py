@@ -11,6 +11,9 @@ import graderunittest
 import htmlgenerator
 import validation
 
+
+class GraderUtilsError(Exception): pass
+
 # try:
 #     import settings
 #     if settings.HTML_TRACEBACK:
@@ -51,12 +54,39 @@ def _run_test_modules(test_modules_data):
     return results
 
 
-# TODO: exceptions thrown during blacklist checks will be shown to the user
+def run_blacklist_validation(blacklists, error_template):
+    """
+    Search for blacklisted strings as defined in the blacklist objects given as arguments.
+    If any match is found, render them using the HTML template for errors and return True.
+    """
+    blacklist_matches = []
+
+    for blacklist in blacklists:
+        if blacklist["type"] == "plain_text":
+            get_matches = validation.get_plain_text_blacklist_matches
+        elif blacklist["type"] == "python":
+            get_matches = validation.get_python_blacklist_matches
+        else:
+            raise GraderUtilsError("A blacklist was given but validation for '{}' is not defined.".format(blacklist["method"]))
+
+        blacklist_matches.append(get_matches(blacklist))
+
+    # Found matches
+    if blacklist_matches:
+        error_data = {"blacklist_matches": blacklist_matches}
+        errors_html = htmlgenerator.errors_as_html(error_data, error_template)
+        print(errors_html, file=sys.stderr)
+        return True
+
+    # No matches found
+    return False
+
+
 def main(test_modules_data, error_template=None,
-         feedback_template=None, blacklist=None):
+         feedback_template=None, blacklists=None):
     """
     Main runner that:
-        - (if blacklist is supplied) Checks for blacklisted matches.
+        - (Optional) Checks for blacklisted matches and returns 1 if matches are found.
         - Runs each module in test_modules_data with unittest.
         If there are no errors:
             - Writes the total result of all test results into stdout for A+ to retrieve the points.
@@ -68,15 +98,9 @@ def main(test_modules_data, error_template=None,
             - Writes the rendered HTML into stderr.
             - Returns 1
     """
-    # Check for blacklisted names if a blacklist is supplied.
-    if blacklist is not None:
-        blacklist_matches = validation.get_blacklist_matches(blacklist)
-        # If matches are found, show feedback with the error template and return.
-        if blacklist_matches:
-            error_data = {"blacklist_matches": blacklist_matches}
-            errors_html = htmlgenerator.errors_as_html(error_data, error_template)
-            print(errors_html, file=sys.stderr)
-            return 1 if blacklist.get("expect_success", False) else 0
+    if blacklists and run_blacklist_validation(blacklists, error_template):
+        # At least one file contained blacklisted strings.
+        return 1
 
     # If there are any exceptions during running, render the traceback into HTML using the provided error_template.
     try:

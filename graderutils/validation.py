@@ -2,20 +2,24 @@
 Simple file validation for various file formats.
 Can be used for checking a file is valid before starting the grading or used as a trivial grader to give points for submitting correct filetypes.
 """
+import argparse
 import ast
 import collections
-import importlib.util
-import importlib
-import htmlgenerator
-import sys
-import argparse
-import imghdr
 import html5lib
+import imghdr
+import importlib
+import re
+import sys
+
+import htmlgenerator
+
+
+class ValidationError(Exception): pass
+
 
 BlacklistMatch = collections.namedtuple("BlacklistMatch", ["filename", "linenumber", "line_content", "description"])
 
-# TODO: in debug mode, show warning when supplying a blacklist with no check_files, use an assert for now
-def get_blacklist_matches(blacklist):
+def get_python_blacklist_matches(blacklist):
     """
     Search all files in blacklist["check_files"] for blacklisted node names defined in blacklist["node_names"] and blacklisted node dumps in blacklist["node_dumps"].
     See the settings.yaml for examples and format.
@@ -23,8 +27,6 @@ def get_blacklist_matches(blacklist):
     Matches are returned in a list of BlacklistMatch objects/namedtuples.
     If linenumbers are not valid for some node (e.g. function arguments node), -1 is used as the linenumber.
     """
-    assert blacklist["check_files"] # TODO
-
     matches = []
     blacklisted_names = blacklist["node_names"].keys()
     blacklisted_dumps = blacklist["node_dumps"].keys()
@@ -42,18 +44,42 @@ def get_blacklist_matches(blacklist):
             node_dump = ast.dump(node)
             linenumber = getattr(node, "lineno", -1)
             line_content = submitted_lines[linenumber-1] if linenumber > 0 else ""
-            if node_name in blacklisted_names:
-                matches.append(BlacklistMatch(
-                        filename=filename,
-                        linenumber=linenumber,
-                        line_content=line_content,
-                        description=blacklist["node_names"][node_name]))
             if node_dump in blacklisted_dumps:
+                description = blacklist["node_dumps"][node_dump]
                 matches.append(BlacklistMatch(
-                        filename=filename,
-                        linenumber=linenumber,
-                        line_content=line_content,
-                        description=blacklist["node_dumps"][node_dump]))
+                        filename, linenumber,
+                        line_content, description))
+            elif node_name in blacklisted_names:
+                description = blacklist["node_names"][node_name]
+                matches.append(BlacklistMatch(
+                        filename, linenumber,
+                        line_content, description))
+
+    return matches
+
+
+def get_plain_text_blacklist_matches(blacklist):
+    """
+    Simple blacklist matching, which searches all files in blacklist["check_files"] for strings defined in blacklist["strings"].
+    """
+    matches = []
+    blacklisted_strings = blacklist["strings"].keys()
+    ignorecase = blacklist.get("ignorecase", False)
+
+    for filename in blacklist["check_files"]:
+        with open(filename, encoding="utf-8") as submitted_file:
+            source = submitted_file.readlines() # Note: may raise OSError
+
+        pattern_string = "(" + "|".join(blacklisted_strings) + ")"
+        pattern = re.compile(pattern_string, re.IGNORECASE if ignorecase else 0)
+
+        for line_no, line in enumerate(source, start=1):
+            for line_match in re.findall(pattern, line):
+                key = line_match if not ignorecase else line_match.lower()
+                description = blacklist["strings"][key]
+                matches.append(BlacklistMatch(
+                    line_match, line_no,
+                    line, description))
 
     return matches
 

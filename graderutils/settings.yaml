@@ -24,18 +24,25 @@ test_modules_data:
 #
 
 # If commented out, all blacklist checks are skipped.
-blacklist:
-  node_names:
-    ListComp: List comprehensions
-    For: For loops
-  # TODO maybe add some regexp support so that the dump could be patterns
-  node_dumps:
-    "Name(id='list', ctx=Load())": Loading the list builtin
-    "ImportFrom(module='os', names=[alias(name='chdir', asname=None)], level=0)": Importing the chdir function from the os module
-  # List of Python files that should be searched for blacklisted names.
-  check_files:
-    - my_solution.py
-  # True to exit with status 1 if blacklisted names are found, defaults to False.
-  # This makes it easier to control whether A+ should deduct one submission when blacklisted names are found.
-  expect_success: True
+blacklists:
+  - type: python
+    node_names:
+      ListComp: List comprehensions
+      For: For loops
+    # TODO maybe add some regexp support so that the dump could be patterns
+    node_dumps:
+      "Name(id='list', ctx=Load())": Loading the list builtin
+      "ImportFrom(module='os', names=[alias(name='chdir', asname=None)], level=0)": Importing the chdir function from the os module
+    # List of Python files that should be searched for blacklisted names.
+    check_files:
+      - my_solution.py
+
+  - type: plain_text
+    # If ignorecase is True, all keys in strings dict must be in lowercase
+    ignorecase: True
+    strings:
+      drop: Dropping tables
+      delete: Deleting entries
+    check_files:
+      - my_solution.sql
 

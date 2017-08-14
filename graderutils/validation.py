@@ -123,7 +123,7 @@ if __name__ == "__main__":
     parser.add_argument("--pdf")
     args = parser.parse_args()
 
-    errors = None
+    errors = {}
 
     if args.python:
         import matplotlib
@@ -142,13 +142,13 @@ if __name__ == "__main__":
         errors = get_html_errors(filename)
     elif args.css:
         filename = args.css
-        errors = {}
+        raise NotImplementedError("css validation not available")
     elif args.xlsx:
         filename = args.xlsx
-        errors = {}
+        raise NotImplementedError("xlsx validation not available")
     elif args.pdf:
         filename = args.pdf
-        errors = {}
+        raise NotImplementedError("pdf validation not available")
 
     if errors:
         print(htmlgenerator.errors_as_html(errors), file=sys.stderr)

@@ -1,3 +1,6 @@
+TODO add email logger to config
+TODO docs, everything below
+
 Miscellaneous tools and templates for showing more specific and hopefully
 slightly prettier feedback than just the console output produced by ``unittest.main`` after
 running Python grader tests in MOOC grader.

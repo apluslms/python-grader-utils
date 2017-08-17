@@ -1,3 +1,34 @@
+"""
+Can be used to generate coverage-tests for user uploaded tests
+
+To create a new coverage-test create a ``coverage_tests.py`` with necessary imports and class TestCoverage with TestCoverageMeta as it's metaclass. Example:
+
+```python
+class TestCoverage(unittest.TestCase, metaclass=TestCoverageMeta, testmodule="usertest", filename="userfile", points=[8, 10, 12]):
+    pass
+```
+The keyword arguments are:
+
+Argument  | Function
+--------  | --------
+testmodule| the name of the test module user uploaded
+filename  | the name of the file that you check the coverage for
+points    | list of points for different coverage amounts
+
+This example would run usertest (from test import Test as usertest) and check coverages for userfile.py.
+It would give 8 points if 33.33% of userfile.py would be covered, 10 points more if 66.66% and 12 points if 100%
+totaling 30 points.
+If you give a list with 5 point amounts it would check coverage in 20% intervals.
+It will give 0 points out of the total if all of the users tests won't succeed
+
+Because you don't want grader to run users tests as graded tests (because crafty users could add (1000p) to their tests and it shows up ugly) you should also add
+
+```python
+def load_tests(*args, **kwargs):
+    return unittest.TestLoader().loadTestFromTestCase(TestCoverage)
+```
+in ``coverage_tests.py``
+"""
 import unittest
 import coverage
 import importlib
@@ -29,7 +60,7 @@ class TestCoverageMeta(type):
     you should also
     def load_tests(*args, **kwargs):
         return unittest.TestLoader().loadTestFromTestCase(TestCoverage)
-    in coverage_tests.py 
+    in coverage_tests.py
     """
     def __new__(cls, clsname, bases, dct, testmodule, filename, points, minimum=0):
         newclass = super(TestCoverageMeta, cls).__new__(cls, clsname, bases, dct)
@@ -38,7 +69,7 @@ class TestCoverageMeta(type):
         cov.start()
         #we need to import the files here and make sure that
         #the users file is reloaded so that coverage shows right
-        #lines as covered. It would miss function definitions otherwise 
+        #lines as covered. It would miss function definitions otherwise
         test = importlib.import_module(testmodule)
         mod = importlib.import_module(filename)
         importlib.reload(mod)
@@ -58,13 +89,13 @@ class TestCoverageMeta(type):
         def generate_test(percentage, test_num, points):
             def a_test(self):
                 if result.wasSuccessful():
-                    self.assertGreaterEqual(covered, percentage, 
+                    self.assertGreaterEqual(covered, percentage,
                         "\nYour code covers only {:.2f}%\nMissing lines: {}"
                         .format(covered, missing))
                 else:
                     self.fail("Test wasn't run because your tests weren't successful")
             a_test.__doc__ = 'Checks that test coverage is over {}% ({}p)'.format(percentage, points)
-            
+
             setattr(newclass, 'test_coverage_{}'.format(test_num), a_test)
         iterations = len(points)
         for num, point in enumerate(points, start=1):

@@ -1,101 +1,30 @@
-TODO add email logger to config
-TODO docs, everything below
 
-Miscellaneous tools and templates for showing more specific and hopefully
-slightly prettier feedback than just the console output produced by ``unittest.main`` after
-running Python grader tests in MOOC grader.
-Created during the summer 2016 for CS-A1141 Tietorakenteet ja algoritmit Y.
+Graderutils
+===========
 
-## ``astparser.py``
+Python library for test suite management, file validation and test feedback formatting for programming courses on [A+](https://github.com/Aalto-LeTech/a-plus) using [MOOC grader](https://github.com/Aalto-LeTech/mooc-grader) for grading exercises.
+Originally created during the summer 2016 for an introductory course in data structures and algorithms (CS-A1141 Tietorakenteet ja algoritmit Y) at [Aalto University](http://www.aalto.fi/en).
 
-Provides crude capabilities of inspecting the syntax of a submitted Python file.
+Features
+--------
+* Running tests for submitted files and showing results and feedback as HTML.
+* Filetype validation before running tests.
+* Blacklisting forbidden Python syntax with [abstract syntax tree](https://docs.python.org/3/library/ast.html) nodes.
+* Providing prettier exceptions and to-the-point feedback using an HTML error template.
+* (TODO) HTML templates, CSS and JavaScript can be customized.
+* (TODO) Settings can be included into [MOOC grader](https://github.com/Aalto-LeTech/mooc-grader) exercise configuration files.
 
-## ``constants.py``
 
-Mappings of names to ``astparser``-output.
-These names should be included in a ``test_config.py``-file in the ``user``-directory in the temporary ``uploads``-directory of the MOOC grader sandbox.
+Installing
+----------
 
-## ``error_template.html``
-
-Rendered by ``importvalidator.py`` if the submitted file does not conform to the
-specs as defined in ``test_config.py``.
-
-## ``feedback.css``
-
-Styles for the rendered templates.
-
-## ``feedback.js``
-
-Used for drawing for example graphs from ``JSON`` generated from the grader
-tests.
-The figures are drawn into ``feedback_template_en.html``.
-
-## ``feedback_template_en.html``
-
-Contains bootstrap styled versions of unittest test results.
-Rendered by ``grader_main.py`` after running all the tests.
-
-## ``grader_main.py``
-
-Main test runner and discoverer.
-
-## ``graderunittest.py``
-
-Base ``TestCase``-class for MOOC grader tests.
-Added a timed test case class with timeout for individual test methods.
-(The default MOOC grader timeout is to sigkill the Python interpreter.)
-
-## ``htmlgenerator.py``
-
-Renders ``unittest`` test result objects as HTML using
-[Jinja2](http://jinja.pocoo.org/docs/dev/).
-
-## ``importvalidator.py``
-
-Checks that the submitted file does not contain invalid syntax and that it
-conforms to the specs defined in the ``test_config.py`` file for the exercise.
-
-## ``testcoveragemeta.py``
-
-Can be used to generate coverage-tests for user uploaded tests
-
-To create a new coverage-test create a ``coverage_tests.py`` with necessary imports and class TestCoverage with TestCoverageMeta as it's metaclass. Example:
-
-```python
-class TestCoverage(unittest.TestCase, metaclass=TestCoverageMeta, testmodule="usertest", filename="userfile", points=[8, 10, 12]):
-    pass
+Install as a Python package into the Python virtual environment used by the grader.
 ```
-The keyword arguments are:
-
-Argument  | Function
---------  | --------
-testmodule| the name of the test module user uploaded
-filename  | the name of the file that you check the coverage for
-points    | list of points for different coverage amounts
-
-This example would run usertest (from test import Test as usertest) and check coverages for userfile.py.
-It would give 8 points if 33.33% of userfile.py would be covered, 10 points more if 66.66% and 12 points if 100%
-totaling 30 points.
-If you give a list with 5 point amounts it would check coverage in 20% intervals.
-It will give 0 points out of the total if all of the users tests won't succeed
-
-Because you don't want grader to run users tests as graded tests (because crafty users could add (1000p) to their tests and it shows up ugly) you should also add
-
-```python
-def load_tests(*args, **kwargs):
-    return unittest.TestLoader().loadTestFromTestCase(TestCoverage)
+(TODO) pip install -e git+https://github.com/Aalto-LeTech/python-grader-utils.git@v1.0
 ```
-in ``coverage_tests.py``
-
 
 TODO
+====
 
-- Remove all hardcoded error messages which are shown to students when they submit incorrect files (maybe parametrize by moving them to an error html template)
-- Integrate test_config into the rst-directives
-- The settings-module is useless but some other config support might be handy
+* Email error logger
 
-
-Hard coded stuff or global constants:
-- Error messages: importvalidator.import_module_or_errors
-- Test names: grader_main.TEST_NAMES
-- MemoryError message: grader_main

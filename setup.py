@@ -23,7 +23,7 @@ setup(
     description='Utilities for Python based grader test pipelines',
     long_description=long_description,
 
-    url='https://github.com/matiaslindgren/grader-utils',
+    url='https://github.com/Aalto-LeTech/python-grader-utils',
     author='Matias Lindgren',
     author_email='matias.lindgren@gmail.com',
     license='MIT',

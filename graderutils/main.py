@@ -17,14 +17,6 @@ import validation
 
 class GraderUtilsError(Exception): pass
 
-# try:
-#     import settings
-#     if settings.HTML_TRACEBACK:
-#         import cgitb
-#         sys.excepthook = cgitb.Hook(file=sys.stderr, format="html", display=1, context=5)
-# except:
-#     pass
-
 
 def _load_tests_from_module_name(module_name):
     """

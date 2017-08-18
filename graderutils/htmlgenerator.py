@@ -8,14 +8,6 @@ import re
 
 import jinja2
 
-# try:
-#     import settings
-#     if settings.HTML_TRACEBACK:
-#         import sys
-#         import cgitb
-#         sys.excepthook = cgitb.Hook(file=sys.stderr, format="html", display=1, context=5)
-# except:
-#     pass
 
 class HTMLGeneratorError(Exception): pass
 

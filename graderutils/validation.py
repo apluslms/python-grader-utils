@@ -20,7 +20,8 @@ class ValidationError(Exception): pass
 
 BlacklistMatch = collections.namedtuple("BlacklistMatch", ["filename", "linenumber", "line_content", "description"])
 
-def get_python_blacklist_matches(blacklist):
+
+def _get_python_blacklist_matches(blacklist):
     """
     Search all files in blacklist["check_files"] for blacklisted node names defined in blacklist["node_names"] and blacklisted node dumps in blacklist["node_dumps"].
     See the settings.yaml for examples and format.
@@ -59,7 +60,7 @@ def get_python_blacklist_matches(blacklist):
     return matches
 
 
-def get_plain_text_blacklist_matches(blacklist):
+def _get_plain_text_blacklist_matches(blacklist):
     """
     Simple blacklist matching, which searches all files in blacklist["check_files"] for strings defined in blacklist["strings"].
     """
@@ -83,6 +84,23 @@ def get_plain_text_blacklist_matches(blacklist):
                     line, description))
 
     return matches
+
+
+def get_blacklist_matches(blacklists):
+    """
+    Search for blacklisted strings as defined in the blacklist objects given as arguments.
+    Return a list of matches or an empty list if there are no matches.
+    """
+    blacklist_matches = []
+    for blacklist in blacklists:
+        if blacklist["type"] == "plain_text":
+            get_matches = _get_plain_text_blacklist_matches
+        elif blacklist["type"] == "python":
+            get_matches = _get_python_blacklist_matches
+        else:
+            raise ValidationError("A blacklist was given but validation for '{}' is not defined.".format(blacklist["method"]))
+        blacklist_matches.append(get_matches(blacklist))
+    return blacklist_matches
 
 
 def get_image_type_errors(image, expected_type):

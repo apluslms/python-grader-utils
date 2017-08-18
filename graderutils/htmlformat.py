@@ -240,3 +240,9 @@ def errors_as_html(error_data, error_template=None):
     return template.render(error_data)
 
 
+def blacklist_matches_as_html(matches, error_template=None):
+    """
+    For convenience, calls errors_as_html with {"blacklist_matches": matches} as the context dict.
+    """
+    return errors_as_html({"blacklist_matches": matches}, error_template)
+

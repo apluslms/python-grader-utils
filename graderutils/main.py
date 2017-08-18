@@ -49,33 +49,7 @@ def _run_test_modules(test_modules_data):
     return results
 
 
-def run_blacklist_validation(blacklists, error_template):
-    """
-    Search for blacklisted strings as defined in the blacklist objects given as arguments.
-    If any match is found, render the results using the HTML template for errors and return the rendered raw HTML string.
-    Otherwise, return an empty string.
-    """
-    blacklist_matches = []
-
-    for blacklist in blacklists:
-        if blacklist["type"] == "plain_text":
-            get_matches = validation.get_plain_text_blacklist_matches
-        elif blacklist["type"] == "python":
-            get_matches = validation.get_python_blacklist_matches
-        else:
-            raise GraderUtilsError("A blacklist was given but validation for '{}' is not defined.".format(blacklist["method"]))
-
-        blacklist_matches.append(get_matches(blacklist))
-
-    errors_html = ""
-    if blacklist_matches:
-        error_data = {"blacklist_matches": blacklist_matches}
-        errors_html = htmlformat.errors_as_html(error_data, error_template)
-    return errors_html
-
-
-def main(test_modules_data, error_template=None,
-         feedback_template=None, blacklists=None):
+def main(test_modules_data, error_template=None, feedback_template=None):
     """
     Main runner that:
         - (Optional) Checks for blacklisted matches and returns 1 if matches are found.
@@ -90,11 +64,6 @@ def main(test_modules_data, error_template=None,
             - Writes the rendered HTML into stderr.
             - Returns 1
     """
-    if blacklists:
-        match_feedback = run_blacklist_validation(blacklists, error_template)
-        if match_feedback:
-            print(match_feedback, file=sys.stderr)
-            return 1
 
     # If there are any exceptions during running, render the traceback into HTML using the provided error_template.
     try:
@@ -152,6 +121,23 @@ if __name__ == "__main__":
     try:
         with open(settings_file_path, encoding="utf-8") as settings_file:
             settings = yaml.safe_load(settings_file)
+
+        # If blacklisted syntax is defined in the settings file,
+        # run blacklist validation on the files as defined in the
+        # blacklist settings.
+        if "blacklists" in settings and settings["blacklists"]:
+            blacklists = settings["blacklists"]
+            if not isinstance(blacklists, list):
+                raise GraderUtilsError("Blacklist configurations should be given as a list in the configuration file.")
+            matches = validation.get_blacklist_matches(blacklists)
+            if matches:
+                error_template = settings.get("error_template", None)
+                match_feedback = htmlformat.blacklist_matches_as_html(
+                        matches, error_template)
+                print(match_feedback, file=sys.stderr)
+                sys.exit(1)
+            del settings["blacklists"]
+
         sys.exit(main(**settings))
 
     except:

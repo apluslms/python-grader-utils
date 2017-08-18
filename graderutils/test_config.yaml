@@ -15,13 +15,8 @@ test_modules_data:
 # Optional
 # Dictionary of Python abstract syntax tree (ast) nodes that should not be found in the submitted file and the descriptions shown to the user if a match is found.
 # Can be either the node name (i.e. node.__class__.__name__) or the string as returned by ast.dump.
-# The below snippet can be used to dump the full ast of a Python source string.
-
-# TODO: make this into cli utility
-# import ast
-# def dump(source):
-#     print('\n'.join(map(ast.dump, ast.walk(ast.parse(source)))))
-#
+# The graderutils.validation module contains a simple ast_dump function for dumping ast nodes of given source strings.
+# TODO: allow short and long descriptions for blacklist matches
 
 # If commented out, all blacklist checks are skipped.
 blacklists:

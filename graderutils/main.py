@@ -52,7 +52,8 @@ def _run_test_modules(test_modules_data):
 def run_blacklist_validation(blacklists, error_template):
     """
     Search for blacklisted strings as defined in the blacklist objects given as arguments.
-    If any match is found, render them using the HTML template for errors and return True.
+    If any match is found, render the results using the HTML template for errors and return the rendered raw HTML string.
+    Otherwise, return an empty string.
     """
     blacklist_matches = []
 
@@ -66,15 +67,11 @@ def run_blacklist_validation(blacklists, error_template):
 
         blacklist_matches.append(get_matches(blacklist))
 
-    # Found matches
+    errors_html = ""
     if blacklist_matches:
         error_data = {"blacklist_matches": blacklist_matches}
         errors_html = htmlformat.errors_as_html(error_data, error_template)
-        print(errors_html, file=sys.stderr)
-        return True
-
-    # No matches found
-    return False
+    return errors_html
 
 
 def main(test_modules_data, error_template=None,
@@ -93,9 +90,11 @@ def main(test_modules_data, error_template=None,
             - Writes the rendered HTML into stderr.
             - Returns 1
     """
-    if blacklists and run_blacklist_validation(blacklists, error_template):
-        # At least one file contained blacklisted strings.
-        return 1
+    if blacklists:
+        match_feedback = run_blacklist_validation(blacklists, error_template)
+        if match_feedback:
+            print(match_feedback, file=sys.stderr)
+            return 1
 
     # If there are any exceptions during running, render the traceback into HTML using the provided error_template.
     try:

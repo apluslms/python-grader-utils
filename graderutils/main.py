@@ -88,7 +88,7 @@ def main(test_modules_data, error_template=None, feedback_template=None):
             # Attempt to clean up some room for rendering errors as HTML.
             gc.collect()
         error_data = {
-            "error": {
+            "exception": {
                 "type": error.__class__.__name__,
                 "message": str(error),
                 "object": error

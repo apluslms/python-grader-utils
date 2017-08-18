@@ -5,77 +5,133 @@
 <h2>It seems that there were some errors</h2>
 
 
-{% if error.type == "ImportError" %}
+{% if exception %}
+  {% if exception.type == "ImportError" %}
+  <div class="grading-task">
+    <div class="panel panel-default">
 
-<div class="grading-task">
-  <div class="panel panel-default">
-
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" href="#import-error">Import error</a>
-        <span class="label feedback-label label-danger">Error</span>
-      </h4>
-    </div>
-
-      <div id="import-error" class="panel-collapse collapse in">
-        <div class="panel-body">
-          <p>The submitted file could not be imported for execution, reason:</p>
-          <pre>{{ error.message }}</pre>
-        </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" href="#import-error">Import error</a>
+          <span class="label feedback-label label-danger">Error</span>
+        </h4>
       </div>
 
-  </div>
-</div>
-
-{% endif %}
-
-{% if error.type == "MemoryError" %}
-
-<div class="grading-task">
-  <div class="panel panel-default">
-
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" href="#memory-error">Memory error</a>
-        <span class="label feedback-label label-danger">Error</span>
-      </h4>
-    </div>
-
-      <div id="memory-error" class="panel-collapse collapse in">
-        <div class="panel-body">
-          <pre>{{ error.message }}</pre>
+        <div id="import-error" class="panel-collapse collapse in">
+          <div class="panel-body">
+            <p>The submitted file could not be imported for execution, reason:</p>
+            <pre>{{ exception.message }}</pre>
+          </div>
         </div>
+
+    </div>
+  </div>
+
+  {% elif exception.type == "MemoryError" %}
+  <div class="grading-task">
+    <div class="panel panel-default">
+
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" href="#memory-error">Memory error</a>
+          <span class="label feedback-label label-danger">Error</span>
+        </h4>
       </div>
 
-  </div>
-</div>
-
-{% endif %}
-
-{% if error.type == "SyntaxError" %}
-
-<div class="grading-task">
-  <div class="panel panel-default">
-
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" href="#syntax-error">Syntax error</a>
-        <span class="label feedback-label label-danger">Error</span>
-      </h4>
-    </div>
-
-      <div id="syntax-error" class="panel-collapse collapse in">
-        <div class="panel-body">
-          <pre>{{ error.message }}:</pre>
-          <code>{{ error.object.text }}</code>
+        <div id="memory-error" class="panel-collapse collapse in">
+          <div class="panel-body">
+            <pre>{{ exception.message }}</pre>
+          </div>
         </div>
+
+    </div>
+  </div>
+
+  {% elif exception.type == "SyntaxError" %}
+  <div class="grading-task">
+    <div class="panel panel-default">
+
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" href="#syntax-error">Syntax error</a>
+          <span class="label feedback-label label-danger">Error</span>
+        </h4>
       </div>
 
+        <div id="syntax-error" class="panel-collapse collapse in">
+          <div class="panel-body">
+            <pre>{{ exception.message }}:</pre>
+            <code>{{ exception.object.text }}</code>
+          </div>
+        </div>
+
+    </div>
   </div>
-</div>
 
+  {% elif exception.type == "filetype error" %}
+  <div class="grading-task">
+    <div class="panel panel-default">
+
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" href="#file-type-error">Wrong filetype error</a>
+          <span class="label feedback-label label-danger">Error</span>
+        </h4>
+      </div>
+
+        <div id="import-error" class="panel-collapse collapse in">
+          <div class="panel-body">
+            <p>The submitted file could not be accepted, reason:</p>
+            <pre>{{ exception.message }}</pre>
+          </div>
+        </div>
+
+    </div>
+  </div>
+
+  {% elif exception.type == "html style error" %}
+  <div class="grading-task">
+    <div class="panel panel-default">
+
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" href="#html_style_error">Invalid HTML error</a>
+          <span class="label feedback-label label-danger">Error</span>
+        </h4>
+      </div>
+
+        <div id="import-error" class="panel-collapse collapse in">
+          <div class="panel-body">
+            <p>The HTML file contained following errors:</p>
+            <pre>{{ exception.html_style_error }}</pre>
+              Tiedostosi sisälsi virheitä. Käytä oheisen linkin takaa löytyvää työkalua tutkimaan virheitä tarkemminen. http://validator.w3.org/#validate_by_input
+          </div>
+        </div>
+
+    </div>
+  </div>
+
+  {% else %}
+  <div class="grading-task">
+    <div class="panel panel-default">
+
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" href="#error">{{ exception.type }}</a>
+          <span class="label feedback-label label-danger">Error</span>
+        </h4>
+      </div>
+
+        <div id="error" class="panel-collapse collapse in">
+          <div class="panel-body">
+            <pre>{{ exception.message }}</pre>
+          </div>
+        </div>
+
+    </div>
+  </div>
+  {% endif %}
 {% endif %}
-
 
 {% for match in blacklist_matches %}
 
@@ -112,51 +168,4 @@
 </div>
 
 {% endfor %}
-
-{% if error.type == "filetype error" %}
-<div class="grading-task">
-  <div class="panel panel-default">
-
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" href="#file-type-error">Wrong filetype error</a>
-        <span class="label feedback-label label-danger">Error</span>
-      </h4>
-    </div>
-
-      <div id="import-error" class="panel-collapse collapse in">
-        <div class="panel-body">
-          <p>The submitted file could not be accepted, reason:</p>
-          <pre>{{ error.message }}</pre>
-        </div>
-      </div>
-
-  </div>
-</div>
-
-{% endif %}
-
-{% if error.type == "html style error" %}
-<div class="grading-task">
-  <div class="panel panel-default">
-
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" href="#html_style_error">Invalid HTML error</a>
-        <span class="label feedback-label label-danger">Error</span>
-      </h4>
-    </div>
-
-      <div id="import-error" class="panel-collapse collapse in">
-        <div class="panel-body">
-          <p>The HTML file contained following errors:</p>
-          <pre>{{ error.html_style_error }}</pre>
-            Tiedostosi sisälsi virheitä. Käytä oheisen linkin takaa löytyvää työkalua tutkimaan virheitä tarkemminen. http://validator.w3.org/#validate_by_input
-        </div>
-      </div>
-
-  </div>
-</div>
-
-{% endif %}
 

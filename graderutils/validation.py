@@ -100,7 +100,7 @@ def get_blacklist_matches(blacklists):
             get_matches = _get_python_blacklist_matches
         else:
             raise ValidationError("A blacklist was given but validation for '{}' is not defined.".format(blacklist["method"]))
-        blacklist_matches.append(get_matches(blacklist))
+        blacklist_matches.extend(get_matches(blacklist))
     return blacklist_matches
 
 

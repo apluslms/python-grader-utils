@@ -9,7 +9,7 @@ import re
 import jinja2
 
 
-class HTMLGeneratorError(Exception): pass
+class HTMLFormatError(Exception): pass
 
 
 def suffix_after(string, split_at):

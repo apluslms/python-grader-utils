@@ -12,10 +12,11 @@ import importlib
 import re
 import sys
 
+from graderutils.main import GraderUtilsError
 from graderutils import htmlformat
 
 
-class ValidationError(Exception): pass
+class ValidationError(GraderUtilsError): pass
 
 
 BlacklistMatch = collections.namedtuple("BlacklistMatch", ["filename", "linenumber", "line_content", "description"])

@@ -8,8 +8,10 @@ import re
 
 import jinja2
 
+from graderutils.main import GraderUtilsError
 
-class HTMLFormatError(Exception): pass
+
+class HTMLFormatError(GraderUtilsError): pass
 
 
 def suffix_after(string, split_at):

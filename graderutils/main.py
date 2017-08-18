@@ -10,12 +10,13 @@ import unittest
 
 import yaml
 
+
+class GraderUtilsError(Exception): pass
+
+
 from graderutils import graderunittest
 from graderutils import htmlformat
 from graderutils import validation
-
-
-class GraderUtilsError(Exception): pass
 
 
 def _load_tests_from_module_name(module_name):
@@ -82,6 +83,8 @@ def main(test_modules_data, error_template=None, feedback_template=None):
         print(html_results, file=sys.stderr)
         return 0
 
+    except GraderUtilsError:
+        raise
     except Exception as error:
         if isinstance(error, MemoryError):
             # Testing used up all provided memory.

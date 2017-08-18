@@ -20,7 +20,7 @@ Installing
 
 Install as a Python package into the Python virtual environment used by the grader.
 ```
-(TODO) pip install -e git+https://github.com/Aalto-LeTech/python-grader-utils.git@v1.0
+(TODO) pip install git+https://github.com/Aalto-LeTech/python-grader-utils.git@v1.0
 ```
 
 TODO

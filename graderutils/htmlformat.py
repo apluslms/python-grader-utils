@@ -224,7 +224,7 @@ def results_as_html(results, feedback_template=None):
         "total_tests_run": total_tests_run
     }
 
-    return template.render(context)
+    return template.render(**context)
 
 
 def errors_as_html(error_data, error_template=None):
@@ -239,7 +239,7 @@ def errors_as_html(error_data, error_template=None):
 
     env = jinja2.Environment(loader=template_loader)
     template = env.get_template(error_template)
-    return template.render(error_data)
+    return template.render(**error_data)
 
 
 def blacklist_matches_as_html(matches, error_template=None):

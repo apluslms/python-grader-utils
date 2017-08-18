@@ -104,6 +104,14 @@ def get_blacklist_matches(blacklists):
     return blacklist_matches
 
 
+def ast_dump(source):
+    """
+    Returns all AST nodes of source, each dumped on its own line.
+    You can use this to experiment what AST node names you want to add to the blacklisted nodes.
+    """
+    return '\n'.join(map(ast.dump, ast.walk(ast.parse(source))))
+
+
 def get_image_type_errors(image, expected_type):
     errors = {}
     actual_type = imghdr.what(image)

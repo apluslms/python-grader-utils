@@ -118,7 +118,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.debug:
-        print("<b>Warning: Graderutils is running in debug mode, all configuration related exceptions will be shown to the user!</b>", file=sys.stderr)
+        print("<div class='alert alert-danger'>Graderutils main module called with the --debug flag, all graderutils exceptions will be shown to the user!</div>", file=sys.stderr)
     config_file_path = args.config_file
 
     try:
@@ -147,6 +147,6 @@ if __name__ == "__main__":
         if args.debug:
             raise
         else:
-            print("<h1>Something went wrong in the grader...</h1>", file=sys.stderr)
+            print("<h3>Something went wrong in the grader... Please contact the course staff.</h3>", file=sys.stderr)
             sys.exit(1)
 

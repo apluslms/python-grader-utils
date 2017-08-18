@@ -11,7 +11,7 @@ import unittest
 import yaml
 
 import graderunittest
-import htmlgenerator
+import htmlformat
 import validation
 
 
@@ -69,7 +69,7 @@ def run_blacklist_validation(blacklists, error_template):
     # Found matches
     if blacklist_matches:
         error_data = {"blacklist_matches": blacklist_matches}
-        errors_html = htmlgenerator.errors_as_html(error_data, error_template)
+        errors_html = htmlformat.errors_as_html(error_data, error_template)
         print(errors_html, file=sys.stderr)
         return True
 
@@ -110,7 +110,7 @@ def main(test_modules_data, error_template=None,
         print("TotalPoints: {}\nMaxPoints: {}".format(total_points, total_max_points))
 
         # Show feedback.
-        html_results = htmlgenerator.results_as_html(results, feedback_template)
+        html_results = htmlformat.results_as_html(results, feedback_template)
         print(html_results, file=sys.stderr)
         return 0
 
@@ -126,7 +126,7 @@ def main(test_modules_data, error_template=None,
                 "object": error
             }
         }
-        errors_html = htmlgenerator.errors_as_html(error_data, error_template)
+        errors_html = htmlformat.errors_as_html(error_data, error_template)
         print(errors_html, file=sys.stderr)
         return 1
 

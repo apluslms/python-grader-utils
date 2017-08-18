@@ -12,7 +12,7 @@ import importlib
 import re
 import sys
 
-import htmlgenerator
+import htmlformat
 
 
 class ValidationError(Exception): pass
@@ -173,6 +173,6 @@ if __name__ == "__main__":
     #     raise NotImplementedError("pdf validation not available")
 
     if errors:
-        print(htmlgenerator.errors_as_html(errors), file=sys.stderr)
+        print(htmlformat.errors_as_html(errors), file=sys.stderr)
         sys.exit(1)
 

@@ -108,7 +108,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
             "--debug",
-            type=bool,
+            action="store_true",
             default=False,
             help="By default, exceptions related to improperly configured tests are catched and hidden to prevent course information to be shown to the user. Using this flag will let all such exceptions through."
     )

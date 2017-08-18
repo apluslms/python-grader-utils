@@ -12,7 +12,7 @@ import importlib
 import re
 import sys
 
-import htmlformat
+from graderutils import htmlformat
 
 
 class ValidationError(Exception): pass

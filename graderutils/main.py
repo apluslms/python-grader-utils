@@ -10,9 +10,9 @@ import unittest
 
 import yaml
 
-import graderunittest
-import htmlformat
-import validation
+from graderutils import graderunittest
+from graderutils import htmlformat
+from graderutils import validation
 
 
 class GraderUtilsError(Exception): pass

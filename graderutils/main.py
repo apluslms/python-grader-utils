@@ -115,30 +115,30 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.debug:
-        print("<h1>Warning: Graderutils is running in debug mode, all configuration related exceptions will be shown to the user!</h1>", file=sys.stderr)
-    settings_file_path = args.settings_file
+        print("<b>Warning: Graderutils is running in debug mode, all configuration related exceptions will be shown to the user!</b>", file=sys.stderr)
+    config_file_path = args.config_file
 
     try:
-        with open(settings_file_path, encoding="utf-8") as settings_file:
-            settings = yaml.safe_load(settings_file)
+        with open(config_file_path, encoding="utf-8") as config_file:
+            config = yaml.safe_load(config_file)
 
-        # If blacklisted syntax is defined in the settings file,
+        # If blacklisted syntax is defined in the config file,
         # run blacklist validation on the files as defined in the
         # blacklist settings.
-        if "blacklists" in settings and settings["blacklists"]:
-            blacklists = settings["blacklists"]
+        if "blacklists" in config and config["blacklists"]:
+            blacklists = config["blacklists"]
             if not isinstance(blacklists, list):
                 raise GraderUtilsError("Blacklist configurations should be given as a list in the configuration file.")
             matches = validation.get_blacklist_matches(blacklists)
             if matches:
-                error_template = settings.get("error_template", None)
+                error_template = config.get("error_template", None)
                 match_feedback = htmlformat.blacklist_matches_as_html(
                         matches, error_template)
                 print(match_feedback, file=sys.stderr)
                 sys.exit(1)
-            del settings["blacklists"]
+            del config["blacklists"]
 
-        sys.exit(main(**settings))
+        sys.exit(main(**config))
 
     except:
         if args.debug:

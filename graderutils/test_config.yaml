@@ -16,18 +16,21 @@ test_modules_data:
 # Dictionary of Python abstract syntax tree (ast) nodes that should not be found in the submitted file and the descriptions shown to the user if a match is found.
 # Can be either the node name (i.e. node.__class__.__name__) or the string as returned by ast.dump.
 # The graderutils.validation module contains a simple ast_dump function for dumping ast nodes of given source strings.
+# See also https://greentreesnakes.readthedocs.io/en/latest/nodes.html
+
 # TODO: allow short and long descriptions for blacklist matches
 
 # If commented out, all blacklist checks are skipped.
 blacklists:
   - type: python
+    # It is possible to add an optional long description that will be shown once if there are one or more matches.
+    description: "In this exercise, some builtin syntax related to lists is not allowed, since you should make you own list implementation."
     node_names:
       ListComp: List comprehensions
       For: For loops
     # TODO maybe add some regexp support so that the dump could be patterns
     node_dumps:
       "Name(id='list', ctx=Load())": Loading the list builtin
-      "ImportFrom(module='os', names=[alias(name='chdir', asname=None)], level=0)": Importing the chdir function from the os module
     # List of Python files that should be searched for blacklisted names.
     check_files:
       - my_solution.py

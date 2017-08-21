@@ -56,26 +56,23 @@ def _check_python_forbidden_syntax(config, blacklist=True):
             line_content = submitted_lines[linenumber-1] if linenumber > 0 else ""
             if blacklist:
                 if node_dump in dumps:
+                    # This node has a dump representation that is not allowed.
                     description = config["node_dumps"][node_dump]
                     matches.append(ForbiddenSyntaxMatch(
                             filename, linenumber,
                             line_content, description))
                 elif node_name in names:
+                    # This node has a name that is not allowed.
                     description = config["node_names"][node_name]
                     matches.append(ForbiddenSyntaxMatch(
                             filename, linenumber,
                             line_content, description))
             else:
-                if node_name not in names:
-                    description = config["node_names"][node_name]
+                if node_name not in names and node_dump not in dumps:
+                    # This node has a name or dump representation that is not allowed.
                     matches.append(ForbiddenSyntaxMatch(
                             filename, linenumber,
-                            line_content, description))
-                elif node_dump not in dumps:
-                    description = config["node_dumps"][node_dump]
-                    matches.append(ForbiddenSyntaxMatch(
-                            filename, linenumber,
-                            line_content, description))
+                            line_content, ""))
 
     return matches
 

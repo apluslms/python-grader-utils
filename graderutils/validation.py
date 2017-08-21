@@ -129,6 +129,7 @@ def ast_dump(source):
     """
     Returns all AST nodes of source, each dumped on its own line.
     You can use this to experiment what AST node names you want to add to the blacklisted nodes.
+    Or install more sophisticated utilities from https://greentreesnakes.readthedocs.io/en/latest/.
     """
     return '\n'.join(map(ast.dump, ast.walk(ast.parse(source))))
 

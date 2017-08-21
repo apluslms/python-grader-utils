@@ -125,21 +125,19 @@ if __name__ == "__main__":
         with open(config_file_path, encoding="utf-8") as config_file:
             config = yaml.safe_load(config_file)
 
-        # If blacklisted syntax is defined in the config file,
-        # run blacklist validation on the files as defined in the
-        # blacklist settings.
-        if "blacklists" in config and config["blacklists"]:
-            blacklists = config["blacklists"]
-            if not isinstance(blacklists, list):
-                raise GraderUtilsError("Blacklist configurations should be given as a list in the configuration file.")
-            matches = validation.get_blacklist_matches(blacklists)
-            if matches:
-                error_template = config.get("error_template", None)
-                match_feedback = htmlformat.blacklist_matches_as_html(
-                        matches, error_template)
-                print(match_feedback, file=sys.stderr)
-                sys.exit(1)
-            del config["blacklists"]
+        for forbidden_type in ("blacklists", "whitelists"):
+            if forbidden_type in config:
+                forbidden_lists = config[forbidden_type]
+                if not isinstance(forbidden_lists, list):
+                    raise GraderUtilsError("Configurations for {} should be given as a list in the configuration file.".format(repr(forbidden_type)))
+                matches = validation.get_blacklist_matches(forbidden_lists)
+                if matches:
+                    error_template = config.get("error_template", None)
+                    match_feedback = htmlformat.blacklist_matches_as_html(
+                            matches, error_template)
+                    print(match_feedback, file=sys.stderr)
+                    sys.exit(1)
+                del config[forbidden_type]
 
         sys.exit(main(**config))
 

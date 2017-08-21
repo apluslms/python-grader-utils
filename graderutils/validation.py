@@ -70,9 +70,10 @@ def _check_python_forbidden_syntax(config, blacklist=True):
             else:
                 if node_name not in names and node_dump not in dumps:
                     # This node has a name or dump representation that is not allowed.
+                    description = node_name
                     matches.append(ForbiddenSyntaxMatch(
                             filename, linenumber,
-                            line_content, ""))
+                            line_content, description))
 
     return matches
 

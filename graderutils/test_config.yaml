@@ -1,7 +1,7 @@
 # List of pairs of test modules to be executed and their descriptions as shown to the user.
 test_modules_data:
-  - [validation_tests.py, Pre-grading validation tests]
-  - [grader_tests.py, Grader tests]
+  - [validation_tests, Pre-grading validation tests]
+  - [grader_tests, Grader tests]
 
 
 # Optional

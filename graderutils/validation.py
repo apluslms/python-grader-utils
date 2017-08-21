@@ -19,46 +19,67 @@ from graderutils import htmlformat
 class ValidationError(GraderUtilsError): pass
 
 
-BlacklistMatch = collections.namedtuple("BlacklistMatch", ["filename", "linenumber", "line_content", "description"])
+ForbiddenSyntaxMatch = collections.namedtuple("ForbiddenSyntaxMatch", ["filename", "linenumber", "line_content", "description"])
 
 
-def _get_python_blacklist_matches(blacklist):
+def _check_python_forbidden_syntax(config, blacklist=True):
     """
-    Search all files in blacklist["check_files"] for blacklisted node names defined in blacklist["node_names"] and blacklisted node dumps in blacklist["node_dumps"].
-    See the settings.yaml for examples and format.
-
-    Matches are returned in a list of BlacklistMatch objects/namedtuples.
+    Search all files in config["check_files"] for node names defined in config["node_names"] and node dumps in config["node_dumps"].
+    If blacklist is True, return ForbiddenSyntaxMatch objects for every match.
+    Else return ForbiddenSyntaxMatch for every miss.
     If linenumbers are not valid for some node (e.g. function arguments node), -1 is used as the linenumber.
+
+    See the test_config.yaml for examples and format.
     """
     matches = []
-    blacklisted_names = blacklist["node_names"].keys()
-    blacklisted_dumps = blacklist["node_dumps"].keys()
+    names = config["node_names"].keys()
+    dumps = config["node_dumps"].keys()
 
-    for filename in blacklist["check_files"]:
+    for filename in config["check_files"]:
         with open(filename, encoding="utf-8") as submitted_file:
             source = submitted_file.read() # Note: may raise OSError
 
         submitted_ast = ast.parse(source) # Note: may raise SyntaxError
         submitted_lines = source.splitlines()
 
-        # Walk once through the ast of the source of the submitted file, searching for blacklisted stuff.
+        # Walk once through the ast of the source of the submitted file, searching for black/whitelisted stuff.
         for node in ast.walk(submitted_ast):
             node_name = node.__class__.__name__
             node_dump = ast.dump(node)
             linenumber = getattr(node, "lineno", -1)
             line_content = submitted_lines[linenumber-1] if linenumber > 0 else ""
-            if node_dump in blacklisted_dumps:
-                description = blacklist["node_dumps"][node_dump]
-                matches.append(BlacklistMatch(
-                        filename, linenumber,
-                        line_content, description))
-            elif node_name in blacklisted_names:
-                description = blacklist["node_names"][node_name]
-                matches.append(BlacklistMatch(
-                        filename, linenumber,
-                        line_content, description))
+            if blacklist:
+                if node_dump in dumps:
+                    description = config["node_dumps"][node_dump]
+                    matches.append(ForbiddenSyntaxMatch(
+                            filename, linenumber,
+                            line_content, description))
+                elif node_name in names:
+                    description = config["node_names"][node_name]
+                    matches.append(ForbiddenSyntaxMatch(
+                            filename, linenumber,
+                            line_content, description))
+            else:
+                if node_name not in names:
+                    description = config["node_names"][node_name]
+                    matches.append(ForbiddenSyntaxMatch(
+                            filename, linenumber,
+                            line_content, description))
+                elif node_dump not in dumps:
+                    description = config["node_dumps"][node_dump]
+                    matches.append(ForbiddenSyntaxMatch(
+                            filename, linenumber,
+                            line_content, description))
 
     return matches
+
+
+def _get_python_blacklist_matches(blacklist):
+    return _check_python_forbidden_syntax(blacklist, blacklist=True)
+
+
+def _get_python_whitelist_misses(whitelist):
+    return _check_python_forbidden_syntax(whitelist, blacklist=False)
 
 
 def _get_plain_text_blacklist_matches(blacklist):
@@ -80,7 +101,7 @@ def _get_plain_text_blacklist_matches(blacklist):
             for line_match in re.findall(pattern, line):
                 key = line_match if not ignorecase else line_match.lower()
                 description = blacklist["strings"][key]
-                matches.append(BlacklistMatch(
+                matches.append(ForbiddenSyntaxMatch(
                     line_match, line_number,
                     line, description))
 

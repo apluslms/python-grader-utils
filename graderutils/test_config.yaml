@@ -41,3 +41,33 @@ blacklists:
     check_files:
       - my_solution.sql
 
+# Optional
+# Whitelists are inverted blacklists, where all node names and node dumps are forbidden, unless specified in the whitelist.
+# There are no exceptions, if the node name is not in the list and it is in the submitted module, it will not be accepted.
+# The descriptions in node_names and node_dumps are ignored,
+# but you can provide a message in 'description'.
+# Again, it might be useful to check out https://greentreesnakes.readthedocs.io/en/latest/nodes.html
+whitelists:
+  - type: python
+    description: "You should only submit closed form equations, other kind of syntax is not allowed in this exercise."
+    node_names:
+      # Descriptions are not shown, but allowed here, in order to make it easier
+      # to convert blacklists to whitelists and vice versa.
+      Module: Module
+      Assign: Assigning values to names
+      # Storing and loading names/variables
+      Name: Using names
+      Load: Loading a name
+      Store: Storing a name
+      # Bitwise operations and matrix multiplication are not included
+      BinOp: Binary operations
+      Add: Addition
+      Sub: Subtraction
+      Mult: Multiplication
+      Div: Division
+      FloorDiv: Floor division
+      Mod: Modulo
+      Pow: Power
+    check_files:
+      - my_solution.py
+

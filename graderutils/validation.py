@@ -32,8 +32,14 @@ def _check_python_forbidden_syntax(config, blacklist=True):
     See the test_config.yaml for examples and format.
     """
     matches = []
-    names = config["node_names"].keys()
-    dumps = config["node_dumps"].keys()
+    if "node_names" in config:
+        names = config["node_names"].keys()
+    else:
+        names = set()
+    if "node_dumps" in config:
+        dumps = config["node_dumps"].keys()
+    else:
+        dumps = set()
 
     for filename in config["check_files"]:
         with open(filename, encoding="utf-8") as submitted_file:

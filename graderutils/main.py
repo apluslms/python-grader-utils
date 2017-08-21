@@ -130,7 +130,10 @@ if __name__ == "__main__":
                 forbidden_lists = config[forbidden_type]
                 if not isinstance(forbidden_lists, list):
                     raise GraderUtilsError("Configurations for {} should be given as a list in the configuration file.".format(repr(forbidden_type)))
-                matches = validation.get_blacklist_matches(forbidden_lists)
+                if forbidden_type == "blacklists":
+                    matches = validation.get_blacklist_matches(forbidden_lists)
+                elif forbidden_type == "whitelists":
+                    matches = validation.get_whitelist_misses(forbidden_lists)
                 if matches:
                     error_template = config.get("error_template", None)
                     match_feedback = htmlformat.blacklist_matches_as_html(

@@ -124,8 +124,33 @@ def get_blacklist_matches(blacklists):
             get_matches = _get_python_blacklist_matches
         else:
             raise ValidationError("A blacklist was given but validation for '{}' is not defined.".format(blacklist["method"]))
-        blacklist_matches.extend(get_matches(blacklist))
+        matches = get_matches(blacklist)
+        if matches:
+            description = blacklist.get("description", "")
+            match_data = {"description": description,
+                          "matches": matches}
+            blacklist_matches.append(match_data)
     return blacklist_matches
+
+
+def get_whitelist_misses(whitelists):
+    """
+    Search for missing whitelisted strings as defined in the whitelist objects given as arguments.
+    Return a list of misses or an empty list if there are no misses.
+    """
+    whitelist_misses = []
+    for whitelist in whitelists:
+        if whitelist["type"] == "python":
+            get_misses = _get_python_whitelist_misses
+        else:
+            raise ValidationError("A whitelist was given but validation for '{}' is not defined.".format(whitelist["method"]))
+        misses = get_misses(whitelist)
+        if misses:
+            description = whitelist.get("description", "")
+            matches_data = {"description": description,
+                            "matches": misses}
+            whitelist_misses.append(matches_data)
+    return whitelist_misses
 
 
 def ast_dump(source):

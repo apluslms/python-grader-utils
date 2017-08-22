@@ -111,18 +111,18 @@ if __name__ == "__main__":
             help="Path to a YAML-file containing grading settings.",
     )
     parser.add_argument(
-            "--debug",
+            "--allow_exceptions",
             action="store_true",
             default=False,
-            help="By default, exceptions related to improperly configured tests are catched and hidden to prevent course information to be shown to the user. Using this flag will let all such exceptions through."
+            help="By default, exceptions related to improperly configured tests are catched and hidden behind a generic error message to prevent possible grader test information to be shown to the user. This flag lets them through unformatted."
     )
     args = parser.parse_args()
 
-    if args.debug:
-        debug_warning = "Graderutils main module called with the --debug flag, all graderutils exceptions will be shown to the user!"
+    if args.allow_exceptions:
+        debug_warning = "Graderutils main module called with the <code>--allow_exceptions</code> flag, all graderutils exceptions will be shown to the user!"
         print(htmlformat.wrap_div_alert(debug_warning), file=sys.stderr)
 
-    # Starting from here, hide infrastructure exceptions (not validation exceptions) if args.debug is given and True.
+    # Starting from here, hide infrastructure exceptions (not validation exceptions) if args.allow_exceptions is given and True.
     try:
         config_file_path = args.config_file
 
@@ -143,7 +143,7 @@ if __name__ == "__main__":
         sys.exit(main(test_modules_data, error_template, feedback_template))
 
     except:
-        if args.debug:
+        if args.allow_exceptions:
             raise
         else:
             error_msg = "Something went wrong during the grader tests... Please contact course staff."

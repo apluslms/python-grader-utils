@@ -16,6 +16,10 @@ from graderutils import htmlformat
 
 SUPPORTED_VALIDATION_CHOICES = (
         "python_import",
+        "python_blacklist",
+        "python_whitelist",
+        "plain_text_blacklist",
+        "plain_text_whitelist",
         "image_type",
         "labview",
         "html")

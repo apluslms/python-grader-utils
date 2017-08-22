@@ -24,8 +24,8 @@ validation:
   # If such syntax is found, pass data of found matches to the error template.
   - type: python_blacklist
     file: my_solution.py
-    description: "In this exercise, some builtin syntax related to lists is not allowed, since you should make you own list implementation."
-    # Names of abstract syntax tree nodes and custom descriptions which are shown if nodes are found in the submitted file.
+    message: "In this exercise, some builtin syntax related to lists is not allowed, since you should make you own list implementation."
+    # Names of abstract syntax tree nodes and custom messages which are shown if nodes are found in the submitted file.
     # A comprehensive list of AST nodes can be found here: https://greentreesnakes.readthedocs.io/en/latest/nodes.html
     node_names:
       ListComp: List comprehensions
@@ -45,15 +45,14 @@ validation:
 
   # More validation options
 
-  # Whitelists are inverted blacklists, where all node names and node dumps are forbidden, unless specified in the whitelist.
+  # Whitelists are inverted blacklists, where all node names and node dumps are restricted, unless specified in the whitelist.
   # There are no exceptions, if the node is not in included in the whitelist and it is in the submitted module, it will not be accepted.
-  # The descriptions in node_names and node_dumps are ignored, but you can provide a message in 'description'.
+  # The messages in node_names and node_dumps are ignored, but you can provide a message in 'message'.
   - type: python_whitelist
     file: my_solution.py
-    description: "You should only submit closed form equations, other kind of syntax is not allowed in this exercise."
+    message: "You should only submit closed form equations, other kind of syntax is not allowed in this exercise."
     node_names:
-      # Descriptions are not shown, but allowed here, in order to make it easier
-      # to convert blacklists to whitelists and vice versa.
+      # Node messages are ignored for whitelists and the name of the missed node will be used instead.
       Module: Module
       Assign: Assigning values to names
       # Storing and loading names/variables

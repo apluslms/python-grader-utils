@@ -25,7 +25,7 @@ SUPPORTED_VALIDATION_CHOICES = (
         "labview",
         "html")
 
-RestrictedSyntaxMatch = collections.namedtuple("RestrictedSyntaxMatch", ["filename", "linenumber", "line_content", "description"])
+RestrictedSyntaxMatch = collections.namedtuple("RestrictedSyntaxMatch", ["filename", "linenumber", "line_content", "message"])
 
 
 def _check_python_restricted_syntax(config, blacklist=True):
@@ -64,23 +64,23 @@ def _check_python_restricted_syntax(config, blacklist=True):
         if blacklist:
             if node_dump in dumps:
                 # This node has a dump representation that is not allowed.
-                description = config["node_dumps"][node_dump]
+                message = config["node_dumps"][node_dump]
                 matches.append(RestrictedSyntaxMatch(
                         filename, linenumber,
-                        line_content, description))
+                        line_content, message))
             elif node_name in names:
                 # This node has a name that is not allowed.
-                description = config["node_names"][node_name]
+                message = config["node_names"][node_name]
                 matches.append(RestrictedSyntaxMatch(
                         filename, linenumber,
-                        line_content, description))
+                        line_content, message))
         else:
             if node_name not in names and node_dump not in dumps:
                 # This node has a name or dump representation that is not allowed.
-                description = node_name
+                message = node_name
                 matches.append(RestrictedSyntaxMatch(
                         filename, linenumber,
-                        line_content, description))
+                        line_content, message))
 
     return matches
 
@@ -108,10 +108,10 @@ def _check_plain_text_restricted_syntax(config, blacklist=True):
         if blacklist:
             for line_match in re_matches:
                 key = line_match if not ignorecase else line_match.lower()
-                description = config["strings"][key]
+                message = config["strings"][key]
                 matches.append(RestrictedSyntaxMatch(
                     line_match, line_number,
-                    line, description))
+                    line, message))
         else:
             if not re_matches:
                 matches.append(RestrictedSyntaxMatch("", line_number, line, ""))
@@ -139,8 +139,9 @@ def get_restricted_syntax_matches(config, get_matches):
     match_data = {}
     matches = get_matches(config)
     if matches:
-        description = config.get("description", "")
-        match_data = {"description": description,
+        message = config.get("message", "")
+        match_data = {"type": "restricted_syntax",
+                      "message": message,
                       "matches": matches}
     return match_data
 

@@ -137,7 +137,7 @@
 {% for restricted_syntax in found_restricted_syntax_list %}
 
 <div class="grading-task">
-  <h4>{{ restricted_syntax.description }}</h4>
+  <h4>{{ restricted_syntax.message }}</h4>
 
   <div class="panel panel-default">
 
@@ -157,7 +157,7 @@
           <div>
             <p>
             The submitted file <code>{{ match.filename }}</code>
-            contains restricted syntax <code>{{ match.description }}</code>
+            contains restricted syntax <code>{{ match.message }}</code>
             {% if match.linenumber > 0 %}
             at line number <code>{{ match.linenumber }}</code>:
             <pre><code class="python">{{ match.line_content }}</code></pre>

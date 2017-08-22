@@ -102,34 +102,6 @@ def main(test_modules_data, error_template=None, feedback_template=None):
         return 1
 
 
-def check_forbidden_syntax(config):
-    """
-    If checking for forbidden syntax is configured in the config file,
-    check for used forbidden syntax and return the error html template
-    rendered with feedback if matches are found.
-    Else return an empty string.
-    Mutates the given parameter by removing keys which are checked.
-    """
-    match_feedback = ""
-    for forbidden_type in ("blacklists", "whitelists"):
-        if forbidden_type in config:
-            forbidden_lists = config[forbidden_type]
-            if not isinstance(forbidden_lists, list):
-                raise GraderUtilsError("Configurations for {} should be given as a list in the configuration file.".format(repr(forbidden_type)))
-            if forbidden_type == "blacklists":
-                matches = validation.get_blacklist_matches(forbidden_lists)
-            elif forbidden_type == "whitelists":
-                matches = validation.get_whitelist_misses(forbidden_lists)
-            if matches:
-                error_template = config.get("error_template", None)
-                match_feedback = htmlformat.blacklist_matches_as_html(
-                        matches, error_template)
-            del config[forbidden_type]
-        if match_feedback:
-            break
-    return match_feedback
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

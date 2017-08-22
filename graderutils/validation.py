@@ -78,6 +78,39 @@ def _check_python_forbidden_syntax(config, blacklist=True):
     return matches
 
 
+def _check_plain_text_forbidden_syntax(config, blacklist=True):
+    """
+    As in _check_python_forbidden_syntax but for plain text strings.
+    There is no tokenization of the source text.
+    The source text is checked by a simple regular expression and a match happens when that regular expression matches on a line in the source text.
+    """
+    matches = []
+    config_strings = config["strings"].keys()
+    ignorecase = config.get("ignorecase", False)
+
+    for filename in config["check_files"]:
+        with open(filename, encoding="utf-8") as submitted_file:
+            source = submitted_file.readlines() # Note: may raise OSError
+
+        pattern_string = "(" + "|".join(config_strings) + ")"
+        pattern = re.compile(pattern_string, re.IGNORECASE if ignorecase else 0)
+
+        for line_number, line in enumerate(source, start=1):
+            re_matches = re.findall(pattern, line)
+            if blacklist:
+                for line_match in re_matches:
+                    key = line_match if not ignorecase else line_match.lower()
+                    description = config["strings"][key]
+                    matches.append(ForbiddenSyntaxMatch(
+                        line_match, line_number,
+                        line, description))
+            else:
+                if not re_matches:
+                    matches.append(ForbiddenSyntaxMatch("", line_number, line, ""))
+
+    return matches
+
+
 def _get_python_blacklist_matches(blacklist):
     return _check_python_forbidden_syntax(blacklist, blacklist=True)
 
@@ -87,71 +120,68 @@ def _get_python_whitelist_misses(whitelist):
 
 
 def _get_plain_text_blacklist_matches(blacklist):
+    return _check_plain_text_forbidden_syntax(blacklist, blacklist=True)
+
+
+def _get_plain_text_whitelist_misses(whitelist):
+    return _check_plain_text_forbidden_syntax(whitelist, blacklist=False)
+
+
+def check_forbidden_syntax(config):
     """
-    Simple blacklist matching, which searches all files in blacklist["check_files"] for strings defined in blacklist["strings"].
+    If checking for forbidden syntax is configured in the config file,
+    check for used forbidden syntax and return the error html template
+    rendered with feedback if matches are found.
+    Else return an empty string.
+    Mutates the given parameter by removing keys which are checked.
     """
-    matches = []
-    blacklisted_strings = blacklist["strings"].keys()
-    ignorecase = blacklist.get("ignorecase", False)
-
-    for filename in blacklist["check_files"]:
-        with open(filename, encoding="utf-8") as submitted_file:
-            source = submitted_file.readlines() # Note: may raise OSError
-
-        pattern_string = "(" + "|".join(blacklisted_strings) + ")"
-        pattern = re.compile(pattern_string, re.IGNORECASE if ignorecase else 0)
-
-        for line_number, line in enumerate(source, start=1):
-            for line_match in re.findall(pattern, line):
-                key = line_match if not ignorecase else line_match.lower()
-                description = blacklist["strings"][key]
-                matches.append(ForbiddenSyntaxMatch(
-                    line_match, line_number,
-                    line, description))
-
-    return matches
+    match_feedback = ""
+    for forbidden_list_type in ("blacklists", "whitelists"):
+        if forbidden_list_type in config:
+            forbidden_lists = config[forbidden_list_type]
+            if not isinstance(forbidden_lists, list):
+                raise ValidationError("Configurations for {} should be given as a list in the configuration file.".format(repr(forbidden_list_type)))
+            matches = get_forbidden_syntax_matches(forbidden_lists, forbidden_list_type)
+            if matches:
+                error_template = config.get("error_template", None)
+                match_feedback = htmlformat.blacklist_matches_as_html(
+                        matches, error_template)
+            del config[forbidden_list_type]
+        if match_feedback:
+            break
+    return match_feedback
 
 
-def get_blacklist_matches(blacklists):
+def get_forbidden_syntax_matches(forbidden_lists, forbidden_list_type):
     """
-    Search for blacklisted strings as defined in the blacklist objects given as arguments.
     Return a list of matches or an empty list if there are no matches.
     """
-    blacklist_matches = []
-    for blacklist in blacklists:
-        if blacklist["type"] == "plain_text":
-            get_matches = _get_plain_text_blacklist_matches
-        elif blacklist["type"] == "python":
-            get_matches = _get_python_blacklist_matches
+    if forbidden_list_type not in {"blacklists", "whitelists"}:
+        raise ValidationError("Unknown forbidden syntax list type '{}'".format(forbidden_list_type))
+
+    matches = []
+    for forbidden in forbidden_lists:
+        if forbidden["type"] == "plain_text":
+            if forbidden_list_type == "blacklists":
+                get_matches = _get_plain_text_blacklist_matches
+            elif forbidden_list_type == "whitelists":
+                get_matches = _get_plain_text_whitelist_misses
+        elif forbidden["type"] == "python":
+            if forbidden_list_type == "blacklists":
+                get_matches = _get_python_blacklist_matches
+            elif forbidden_list_type == "whitelists":
+                get_matches = _get_python_whitelist_misses
         else:
-            raise ValidationError("A blacklist was given but validation for '{}' is not defined.".format(blacklist["method"]))
-        matches = get_matches(blacklist)
+            raise ValidationError("Unknown syntax type '{}', cannot check for forbidden syntax.".format(forbidden["type"]))
+
+        matches = get_matches(forbidden)
         if matches:
-            description = blacklist.get("description", "")
+            description = forbidden.get("description", "")
             match_data = {"description": description,
                           "matches": matches}
-            blacklist_matches.append(match_data)
-    return blacklist_matches
+            matches.append(match_data)
 
-
-def get_whitelist_misses(whitelists):
-    """
-    Search for missing whitelisted strings as defined in the whitelist objects given as arguments.
-    Return a list of misses or an empty list if there are no misses.
-    """
-    whitelist_misses = []
-    for whitelist in whitelists:
-        if whitelist["type"] == "python":
-            get_misses = _get_python_whitelist_misses
-        else:
-            raise ValidationError("A whitelist was given but validation for '{}' is not defined.".format(whitelist["method"]))
-        misses = get_misses(whitelist)
-        if misses:
-            description = whitelist.get("description", "")
-            matches_data = {"description": description,
-                            "matches": misses}
-            whitelist_misses.append(matches_data)
-    return whitelist_misses
+    return matches
 
 
 def ast_dump(source):

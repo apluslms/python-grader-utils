@@ -192,7 +192,7 @@ def test_result_as_template_context(result_object):
     return context
 
 
-def results_as_html(results, feedback_template=None):
+def test_results_as_html(results, feedback_template=None):
     """Render the list of results as HTML and return the HTML as a string.
     @param results List of TestResult objects.
     @return Raw HTML as a string.

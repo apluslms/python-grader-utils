@@ -112,11 +112,11 @@ def _check_plain_text_restricted_syntax(config, blacklist=True):
                 key = line_match if not ignorecase else line_match.lower()
                 message = config["strings"][key]
                 matches.append(RestrictedSyntaxMatch(
-                    line_match, line_number,
+                    filename, line_number,
                     line, message))
         else:
             if not re_matches:
-                matches.append(RestrictedSyntaxMatch("", line_number, line, ""))
+                matches.append(RestrictedSyntaxMatch(filename, line_number, line, ""))
 
     return matches
 
@@ -247,7 +247,8 @@ def get_validation_errors(validation_configs):
         else:
             raise ValidationError("Unknown validation_type '{}', choose from '{}'.".format(validation_type, SUPPORTED_VALIDATION_CHOICES))
 
-        errors.append(error)
+        if error:
+            errors.append(error)
 
     return errors
 

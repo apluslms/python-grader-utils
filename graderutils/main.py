@@ -132,11 +132,6 @@ if __name__ == "__main__":
                 print(htmlformat.errors_as_html(errors), file=sys.stderr)
                 sys.exit(1)
 
-        match_feedback = validation.check_restricted_syntax(config)
-        if match_feedback:
-            print(match_feedback, file=sys.stderr)
-            sys.exit(1)
-
         sys.exit(main(**config))
 
     except:

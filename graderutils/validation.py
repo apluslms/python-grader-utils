@@ -2,6 +2,7 @@
 Simple file validation for various file formats.
 Can be used for checking if a file is valid before starting the grading.
 May also be useful as a trivial grader to give points for submitting correct filetypes.
+Enable by using the 'validation' key in the test_config.yaml.
 """
 import ast
 import collections

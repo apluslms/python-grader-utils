@@ -212,6 +212,7 @@ def get_validation_errors(validation_configs):
         filename = config.get("file", None)
         if not filename:
             raise ValidationError("No file given to perform validation of validation_type '{}'.".format(validation_type))
+
         error = {}
 
         if validation_type == "python_import":

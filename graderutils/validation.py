@@ -90,9 +90,17 @@ def _check_python_restricted_syntax(config, blacklist=True):
 def _check_plain_text_restricted_syntax(config, blacklist=True):
     """
     As in _check_python_restricted_syntax but for plain text strings.
-    There is no tokenization of the source text.
-    The source text is checked by a simple regular expression and a match happens when that regular expression matches on a line in the source text.
+    No sophisticated tokenization is done for the source text and it is checked by simple regular expressions.
+    If blacklisting, return every line which contains a word which is in config["strings"]
+    If whitelisting, return every line which contains a word which is not in config["strings"].
     """
+    def re_split_no_keep(pattern, string):
+        """Return iterator over string which yields substrings that do not match pattern."""
+        for word in re.split(pattern, string):
+            word = word.strip()
+            if word and not re.match(pattern, word):
+                yield word
+
     matches = []
     config_strings = config["strings"].keys()
     ignorecase = config.get("ignorecase", False)
@@ -106,17 +114,19 @@ def _check_plain_text_restricted_syntax(config, blacklist=True):
     pattern = re.compile(pattern_string, re.IGNORECASE if ignorecase else 0)
 
     for line_number, line in enumerate(source, start=1):
-        re_matches = re.findall(pattern, line)
         if blacklist:
-            for line_match in re_matches:
+            for line_match in re.findall(pattern, line):
                 key = line_match if not ignorecase else line_match.lower()
                 message = config["strings"][key]
                 matches.append(RestrictedSyntaxMatch(
                     filename, line_number,
                     line, message))
         else:
-            if not re_matches:
-                matches.append(RestrictedSyntaxMatch(filename, line_number, line, ""))
+            # Split at matches and do not keep split strings
+            for line_miss in re_split_no_keep(pattern, line):
+                matches.append(RestrictedSyntaxMatch(
+                    filename, line_number,
+                    line, line_miss))
 
     return matches
 

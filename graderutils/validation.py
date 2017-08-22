@@ -131,61 +131,14 @@ def _get_plain_text_whitelist_misses(whitelist):
     return _check_plain_text_forbidden_syntax(whitelist, blacklist=False)
 
 
-def check_forbidden_syntax(config):
-    """
-    If checking for forbidden syntax is configured in the config file,
-    check for used forbidden syntax and return the error html template
-    rendered with feedback if matches are found.
-    Else return an empty string.
-    Mutates the given parameter by removing keys which are checked.
-    """
-    match_feedback = ""
-    for forbidden_list_type in ("blacklists", "whitelists"):
-        if forbidden_list_type in config:
-            forbidden_lists = config[forbidden_list_type]
-            if not isinstance(forbidden_lists, list):
-                raise ValidationError("Configurations for {} should be given as a list in the configuration file.".format(repr(forbidden_list_type)))
-            matches = get_forbidden_syntax_matches(forbidden_lists, forbidden_list_type)
-            if matches:
-                error_template = config.get("error_template", None)
-                match_feedback = htmlformat.blacklist_matches_as_html(
-                        matches, error_template)
-            del config[forbidden_list_type]
-        if match_feedback:
-            break
-    return match_feedback
-
-
-def get_forbidden_syntax_matches(forbidden_lists, forbidden_list_type):
-    """
-    Return a list of matches or an empty list if there are no matches.
-    """
-    if forbidden_list_type not in {"blacklists", "whitelists"}:
-        raise ValidationError("Unknown forbidden syntax list type '{}'".format(forbidden_list_type))
-
-    matches = []
-    for forbidden in forbidden_lists:
-        if forbidden["type"] == "plain_text":
-            if forbidden_list_type == "blacklists":
-                get_matches = _get_plain_text_blacklist_matches
-            elif forbidden_list_type == "whitelists":
-                get_matches = _get_plain_text_whitelist_misses
-        elif forbidden["type"] == "python":
-            if forbidden_list_type == "blacklists":
-                get_matches = _get_python_blacklist_matches
-            elif forbidden_list_type == "whitelists":
-                get_matches = _get_python_whitelist_misses
-        else:
-            raise ValidationError("Unknown syntax type '{}', cannot check for forbidden syntax.".format(forbidden["type"]))
-
-        matches = get_matches(forbidden)
-        if matches:
-            description = forbidden.get("description", "")
-            match_data = {"description": description,
-                          "matches": matches}
-            matches.append(match_data)
-
-    return matches
+def get_forbidden_syntax_matches(config, get_matches):
+    match_data = {}
+    matches = get_matches(config)
+    if matches:
+        description = config.get("description", "")
+        match_data = {"description": description,
+                      "matches": matches}
+    return match_data
 
 
 def ast_dump(source):
@@ -206,9 +159,10 @@ def get_image_type_errors(image, expected_type):
     return errors
 
 
-def get_import_errors(module):
+def get_python_import_errors(filename):
     errors = {}
     try:
+        module = filename.split(".py")[0]
         importlib.import_module(module)
     except Exception as error:
         errors["type"] = error.__class__.__name__
@@ -244,23 +198,49 @@ def get_html_errors(filename):
     return errors
 
 
-def get_validation_errors(config, validation_types):
-    raise NotImplementedError()
+def get_validation_errors(validation_configs):
     errors = []
-    for validation in validation_types:
-        if validation == "python_import":
+    for config in validation_configs:
+        validation_type = config.get("validation_type", None)
+        filename = config.get("file", None)
+        if not filename:
+            raise ValidationError("No file given to perform validation of validation_type '{}'.".format(validation_type))
+        error = {}
+
+        if validation_type == "python_import":
             # import matplotlib
             # matplotlib.use(MATPLOTLIB_RENDERER_BACKEND)
-            # module_name = args.python.split(".py")[0]
-            # errors = get_import_errors(module_name)
-        elif validation == "image_type":
-            image_file = args.image
-            image_type = image_file.split(".")[-1]
-            errors = get_image_type_errors(image_file, image_type)
-        elif validation == "labview":
-            filename = args.labview
-            errors = get_labview_errors(filename)
-        elif validation == "html":
-            filename = args.html
-            errors = get_html_errors(filename)
+            error = get_python_import_errors(filename)
+
+        elif validation_type == "python_blacklist":
+            get_matches = _get_python_blacklist_matches
+            error = get_forbidden_syntax_matches(config, get_matches)
+
+        elif validation_type == "python_whitelist":
+            get_matches = _get_python_whitelist_misses
+            error = get_forbidden_syntax_matches(config, get_matches)
+
+        elif validation_type == "plain_text_blacklist":
+            get_matches = _get_plain_text_blacklist_matches
+            error = get_forbidden_syntax_matches(config, get_matches)
+
+        elif validation_type == "plain_text_whitelist":
+            get_matches = _get_plain_text_whitelist_misses
+            error = get_forbidden_syntax_matches(config, get_matches)
+
+        elif validation_type == "image_validation_type":
+            error = get_image_type_errors(filename)
+
+        elif validation_type == "labview":
+            error = get_labview_errors(filename)
+
+        elif validation_type == "html":
+            error = get_html_errors(filename)
+
+        else:
+            raise ValidationError("Unknown validation validation_type '{}', choose from '{}'.".format(validation_type, SUPPORTED_VALIDATION_CHOICES))
+
+        errors.append(error)
+
     return errors
+

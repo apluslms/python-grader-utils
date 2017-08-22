@@ -116,9 +116,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.debug:
-        print("<div class='alert alert-danger'>Graderutils main module called with the --debug flag, all graderutils exceptions will be shown to the user!</div>", file=sys.stderr)
+        debug_warning = "Graderutils main module called with the --debug flag, all graderutils exceptions will be shown to the user!"
+        print(htmlformat.wrap_div_alert(debug_warning), file=sys.stderr)
 
-    # Starting from here, hide all exceptions if args.debug is given and True.
+    # Starting from here, hide infrastructure exceptions (not validation exceptions) if args.debug is given and True.
     try:
         config_file_path = args.config_file
 
@@ -138,6 +139,7 @@ if __name__ == "__main__":
         if args.debug:
             raise
         else:
-            print("<h3>Something went wrong in the grader... Please contact the course staff.</h3>", file=sys.stderr)
+            error_msg = "Something went wrong during the grader tests... Please contact course staff."
+            print(htmlformat.wrap_div_alert(error_msg), file=sys.stderr)
             sys.exit(1)
 

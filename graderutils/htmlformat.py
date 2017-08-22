@@ -242,9 +242,6 @@ def errors_as_html(error_data, error_template=None):
     return template.render(errors=error_data)
 
 
-def blacklist_matches_as_html(matches_data, error_template=None):
-    """
-    For convenience. Calls errors_as_html with matches_data wrapped in a dict.
-    """
-    return errors_as_html({"found_restricted_syntax_list": matches_data}, error_template)
+def wrap_div_alert(string):
+    return r"<div class='alert alert-danger'>{}</div>".format(string)
 

@@ -11,8 +11,9 @@ import importlib
 import re
 
 from graderutils.main import GraderUtilsError
-from graderutils import htmlformat
 
+
+class ValidationError(GraderUtilsError): pass
 
 SUPPORTED_VALIDATION_CHOICES = (
         "python_import",
@@ -24,15 +25,12 @@ SUPPORTED_VALIDATION_CHOICES = (
         "labview",
         "html")
 
-
-class ValidationError(GraderUtilsError): pass
-
 ForbiddenSyntaxMatch = collections.namedtuple("ForbiddenSyntaxMatch", ["filename", "linenumber", "line_content", "description"])
 
 
 def _check_python_forbidden_syntax(config, blacklist=True):
     """
-    Search all files in config["check_files"] for node names defined in config["node_names"] and node dumps in config["node_dumps"].
+    Read config["file"] and search for node names defined in config["node_names"] and node dumps in config["node_dumps"].
     If blacklist is True, return ForbiddenSyntaxMatch objects for every match.
     Else return ForbiddenSyntaxMatch for every miss.
     If linenumbers are not valid for some node (e.g. function arguments node), -1 is used as the linenumber.
@@ -49,39 +47,40 @@ def _check_python_forbidden_syntax(config, blacklist=True):
     else:
         dumps = set()
 
-    for filename in config["check_files"]:
-        with open(filename, encoding="utf-8") as submitted_file:
-            source = submitted_file.read() # Note: may raise OSError
+    filename = config["file"]
 
-        submitted_ast = ast.parse(source) # Note: may raise SyntaxError
-        submitted_lines = source.splitlines()
+    with open(filename, encoding="utf-8") as submitted_file:
+        source = submitted_file.read() # Note: may raise OSError
 
-        # Walk once through the ast of the source of the submitted file, searching for black/whitelisted stuff.
-        for node in ast.walk(submitted_ast):
-            node_name = node.__class__.__name__
-            node_dump = ast.dump(node)
-            linenumber = getattr(node, "lineno", -1)
-            line_content = submitted_lines[linenumber-1] if linenumber > 0 else ""
-            if blacklist:
-                if node_dump in dumps:
-                    # This node has a dump representation that is not allowed.
-                    description = config["node_dumps"][node_dump]
-                    matches.append(ForbiddenSyntaxMatch(
-                            filename, linenumber,
-                            line_content, description))
-                elif node_name in names:
-                    # This node has a name that is not allowed.
-                    description = config["node_names"][node_name]
-                    matches.append(ForbiddenSyntaxMatch(
-                            filename, linenumber,
-                            line_content, description))
-            else:
-                if node_name not in names and node_dump not in dumps:
-                    # This node has a name or dump representation that is not allowed.
-                    description = node_name
-                    matches.append(ForbiddenSyntaxMatch(
-                            filename, linenumber,
-                            line_content, description))
+    submitted_ast = ast.parse(source) # Note: may raise SyntaxError
+    submitted_lines = source.splitlines()
+
+    # Walk once through the ast of the source of the submitted file, searching for black/whitelisted stuff.
+    for node in ast.walk(submitted_ast):
+        node_name = node.__class__.__name__
+        node_dump = ast.dump(node)
+        linenumber = getattr(node, "lineno", -1)
+        line_content = submitted_lines[linenumber-1] if linenumber > 0 else ""
+        if blacklist:
+            if node_dump in dumps:
+                # This node has a dump representation that is not allowed.
+                description = config["node_dumps"][node_dump]
+                matches.append(ForbiddenSyntaxMatch(
+                        filename, linenumber,
+                        line_content, description))
+            elif node_name in names:
+                # This node has a name that is not allowed.
+                description = config["node_names"][node_name]
+                matches.append(ForbiddenSyntaxMatch(
+                        filename, linenumber,
+                        line_content, description))
+        else:
+            if node_name not in names and node_dump not in dumps:
+                # This node has a name or dump representation that is not allowed.
+                description = node_name
+                matches.append(ForbiddenSyntaxMatch(
+                        filename, linenumber,
+                        line_content, description))
 
     return matches
 
@@ -96,25 +95,26 @@ def _check_plain_text_forbidden_syntax(config, blacklist=True):
     config_strings = config["strings"].keys()
     ignorecase = config.get("ignorecase", False)
 
-    for filename in config["check_files"]:
-        with open(filename, encoding="utf-8") as submitted_file:
-            source = submitted_file.readlines() # Note: may raise OSError
+    filename = config["file"]
 
-        pattern_string = "(" + "|".join(config_strings) + ")"
-        pattern = re.compile(pattern_string, re.IGNORECASE if ignorecase else 0)
+    with open(filename, encoding="utf-8") as submitted_file:
+        source = submitted_file.readlines()
 
-        for line_number, line in enumerate(source, start=1):
-            re_matches = re.findall(pattern, line)
-            if blacklist:
-                for line_match in re_matches:
-                    key = line_match if not ignorecase else line_match.lower()
-                    description = config["strings"][key]
-                    matches.append(ForbiddenSyntaxMatch(
-                        line_match, line_number,
-                        line, description))
-            else:
-                if not re_matches:
-                    matches.append(ForbiddenSyntaxMatch("", line_number, line, ""))
+    pattern_string = "(" + "|".join(config_strings) + ")"
+    pattern = re.compile(pattern_string, re.IGNORECASE if ignorecase else 0)
+
+    for line_number, line in enumerate(source, start=1):
+        re_matches = re.findall(pattern, line)
+        if blacklist:
+            for line_match in re_matches:
+                key = line_match if not ignorecase else line_match.lower()
+                description = config["strings"][key]
+                matches.append(ForbiddenSyntaxMatch(
+                    line_match, line_number,
+                    line, description))
+        else:
+            if not re_matches:
+                matches.append(ForbiddenSyntaxMatch("", line_number, line, ""))
 
     return matches
 
@@ -205,7 +205,7 @@ def get_html_errors(filename):
 def get_validation_errors(validation_configs):
     errors = []
     for config in validation_configs:
-        validation_type = config.get("validation_type", None)
+        validation_type = config.get("type", None)
         filename = config.get("file", None)
         if not filename:
             raise ValidationError("No file given to perform validation of validation_type '{}'.".format(validation_type))

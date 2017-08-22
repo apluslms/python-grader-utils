@@ -238,7 +238,7 @@ def get_validation_errors(validation_configs):
             error = get_html_errors(filename)
 
         else:
-            raise ValidationError("Unknown validation validation_type '{}', choose from '{}'.".format(validation_type, SUPPORTED_VALIDATION_CHOICES))
+            raise ValidationError("Unknown validation_type '{}', choose from '{}'.".format(validation_type, SUPPORTED_VALIDATION_CHOICES))
 
         errors.append(error)
 

@@ -25,14 +25,14 @@ SUPPORTED_VALIDATION_CHOICES = (
         "labview",
         "html")
 
-ForbiddenSyntaxMatch = collections.namedtuple("ForbiddenSyntaxMatch", ["filename", "linenumber", "line_content", "description"])
+RestrictedSyntaxMatch = collections.namedtuple("RestrictedSyntaxMatch", ["filename", "linenumber", "line_content", "description"])
 
 
-def _check_python_forbidden_syntax(config, blacklist=True):
+def _check_python_restricted_syntax(config, blacklist=True):
     """
     Read config["file"] and search for node names defined in config["node_names"] and node dumps in config["node_dumps"].
-    If blacklist is True, return ForbiddenSyntaxMatch objects for every match.
-    Else return ForbiddenSyntaxMatch for every miss.
+    If blacklist is True, return RestrictedSyntaxMatch objects for every match.
+    Else return RestrictedSyntaxMatch for every miss.
     If linenumbers are not valid for some node (e.g. function arguments node), -1 is used as the linenumber.
 
     See the test_config.yaml for examples and format.
@@ -65,29 +65,29 @@ def _check_python_forbidden_syntax(config, blacklist=True):
             if node_dump in dumps:
                 # This node has a dump representation that is not allowed.
                 description = config["node_dumps"][node_dump]
-                matches.append(ForbiddenSyntaxMatch(
+                matches.append(RestrictedSyntaxMatch(
                         filename, linenumber,
                         line_content, description))
             elif node_name in names:
                 # This node has a name that is not allowed.
                 description = config["node_names"][node_name]
-                matches.append(ForbiddenSyntaxMatch(
+                matches.append(RestrictedSyntaxMatch(
                         filename, linenumber,
                         line_content, description))
         else:
             if node_name not in names and node_dump not in dumps:
                 # This node has a name or dump representation that is not allowed.
                 description = node_name
-                matches.append(ForbiddenSyntaxMatch(
+                matches.append(RestrictedSyntaxMatch(
                         filename, linenumber,
                         line_content, description))
 
     return matches
 
 
-def _check_plain_text_forbidden_syntax(config, blacklist=True):
+def _check_plain_text_restricted_syntax(config, blacklist=True):
     """
-    As in _check_python_forbidden_syntax but for plain text strings.
+    As in _check_python_restricted_syntax but for plain text strings.
     There is no tokenization of the source text.
     The source text is checked by a simple regular expression and a match happens when that regular expression matches on a line in the source text.
     """
@@ -109,33 +109,33 @@ def _check_plain_text_forbidden_syntax(config, blacklist=True):
             for line_match in re_matches:
                 key = line_match if not ignorecase else line_match.lower()
                 description = config["strings"][key]
-                matches.append(ForbiddenSyntaxMatch(
+                matches.append(RestrictedSyntaxMatch(
                     line_match, line_number,
                     line, description))
         else:
             if not re_matches:
-                matches.append(ForbiddenSyntaxMatch("", line_number, line, ""))
+                matches.append(RestrictedSyntaxMatch("", line_number, line, ""))
 
     return matches
 
 
 def _get_python_blacklist_matches(blacklist):
-    return _check_python_forbidden_syntax(blacklist, blacklist=True)
+    return _check_python_restricted_syntax(blacklist, blacklist=True)
 
 
 def _get_python_whitelist_misses(whitelist):
-    return _check_python_forbidden_syntax(whitelist, blacklist=False)
+    return _check_python_restricted_syntax(whitelist, blacklist=False)
 
 
 def _get_plain_text_blacklist_matches(blacklist):
-    return _check_plain_text_forbidden_syntax(blacklist, blacklist=True)
+    return _check_plain_text_restricted_syntax(blacklist, blacklist=True)
 
 
 def _get_plain_text_whitelist_misses(whitelist):
-    return _check_plain_text_forbidden_syntax(whitelist, blacklist=False)
+    return _check_plain_text_restricted_syntax(whitelist, blacklist=False)
 
 
-def get_forbidden_syntax_matches(config, get_matches):
+def get_restricted_syntax_matches(config, get_matches):
     match_data = {}
     matches = get_matches(config)
     if matches:
@@ -218,19 +218,19 @@ def get_validation_errors(validation_configs):
 
         elif validation_type == "python_blacklist":
             get_matches = _get_python_blacklist_matches
-            error = get_forbidden_syntax_matches(config, get_matches)
+            error = get_restricted_syntax_matches(config, get_matches)
 
         elif validation_type == "python_whitelist":
             get_matches = _get_python_whitelist_misses
-            error = get_forbidden_syntax_matches(config, get_matches)
+            error = get_restricted_syntax_matches(config, get_matches)
 
         elif validation_type == "plain_text_blacklist":
             get_matches = _get_plain_text_blacklist_matches
-            error = get_forbidden_syntax_matches(config, get_matches)
+            error = get_restricted_syntax_matches(config, get_matches)
 
         elif validation_type == "plain_text_whitelist":
             get_matches = _get_plain_text_whitelist_misses
-            error = get_forbidden_syntax_matches(config, get_matches)
+            error = get_restricted_syntax_matches(config, get_matches)
 
         elif validation_type == "image_validation_type":
             error = get_image_type_errors(filename)

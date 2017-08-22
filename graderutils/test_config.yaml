@@ -20,7 +20,7 @@ validation:
   # Try importing my_solution, catch all exceptions and pass them to the error template.
   - type: python_import
     file: my_solution.py
-  # Set forbidden syntax which should not be found in file.
+  # Set restricted syntax which should not be found in file.
   # If such syntax is found, pass data of found matches to the error template.
   - type: python_blacklist
     file: my_solution.py

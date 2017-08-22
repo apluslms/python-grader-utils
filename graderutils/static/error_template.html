@@ -134,30 +134,30 @@
 {% endif %}
 
 
-{% for forbidden_syntax in found_forbidden_syntax_list %}
+{% for restricted_syntax in found_restricted_syntax_list %}
 
 <div class="grading-task">
-  <h4>{{ forbidden_syntax.description }}</h4>
+  <h4>{{ restricted_syntax.description }}</h4>
 
   <div class="panel panel-default">
 
     <div class="panel-heading">
       <h4 class="panel-title">
-        <a data-toggle="collapse" href="#forbidden-syntax-error">
-          Use of forbidden syntax</a>
+        <a data-toggle="collapse" href="#restricted-syntax-error">
+          Use of restricted syntax</a>
         <span class="label feedback-label label-danger">Error</span>
       </h4>
     </div>
 
-      <div id="forbidden-syntax-error" class="panel-collapse collapse in">
+      <div id="restricted-syntax-error" class="panel-collapse collapse in">
         <div class="panel-body">
 
-        {% for match in forbidden_syntax.matches %}
+        {% for match in restricted_syntax.matches %}
 
           <div>
             <p>
             The submitted file <code>{{ match.filename }}</code>
-            contains forbidden syntax <code>{{ match.description }}</code>
+            contains restricted syntax <code>{{ match.description }}</code>
             {% if match.linenumber > 0 %}
             at line number <code>{{ match.linenumber }}</code>:
             <pre><code class="python">{{ match.line_content }}</code></pre>

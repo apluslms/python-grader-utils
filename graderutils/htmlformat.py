@@ -246,5 +246,5 @@ def blacklist_matches_as_html(matches_data, error_template=None):
     """
     For convenience. Calls errors_as_html with matches_data wrapped in a dict.
     """
-    return errors_as_html({"found_forbidden_syntax_list": matches_data}, error_template)
+    return errors_as_html({"found_restricted_syntax_list": matches_data}, error_template)
 

@@ -38,7 +38,6 @@ def _check_python_restricted_syntax(config, blacklist=True):
 
     See the test_config.yaml for examples and format.
     """
-    matches = []
     if "node_names" in config:
         names = config["node_names"].keys()
     else:
@@ -55,6 +54,8 @@ def _check_python_restricted_syntax(config, blacklist=True):
 
     submitted_ast = ast.parse(source) # Note: may raise SyntaxError
     submitted_lines = source.splitlines()
+
+    matches = []
 
     # Walk once through the ast of the source of the submitted file, searching for black/whitelisted stuff.
     for node in ast.walk(submitted_ast):

@@ -11,7 +11,23 @@ Something weird happened at the server, this test has no title...
 {%- endmacro %}
 
 
+{% if no_tests %}
+
+<div class="grading-task">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#no_tests_success">Passed</a>
+        <span class="label feedback-label label-success">Success</span>
+      </h4>
+    </div>
+  </div>
+</div>
+
+{% else %}
+
 <div class="total-grading-results">
+
   <h1>Total test points: {{ total_points }} of {{ total_max_points }}</h1>
   <h1><small>Total tests run: {{ total_tests_run }}</small></h1>
 </div>

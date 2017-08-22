@@ -227,6 +227,23 @@ def results_as_html(results, feedback_template=None):
     return template.render(**context)
 
 
+def no_tests_html(feedback_template=None):
+    """
+    Trivial test result feedback when there are no tests.
+    Renders feedback_template with 'no_tests' set to True and returns the raw HTML.
+    """
+    if feedback_template is None:
+        feedback_template = "feedback_template.html"
+        template_loader = jinja2.PackageLoader("graderutils", "static")
+    else:
+        template_loader = jinja2.FileSystemLoader("./")
+
+    env = jinja2.Environment(loader=template_loader)
+    template = env.get_template(feedback_template)
+
+    return template.render(no_tests=True)
+
+
 def errors_as_html(error_data, error_template=None):
     """
     Renders the context dictionary errors as html using the given error template and returns the raw html string.

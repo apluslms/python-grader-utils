@@ -3,21 +3,25 @@ Simple file validation for various file formats.
 Can be used for checking if a file is valid before starting the grading.
 May also be useful as a trivial grader to give points for submitting correct filetypes.
 """
-import argparse
 import ast
 import collections
 import html5lib
 import imghdr
 import importlib
 import re
-import sys
 
 from graderutils.main import GraderUtilsError
 from graderutils import htmlformat
 
 
-class ValidationError(GraderUtilsError): pass
+SUPPORTED_VALIDATION_CHOICES = (
+        "python_import",
+        "image_type",
+        "labview",
+        "html")
 
+
+class ValidationError(GraderUtilsError): pass
 
 ForbiddenSyntaxMatch = collections.namedtuple("ForbiddenSyntaxMatch", ["filename", "linenumber", "line_content", "description"])
 
@@ -240,47 +244,23 @@ def get_html_errors(filename):
     return errors
 
 
-# # Non-interactive rendering to png
-# MATPLOTLIB_RENDERER_BACKEND = "AGG"
-
-SUPPORTED_ARGS = ("python", "image", "labview", "html")
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__)
-    for flag in SUPPORTED_ARGS:
-        parser.add_argument("--{}".format(flag))
-
-    args = parser.parse_args()
-
-    errors = {}
-
-    if args.python:
-        # import matplotlib
-        # matplotlib.use(MATPLOTLIB_RENDERER_BACKEND)
-        module_name = args.python.split(".py")[0]
-        errors = get_import_errors(module_name)
-    elif args.image:
-        image_file = args.image
-        image_type = image_file.split(".")[-1]
-        errors = get_image_type_errors(image_file, image_type)
-    elif args.labview:
-        filename = args.labview
-        errors = get_labview_errors(filename)
-    elif args.html:
-        filename = args.html
-        errors = get_html_errors(filename)
-
-    # elif args.css:
-    #     filename = args.css
-    #     raise NotImplementedError("css validation not available")
-    # elif args.xlsx:
-    #     filename = args.xlsx
-    #     raise NotImplementedError("xlsx validation not available")
-    # elif args.pdf:
-    #     filename = args.pdf
-    #     raise NotImplementedError("pdf validation not available")
-
-    if errors:
-        print(htmlformat.errors_as_html(errors), file=sys.stderr)
-        sys.exit(1)
-
+def get_validation_errors(config, validation_types):
+    raise NotImplementedError()
+    errors = []
+    for validation in validation_types:
+        if validation == "python_import":
+            # import matplotlib
+            # matplotlib.use(MATPLOTLIB_RENDERER_BACKEND)
+            # module_name = args.python.split(".py")[0]
+            # errors = get_import_errors(module_name)
+        elif validation == "image_type":
+            image_file = args.image
+            image_type = image_file.split(".")[-1]
+            errors = get_image_type_errors(image_file, image_type)
+        elif validation == "labview":
+            filename = args.labview
+            errors = get_labview_errors(filename)
+        elif validation == "html":
+            filename = args.html
+            errors = get_html_errors(filename)
+    return errors

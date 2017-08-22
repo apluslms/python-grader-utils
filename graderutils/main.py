@@ -110,6 +110,13 @@ if __name__ == "__main__":
             help="Path to a YAML-file containing grading settings.",
     )
     parser.add_argument(
+            "--validation",
+            type=str,
+            action="append",
+            choices=validation.SUPPORTED_VALIDATION_CHOICES,
+            help="The type of file validation before grading."
+    )
+    parser.add_argument(
             "--debug",
             action="store_true",
             default=False,
@@ -119,13 +126,24 @@ if __name__ == "__main__":
 
     if args.debug:
         print("<div class='alert alert-danger'>Graderutils main module called with the --debug flag, all graderutils exceptions will be shown to the user!</div>", file=sys.stderr)
-    config_file_path = args.config_file
 
+    # Starting from here, hide all exceptions if args.debug is given and True.
     try:
+        config_file_path = args.config_file
+
         with open(config_file_path, encoding="utf-8") as config_file:
             config = yaml.safe_load(config_file)
 
-        match_feedback = check_forbidden_syntax(config)
+        validation_types = args.validation
+
+        if validation_types:
+            errors = validation.get_validation_errors(config, validation_types)
+            # Pre-grading validation failed, print errors and exit.
+            if errors:
+                print(htmlformat.errors_as_html(errors), file=sys.stderr)
+                sys.exit(1)
+
+        match_feedback = validation.check_forbidden_syntax(config)
         if match_feedback:
             print(match_feedback, file=sys.stderr)
             sys.exit(1)

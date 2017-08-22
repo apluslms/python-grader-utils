@@ -113,30 +113,28 @@
 
 {% elif error.type == "restricted_syntax" %}
 
-{% for restricted_syntax in error.matches %}
-
 <div class="grading-task">
-  <h4>{{ restricted_syntax.message }}</h4>
-
   <div class="panel panel-default">
 
     <div class="panel-heading">
       <h4 class="panel-title">
-        <a data-toggle="collapse" href="#restricted-syntax-error">
-          Use of restricted syntax</a>
-        <span class="label feedback-label label-danger">Error</span>
+        <a data-toggle="collapse" href="#restricted-syntax-error-{{ loop.index }}">{{ error.message }}</a>
+        <span class="label feedback-label label-danger">Restricted syntax</span>
       </h4>
     </div>
 
-      <div id="restricted-syntax-error" class="panel-collapse collapse in">
+      <div id="restricted-syntax-error-{{ loop.index }}" class="panel-collapse collapse in">
         <div class="panel-body">
 
-        {% for match in restricted_syntax.matches %}
+        {% for match in error.matches %}
 
           <div>
             <p>
             The submitted file <code>{{ match.filename }}</code>
-            contains restricted syntax <code>{{ match.message }}</code>
+            contains restricted syntax
+            {% if match.message|length > 0 %}
+            <code>{{ match.message }}</code>
+            {% endif %}
             {% if match.linenumber > 0 %}
             at line number <code>{{ match.linenumber }}</code>:
             <pre><code class="python">{{ match.line_content }}</code></pre>

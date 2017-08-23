@@ -18,6 +18,7 @@ class ValidationError(GraderUtilsError): pass
 
 SUPPORTED_VALIDATION_CHOICES = (
         "python_import",
+        "python_syntax",
         "python_blacklist",
         "python_whitelist",
         "plain_text_blacklist",
@@ -187,6 +188,20 @@ def get_python_import_errors(filename):
     return errors
 
 
+def get_python_syntax_errors(filename):
+    errors = {}
+    try:
+        with open(filename, encoding="utf-8") as submitted_file:
+            source = submitted_file.read()
+        ast.parse(source)
+    except Exception as error:
+        errors["type"] = error.__class__.__name__
+        errors["message"] = str(error)
+        if isinstance(error, SyntaxError):
+            errors["message"] += ": " + error.text.strip()
+    return errors
+
+
 def get_labview_errors(filename):
     errors = {}
     with open(filename, "rb") as f:
@@ -229,6 +244,9 @@ def get_validation_errors(validation_configs):
             # import matplotlib
             # matplotlib.use(MATPLOTLIB_RENDERER_BACKEND)
             error = get_python_import_errors(filename)
+
+        elif validation_type == "python_syntax":
+            error = get_python_syntax_errors(filename)
 
         elif validation_type == "python_blacklist":
             get_matches = _get_python_blacklist_matches

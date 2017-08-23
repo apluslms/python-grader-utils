@@ -24,6 +24,9 @@ validation:
   # If such syntax is found, pass data of found matches to the error template.
   - type: python_blacklist
     file: my_solution.py
+    # By default, if a validation task fails, validation is stopped and feedback is shown for the failed task.
+    # break_on_fail allows showing several failed validation tasks after validation is complete.
+    break_on_fail: False
     message: "In this exercise, some builtin syntax related to lists is not allowed, since you should make you own list implementation."
     # Names of abstract syntax tree nodes and custom messages which are shown if nodes are found in the submitted file.
     # A comprehensive list of AST nodes can be found here: https://greentreesnakes.readthedocs.io/en/latest/nodes.html

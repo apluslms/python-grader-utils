@@ -235,6 +235,7 @@ def get_validation_errors(validation_configs):
     for config in validation_configs:
         validation_type = config.get("type", None)
         filename = config.get("file", None)
+        break_on_fail = config.get("break_on_fail", True)
         if not filename:
             raise ValidationError("No file given to perform validation of validation_type '{}'.".format(validation_type))
 
@@ -278,6 +279,8 @@ def get_validation_errors(validation_configs):
 
         if error:
             errors.append(error)
+            if break_on_fail:
+                break
 
     return errors
 

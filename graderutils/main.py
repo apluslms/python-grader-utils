@@ -51,20 +51,7 @@ def _run_test_modules(test_modules_data):
 
 
 def main(test_modules_data, error_template, feedback_template):
-    """
-    Main runner that:
-        - Runs each module in test_modules_data (if given) with unittest.
-        If no test modules are given, render the feedback_template with 'no_tests' set to True and give 1 out of 1 points.
-        If there are no errors:
-            - Writes the total result of all test results into stdout for A+ to retrieve the points.
-            - Renders the test result objects as HTML using the feedback_template (or a default template if none is given).
-            - Writes the rendered HTML into stderr.
-            - Returns 0
-        If there are errors:
-            - Renders the errors as HTML using the error_template (or a default template if none is given).
-            - Writes the rendered HTML into stderr.
-            - Returns 1
-    """
+    """TODO docs"""
     # If there are any exceptions during running, render the traceback into HTML using the provided error_template.
     try:
         if test_modules_data:

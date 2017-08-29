@@ -18,9 +18,11 @@ def suffix_after(string, split_at):
     """Return suffix of string after first occurrence of split_at."""
     return string.split(split_at, 1)[-1]
 
+
 def prefix_before(string, split_at):
     """Return prefix of string before first occurrence of split_at."""
     return string.split(split_at, 1)[0]
+
 
 def collapse_max_recursion_exception(string, repeat_threshold=20):
     """Replace identical lines in a max recursion error traceback
@@ -260,5 +262,7 @@ def errors_as_html(error_data, error_template=None):
 
 
 def wrap_div_alert(string):
+    """Wrap an error message in a red box."""
     return r"<div class='alert alert-danger'>{}</div>".format(string)
+
 

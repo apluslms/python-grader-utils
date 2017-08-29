@@ -109,6 +109,8 @@ if __name__ == "__main__":
         error_template = config.get("error_template", None)
         feedback_template = config.get("feedback_template", None)
         test_modules_data = config.get("test_modules_data", [])
+        if not test_modules_data:
+            test_modules_data = config.get("test_modules", [])
 
         if "validation" in config:
             errors = validation.get_validation_errors(config["validation"])

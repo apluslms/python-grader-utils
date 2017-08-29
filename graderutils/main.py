@@ -65,29 +65,19 @@ def main(test_modules_data, error_template, feedback_template):
             total_points = total_max_points = 1
             html_results = htmlformat.no_tests_html(feedback_template)
 
-        # A+ gives these points to the student if the two last lines written to stdout after grading are in the following format.
-        print("TotalPoints: {}\nMaxPoints: {}".format(total_points, total_max_points))
         # Show feedback.
         print(html_results, file=sys.stderr)
-        return 0
 
-    except GraderUtilsError:
+        # A+ gives these points to the student if the two last lines written to stdout after grading are in the following format.
+        print("TotalPoints: {}\nMaxPoints: {}".format(total_points, total_max_points))
+
+    except MemoryError:
+        # Testing used up all provided memory.
+        # Attempt to clean up some room for rendering errors as HTML.
+        gc.collect()
         raise
-    except Exception as error:
-        if isinstance(error, MemoryError):
-            # Testing used up all provided memory.
-            # Attempt to clean up some room for rendering errors as HTML.
-            gc.collect()
-        error_data = {
-            "exception": {
-                "type": error.__class__.__name__,
-                "message": str(error),
-                "object": error
-            }
-        }
-        errors_html = htmlformat.errors_as_html(error_data, error_template)
-        print(errors_html, file=sys.stderr)
-        return 1
+    else:
+        return 0
 
 
 if __name__ == "__main__":

@@ -1,6 +1,11 @@
+<!-- TODO extends user_layout.html -->
 <style>
 {% include 'feedback.css' %}
 </style>
+
+{% block start %}
+{% endblock %}
+
 
 {% macro title_or_default(title) -%}
 {% if title %}
@@ -56,12 +61,25 @@ Something weird happened at the server, this test has no title...
           <span class="label feedback-label label-success">Success</span>
         </h4>
       </div>
-      <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
+      <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse {% if result.user_data %} collapse in {% else %} collapse {% endif %}">
         <div class="panel-body">
-            {% if result.user_data.total_time %}
-            <p>Total time: {{ "%.2f"|format(1000*result.user_data.total_time) }} msec for {{ result.user_data.test_count }} different lists.</p>
-            {% elif result.user_data.preformatted_feedback %}
-            <pre>{{ result.user_data.preformatted_feedback|e }}</pre>
+            {% if result.user_data %}
+              {% if result.user_data.raw_html %}
+                <div class="user-data-container well">
+                {{ result.user_data.raw_html }}
+                </div>
+              {% endif %}
+              {% if result.user_data.total_time %}
+                <p>Total time: {{ "%.2f"|format(1000*result.user_data.total_time) }} msec
+                {% if result.user_data.test_count %}
+                  for {{ result.user_data.test_count }} different lists.</p>
+                {% else %}
+                  .</p>
+                {% endif %}
+              {% endif %}
+              {% if result.user_data.preformatted_feedback %}
+                <pre>{{ result.user_data.preformatted_feedback|e }}</pre>
+              {% endif %}
             {% endif %}
         </div>
       </div>
@@ -74,10 +92,21 @@ Something weird happened at the server, this test has no title...
       <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
         <div class="panel-body feedback-failed">
           <p>The test failed, reason:</p>
-          <pre>{{ result.assertion_message|e }}</pre>
+          <pre class="feedback">{{ result.assertion_message|e }}</pre>
+
+          {% if result.user_data %}
+            {% if result.user_data.raw_html %}
+              <div class="user-data-container well">
+              {{ result.user_data.raw_html }}
+              </div>
+            {% endif %}
+            {% if result.user_data.preformatted_feedback %}
+              <pre>{{ result.user_data.preformatted_feedback|e }}</pre>
+            {% endif %}
+          {% endif %}
 
           {# TODO: this should be in a custom template used only by the tests which use tree rendering #}
-          {% if result.user_data|length > 2 %}
+          {% if result.user_data and result.user_data|length > 2 %}
           <script data-json-tree type="application/json">{{ result.user_data }}</script>
           <div class="tree-graph-container well">
             <p class="error-msg">If this message does not disappear, something went wrong when attempting to draw the tree structure used in the tests.</p>
@@ -136,13 +165,13 @@ Something weird happened at the server, this test has no title...
 
         <h5 class="panel-title">
           <a data-toggle="collapse" href="#full-test-output{{ all_results_loop.index }}">
-              Full console output for {{ testsuite_results.test_description|lower }}</a>
+              Full terminal output for {{ testsuite_results.test_description|lower }}</a>
           <span class="label feedback-label label-info">Info</span>
         </h5>
       </div>
 
       <div id="full-test-output{{ all_results_loop.index }}" class="panel-body collapse">
-        <p><pre>{{ testsuite_results.unittest_output|e }}</pre></p>
+        <p><pre class="feedback">{{ testsuite_results.unittest_output|e }}</pre></p>
       </div>
     </div>
 
@@ -152,13 +181,7 @@ Something weird happened at the server, this test has no title...
 
 {% endif %}
 
-<!-- js functions for drawing graphs into the feedback divs -->
-<!-- <script> -->
-<!-- {% include 'feedback.js' %} -->
-<!-- </script> -->
 
-<!-- <script> -->
-<!-- // Check if the page contains JSON data for trees and then draw them -->
-<!-- main(); -->
-<!-- </script> -->
+{% block end %}
+{% endblock %}
 

@@ -139,27 +139,30 @@ def test_result_as_template_context(result_object):
     return context
 
 
-def test_results_as_html(results, feedback_template=None):
+def _load_template(loader, name):
+    return jinja2.Environment(loader=loader).get_template(name)
+
+def _load_template_file(name):
+    file_loader = jinja2.FileSystemLoader("./")
+    return _load_template(file_loader, name)
+
+def _load_package_template(name):
+    package_loader = jinja2.PackageLoader("graderutils", "static")
+    return _load_template(package_loader, name)
+
+
+# TODO undry with no_tests_html
+def test_results_as_html(results, custom_template_name=None):
     """Render the list of results as HTML and return the HTML as a string.
     @param results List of TestResult objects.
     @return Raw HTML as a string.
     """
-    if feedback_template is None:
-        feedback_template = "feedback_template.html"
-        template_loader = jinja2.PackageLoader("graderutils", "static")
-    else:
-        template_loader = jinja2.FileSystemLoader("./")
-
-    env = jinja2.Environment(loader=template_loader)
-    template = env.get_template(feedback_template)
-
     result_context_dicts = []
     total_points = total_max_points = total_tests_run = 0
 
     for res in results:
         result_context = test_result_as_template_context(res)
         result_context_dicts.append(result_context)
-
         total_points += result_context["points"]
         total_max_points += result_context["max_points"]
         total_tests_run += result_context["tests_run"]
@@ -171,7 +174,16 @@ def test_results_as_html(results, feedback_template=None):
         "total_tests_run": total_tests_run
     }
 
-    return template.render(**context)
+    package_loader = jinja2.PackageLoader("graderutils", "static")
+    env = jinja2.Environment(loader=package_loader)
+    default_template = env.get_template("feedback_template.html")
+
+    if custom_template_name:
+        custom_template = _load_template_file(custom_template_name)
+        context["graderutils_base"] = default_template
+        return custom_template.render(**context)
+
+    return default_template.render(**context)
 
 
 def no_tests_html(feedback_template=None):

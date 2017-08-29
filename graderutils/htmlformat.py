@@ -60,77 +60,22 @@ def collapse_max_recursion_exception(string, repeat_threshold=20):
         result.append(line + '\n')
     return ''.join(result)
 
-# TODO this feature is probably a bit questionable as it modifies the expected traceback message
-# it can be argued whether a custom traceback message without infrastructure specific clutter really is better than a standard traceback message which is not modified
-def shortened_traceback(filename, traceback_string):
-    """Strips traceback_string from all data unrelated to a file named filename.
 
-    @param (str) filename: Filename which occurs in the path shown in traceback_string.
-    @return (str) Shortened version of traceback_string.
-
-    For example:
-
-        'Traceback ...
-         ...
-         ..several lines...
-         ...
-         File "/srv/folder/sandbox/stuff/hashstring1231FFasdgZ/primes.py", line 6, in is_prime
-             if a/0:
-         ZeroDivisionError: division by zero'
-
-     turns into:
-
-        'File "primes.py", line 6, in is_prime
-             if a/0:
-         ZeroDivisionError: division by zero'
-    """
-
+def shortened_traceback(traceback_string):
     if re.search(r"RecursionError|MemoryError", traceback_string):
         traceback_string = collapse_max_recursion_exception(traceback_string)
-
-    # TODO
-    # if not filename or not re.search(filename, traceback_string):
-    #     return traceback_string
-
-    # # Suffix of traceback_string starting after the first occurrence of `filename`
-    # traceback_string = ''.join(suffix_after(traceback_string, filename))
-    # traceback_string = "File \"{:s}".format(filename) + traceback_string
-    # return traceback_string
+    return traceback_string
 
 
-def parsed_assertion_message(assertion_error_traceback, split_at=""):
+def parsed_assertion_message(assertion_error_traceback, split_at=None):
     """
     Remove traceback and 'AssertionError: ' starting from assertion_error_traceback.
     Optionally split the resulting string at split_at and return the prefix.
     """
     without_traceback = suffix_after(assertion_error_traceback, "AssertionError: ")
-    return prefix_before(without_traceback, split_at)
-
-
-def data_from_string_or_empty_json(string, data_tag):
-    """Return suffix of string after first occurrence of data_tag or an empty json string if string does not contain data_tag."""
-    if data_tag not in string:
-        return "{}"
-    return suffix_after(string, data_tag)
-
-
-def extra_data_or_none(test_case):
-    """Return dict with extra feedback data, if available."""
-    # TODO hardcoded
-    EXTRA_FEEDBACK_ATTRS = (
-        "total_time",
-        "test_count",
-        "preformatted_feedback",
-        "html_feedback",
-        "image_path",
-        "svg_xml",
-    )
-    feedback_data = {}
-    for attribute in EXTRA_FEEDBACK_ATTRS:
-        if hasattr(test_case, attribute):
-            feedback_data[attribute] = getattr(test_case, attribute)
-
-    return feedback_data if feedback_data else None
+    if split_at:
+        without_traceback = prefix_before(without_traceback, split_at)
+    return without_traceback
 
 
 ParsedTestResult = collections.namedtuple("ParsedTestResult",
@@ -163,7 +108,7 @@ def test_result_as_template_context(result_object):
 
     failures = (ParsedTestResult("FAIL",
                     test_case.shortDescription(),
-                    full_assert_msg,
+                    parsed_assertion_message(full_assert_msg),
                     getattr(test_case, "user_data", None),
                     "")
                 for test_case, full_assert_msg in result_object.failures)
@@ -171,7 +116,7 @@ def test_result_as_template_context(result_object):
     # Tests which had exceptions other than AssertionError
     errors = (ParsedTestResult("ERROR",
                    test_case.shortDescription(),
-                   shortened_traceback(full_traceback),
+                   full_traceback,
                    getattr(test_case, "user_data", None),
                    full_traceback)
               for test_case, full_traceback in result_object.errors)

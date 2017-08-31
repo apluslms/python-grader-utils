@@ -57,6 +57,9 @@ class ParameterTestCase(unittest.TestCase):
         self.test_config_data = read_yaml(test_config_name)
 
 
+# TODO
+# Make points in docstrings optional and gather the actual
+# points from test method decorators.
 class PointsTestRunner(unittest.TextTestRunner):
     """
     Prints out test grading points in addition to normal text test runner.

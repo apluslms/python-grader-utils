@@ -11,7 +11,6 @@ test_modules:
 
 # Optional
 # Paths to custom Jinja2 HTML templates to be used instead of the default ones.
-# In case of the MOOC grader, the easiest way to use these is probably to copy them into the sandboxed "user" directory with the "prepare" action.
 
 # error_template: ./my_error_template.html
 # feedback_template: ./my_feedback_template.html

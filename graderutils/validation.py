@@ -96,7 +96,7 @@ def _check_plain_text_restricted_syntax(config, blacklist=True):
     If whitelisting, return every line which contains a word which is not in config["strings"].
     """
     def re_split_no_keep(pattern, string):
-        """Return iterator over string which yields substrings that do not match pattern."""
+        """Return an iterator over `string` which yields substrings that do not match `pattern`."""
         for word in re.split(pattern, string):
             word = word.strip()
             if word and not re.match(pattern, word):

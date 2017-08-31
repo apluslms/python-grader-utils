@@ -1,6 +1,14 @@
 {% block feedback_start %}
 {% endblock %}
 
+{# TODO style inclusion repeated in error template, move to generic layout base template #}
+{% block styles %}
+{% if not no_default_css %}
+<style>
+{% include 'feedback.css' %}
+</style>
+{% endif %}
+{% endblock %}
 
 {% macro title_or_default(title) -%}
 {% if title %}

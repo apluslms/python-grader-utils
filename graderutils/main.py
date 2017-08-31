@@ -50,7 +50,7 @@ def _run_test_modules(test_modules_data):
     return results
 
 
-def main(test_modules_data, error_template, feedback_template):
+def main(test_modules_data, error_template, feedback_template, no_default_css):
     """TODO docs"""
     # If there are any exceptions during running, render the traceback into HTML using the provided error_template.
     try:
@@ -60,10 +60,10 @@ def main(test_modules_data, error_template, feedback_template):
             for result in results:
                 total_points += result.points
                 total_max_points += result.max_points
-            html_results = htmlformat.test_results_as_html(results, feedback_template)
+            html_results = htmlformat.test_results_as_html(results, feedback_template, no_default_css)
         else:
             total_points = total_max_points = 1
-            html_results = htmlformat.no_tests_html(feedback_template)
+            html_results = htmlformat.no_tests_html(feedback_template, no_default_css)
 
         # Show feedback.
         print(html_results, file=sys.stderr)
@@ -108,6 +108,7 @@ if __name__ == "__main__":
 
         error_template = config.get("error_template", None)
         feedback_template = config.get("feedback_template", None)
+        no_default_css = config.get("no_default_css", False)
         test_modules_data = config.get("test_modules_data", [])
         if not test_modules_data:
             test_modules_data = config.get("test_modules", [])
@@ -116,10 +117,10 @@ if __name__ == "__main__":
             errors = validation.get_validation_errors(config["validation"])
             # Pre-grading validation failed, print errors and exit.
             if errors:
-                print(htmlformat.errors_as_html(errors, error_template), file=sys.stderr)
+                print(htmlformat.errors_as_html(errors, error_template, no_default_css), file=sys.stderr)
                 sys.exit(1)
 
-        sys.exit(main(test_modules_data, error_template, feedback_template))
+        sys.exit(main(test_modules_data, error_template, feedback_template, no_default_css))
 
     except:
         if args.allow_exceptions:

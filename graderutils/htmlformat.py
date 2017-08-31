@@ -151,8 +151,8 @@ def _load_package_template(name):
     return _load_template(package_loader, name)
 
 
-# TODO undry with no_tests_html
-def test_results_as_html(results, custom_template_name=None):
+# TODO undry with no_tests_html and no_default_css
+def test_results_as_html(results, custom_template_name=None, no_default_css=False):
     """Render the list of results as HTML and return the HTML as a string.
     @param results List of TestResult objects.
     @return Raw HTML as a string.
@@ -171,7 +171,8 @@ def test_results_as_html(results, custom_template_name=None):
         "all_results": result_context_dicts,
         "total_points": total_points,
         "total_max_points": total_max_points,
-        "total_tests_run": total_tests_run
+        "total_tests_run": total_tests_run,
+        "no_default_css": no_default_css
     }
 
     package_loader = jinja2.PackageLoader("graderutils", "static")
@@ -186,7 +187,7 @@ def test_results_as_html(results, custom_template_name=None):
     return default_template.render(**context)
 
 
-def no_tests_html(feedback_template=None):
+def no_tests_html(feedback_template=None, no_default_css=False):
     """
     Trivial test result feedback when there are no tests.
     Renders feedback_template with 'no_tests' set to True and returns the raw HTML.
@@ -200,10 +201,10 @@ def no_tests_html(feedback_template=None):
     env = jinja2.Environment(loader=template_loader)
     template = env.get_template(feedback_template)
 
-    return template.render(no_tests=True)
+    return template.render(no_tests=True, no_default_css=no_default_css)
 
 
-def errors_as_html(error_data, error_template=None):
+def errors_as_html(error_data, error_template=None, no_default_css=False):
     """
     Renders the context dictionary errors as html using the given error template and returns the raw html string.
     """
@@ -215,7 +216,7 @@ def errors_as_html(error_data, error_template=None):
 
     env = jinja2.Environment(loader=template_loader)
     template = env.get_template(error_template)
-    return template.render(errors=error_data)
+    return template.render(errors=error_data, no_default_css=no_default_css)
 
 
 def wrap_div_alert(string):

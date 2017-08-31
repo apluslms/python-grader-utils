@@ -25,6 +25,7 @@ In order to extend the feedback template, the child template must (should) begin
 In order of appearance in this template, the blocks that can be overridden are:
 
 * `feedback_start`: Empty block in the beginning of the template.
+* `styles`: Includes a simple, [default stylesheet](feedback.css). If you are using a course-wide stylesheet, you can disable the default styles by passing a child template with an empty `styles` block or set the `no_default_css` key to `True` in the test configuration yaml.
 * `success_panel_body`: (scoped) Collapsible body of test feedback panels of passed tests.
 * `failed_panel_body_feedback`:  (scoped) Feedback for the failed test. I.e. the message of an `AssertionError` instance that caused the test to fail.
 * `failed_panel_body_user_data`:  (scoped) Rest of the body of test feedback panels of failed tests.
@@ -45,4 +46,3 @@ It is possible to rewrite the whole feedback template by simply excluding the `e
 
 There are currently no sophisticated capabilities for loading external JavaScript within the feedback template.
 If a child template uses JavaScript, proper loading of possible external resources must be implemented in the child template.
-

@@ -1,6 +1,12 @@
+{# TODO style inclusion repeated in feedback template, move to generic layout base template #}
+{% block styles %}
+{% if not no_default_css %}
 <style>
 {% include 'feedback.css' %}
 </style>
+{% endif %}
+{% endblock %}
+
 
 <h2>It seems that there were some errors</h2>
 

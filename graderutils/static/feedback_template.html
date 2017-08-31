@@ -1,9 +1,4 @@
-<!-- TODO extends user_layout.html -->
-<style>
-{% include 'feedback.css' %}
-</style>
-
-{% block start %}
+{% block feedback_start %}
 {% endblock %}
 
 
@@ -63,6 +58,8 @@ Something weird happened at the server, this test has no title...
       </div>
       <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse {% if result.user_data %} collapse in {% else %} collapse {% endif %}">
         <div class="panel-body">
+          {% block success_panel_body scoped %}
+
             {% if result.user_data %}
               {% if result.user_data.raw_html %}
                 <div class="user-data-container well">
@@ -81,6 +78,8 @@ Something weird happened at the server, this test has no title...
                 <pre>{{ result.user_data.preformatted_feedback|e }}</pre>
               {% endif %}
             {% endif %}
+
+          {% endblock %}
         </div>
       </div>
 
@@ -91,8 +90,12 @@ Something weird happened at the server, this test has no title...
       </div>
       <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
         <div class="panel-body feedback-failed">
+          {% block failed_panel_body_feedback scoped %}
           <p>The test failed, reason:</p>
           <pre class="feedback">{{ result.assertion_message|e }}</pre>
+          {% endblock %}
+
+          {% block failed_panel_body_user_data scoped %}
 
           {% if result.user_data %}
             {% if result.user_data.raw_html %}
@@ -105,17 +108,7 @@ Something weird happened at the server, this test has no title...
             {% endif %}
           {% endif %}
 
-          {# TODO: this should be in a custom template used only by the tests which use tree rendering #}
-          {% if result.user_data and result.user_data|length > 2 %}
-          <script data-json-tree type="application/json">{{ result.user_data }}</script>
-          <div class="tree-graph-container well">
-            <p class="error-msg">If this message does not disappear, something went wrong when attempting to draw the tree structure used in the tests.</p>
-            <div class="canvas-container">
-            </div>
-            <p class="info" style="display: none;">Drag canvas to move, scroll mouse to zoom.</p>
-          </div>
-          {% endif %}
-
+          {% endblock %}
         </div>
       </div>
 
@@ -131,6 +124,8 @@ Something weird happened at the server, this test has no title...
       </div>
       <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
         <div class="panel-body">
+          {% block error_panel_body scoped %}
+
           <p>Errors occurred during testing. Click 'Show full traceback' if you want to see the full traceback. </p>
 
           {% if result.assertion_message|length == 0 %}
@@ -144,6 +139,8 @@ Something weird happened at the server, this test has no title...
           <div id="traceback{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="collapse">
             <p><pre>{{ result.full_traceback }}</pre></p>
           </div>
+
+          {% endblock %}
         </div>
       </div>
 
@@ -182,6 +179,6 @@ Something weird happened at the server, this test has no title...
 {% endif %}
 
 
-{% block end %}
+{% block feedback_end %}
 {% endblock %}
 

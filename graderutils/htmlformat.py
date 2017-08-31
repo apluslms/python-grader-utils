@@ -180,7 +180,7 @@ def test_results_as_html(results, custom_template_name=None):
 
     if custom_template_name:
         custom_template = _load_template_file(custom_template_name)
-        context["graderutils_base"] = default_template
+        context["feedback_template"] = default_template
         return custom_template.render(**context)
 
     return default_template.render(**context)

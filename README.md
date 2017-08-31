@@ -21,3 +21,16 @@ Install as a Python package into the Python virtual environment used by the grad
 pip install git+https://github.com/Aalto-LeTech/python-grader-utils.git
 ```
 
+API
+---
+
+* [Custom HTML](graderutils/static/README.md)
+* [Test configuration](graderutils/README.md#test-configuration)
+
+
+TODO
+----
+
+* RegExp support for black- and whitelisted Python ast node dumps (or some other modular way of specifying restricted node contents).
+* An elegant way of loading external JavaScript when showing feedback.
+

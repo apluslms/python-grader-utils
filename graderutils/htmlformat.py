@@ -129,6 +129,7 @@ def test_result_as_template_context(result_object):
 
     context = {
         "results": results,
+        "test_key": result_object.test_key,
         "test_description": result_object.test_description,
         "points": result_object.points,
         "max_points": result_object.max_points,

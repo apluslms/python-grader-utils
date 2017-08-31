@@ -1,7 +1,12 @@
-# List of pairs of test modules to be executed and their descriptions as shown to the user.
-test_modules_data:
-  - [validation_tests, Pre-grading validation tests]
-  - [grader_tests, Grader tests]
+# List of test modules which should be executed.
+# The modules are executed and results shown in the given order.
+test_modules:
+    # The module key should contain the name of an importable Python module which contains at least one unittest.TestCase class.
+    # This key also functions as an uuid for the test module.
+  - module: local_tests
+    description: Local tests
+  - module: grader_tests
+    description: Grader tests
 
 
 # Optional

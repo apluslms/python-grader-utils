@@ -42,10 +42,12 @@ def _run_test_modules(test_modules_data):
     Return a list of TestResult objects.
     """
     results = []
-    for module_name, test_description in test_modules_data:
-        suite = _load_tests_from_module_name(module_name)
+    for test_module in test_modules_data:
+        test_module_name = test_module["module"]
+        suite = _load_tests_from_module_name(test_module_name)
         result = _run_suite(suite)
-        result.test_description = test_description
+        result.test_key = test_module_name
+        result.test_description = test_module["description"]
         results.append(result)
     return results
 

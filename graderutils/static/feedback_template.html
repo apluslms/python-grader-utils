@@ -70,17 +70,9 @@ Something weird happened at the server, this test has no title...
 
             {% if result.user_data %}
               {% if result.user_data.raw_html %}
-                <div class="user-data-container well">
+                <div class="user-data-raw-html well">
                 {{ result.user_data.raw_html }}
                 </div>
-              {% endif %}
-              {% if result.user_data.total_time %}
-                <p>Total time: {{ "%.2f"|format(1000*result.user_data.total_time) }} msec
-                {% if result.user_data.test_count %}
-                  for {{ result.user_data.test_count }} different lists.</p>
-                {% else %}
-                  .</p>
-                {% endif %}
               {% endif %}
               {% if result.user_data.preformatted_feedback %}
                 <pre>{{ result.user_data.preformatted_feedback|e }}</pre>

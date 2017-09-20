@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
         sys.exit(main(test_modules_data, error_template, feedback_template, no_default_css))
 
-    except:
+    except Exception as e:
         if args.allow_exceptions:
             raise
         else:

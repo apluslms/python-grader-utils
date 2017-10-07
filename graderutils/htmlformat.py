@@ -61,7 +61,7 @@ def collapse_max_recursion_exception(string, repeat_threshold=20):
     return ''.join(result)
 
 
-def shortened_traceback(traceback_string):
+def collapse_traceback(traceback_string):
     if re.search(r"RecursionError|MemoryError", traceback_string):
         traceback_string = collapse_max_recursion_exception(traceback_string)
     return traceback_string
@@ -116,7 +116,7 @@ def test_result_as_template_context(result_object):
     # Tests which had exceptions other than AssertionError
     errors = (ParsedTestResult("ERROR",
                    test_case.shortDescription(),
-                   full_traceback,
+                   collapse_traceback(full_traceback),
                    getattr(test_case, "user_data", None),
                    full_traceback)
               for test_case, full_traceback in result_object.errors)

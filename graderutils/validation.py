@@ -48,7 +48,7 @@ def _check_python_restricted_syntax(config, blacklist=True):
     else:
         restricted_dumps = set()
     if "node_dump_regexp" in config:
-        restricted_regexp = [(re.compile(expr), message) for expr, message in config["node_regexp"].items()]
+        restricted_regexp = [(re.compile(expr), message) for expr, message in config["node_dump_regexp"].items()]
     else:
         restricted_regexp = []
 
@@ -90,7 +90,7 @@ def _check_python_restricted_syntax(config, blacklist=True):
         else:
             if (node_name not in restricted_names and
                 node_dump not in restricted_dumps and
-                not any(re.search(pat, node_dump) for pat, _ in restricted_regexp):
+                not any(re.search(pat, node_dump) for pat, _ in restricted_regexp)):
                 # This node has a name or dump representation that is not allowed.
                 message = node_name
                 matches.append(RestrictedSyntaxMatch(

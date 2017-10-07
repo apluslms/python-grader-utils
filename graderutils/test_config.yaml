@@ -41,6 +41,10 @@ validation:
     # The graderutils.validation module contains a simple ast_dump function for dumping all ast nodes of a given source string.
     node_dumps:
       "Name(id='list', ctx=Load())": Loading the list builtin
+    # If a full ast.dump string match is too specific, it can be 'softened' using regexp.
+    # You have to do escaping by yourself, though.
+    node_dump_regexp:
+      "^Attribute.*attr\\=\\'sort\\'\\,\\ ctx\\=Load\\(\\)": Loading the sort method
   # Simple regexp-based substring blacklisting.
   - type: plain_text_blacklist
     file: my_solution.sql

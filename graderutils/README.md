@@ -47,9 +47,13 @@ Do nothing if there are no exceptions during parsing.
 
 Read the contents of `file` and parse the contents using `ast.parse`.
 Walk once through all syntax nodes in the syntax tree for the parsed module.
-If a node is found with the same name as in any of the nodes in `node_names`, record the filename, line number, line content and the short message for the node.
-The same is done for `node_dumps`.
-If any matches are found, show all matches with the error template using the given message in `message`.
+Syntax can be restricted using the following keys:
+  * `node_names`: Dict of node name - message pairs. Node names should be the class names of ast nodes. E.g. an ast.Call node would be matched if `node_names` contains a key that is equal to `Call`.
+  * `node_dumps`: Dict of node dump - message pairs. Node dumps are the string output of ast.dump.
+  * `node_dump_regexp`: Dict of escaped regexp string - message pairs. The regexp patterns are matched to the output of ast.dump.
+
+For each found match, the filename, line number, line content and the short message for the node are recorded.
+Matches are shown with the error template using the given message in `message`.
 Do nothing if there are no matches.
 
 ```
@@ -63,13 +67,15 @@ Do nothing if there are no matches.
     # etc.
   node_dumps:
     "Name(id='list', ctx=Load())": Loading the list builtin
+  node_dump_regexp:
+    "^Name\\(id\\=\\'list\\'": Loading the list builtin
 ```
 
 #### Python whitelist
 
 Similar to Python blacklist, but instead of searching for matches, search for all node names or node dumps that do *not* match a syntax node given in the configuration.
-The short descriptions of `node_names` and `node_dumps` are ignored and instead the name of the syntax node not found is used as a short description.
-E.g. in the below example, finding a `ast.Call` node would be a match with the short description `"Call"`.
+The short descriptions of `node_names`, `node_dumps` and `node_dump_regexp` are ignored and instead the name of the syntax node not found is used as a short description.
+In the below example, finding for example an `ast.Call` node would be a match with the short description `"Call"`.
 
 ```
   type: python_whitelist

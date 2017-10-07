@@ -32,7 +32,7 @@ RestrictedSyntaxMatch = collections.namedtuple("RestrictedSyntaxMatch", ["filena
 
 def _check_python_restricted_syntax(config, blacklist=True):
     """
-    Read config["file"] and search for node names defined in config["node_names"] and node dumps in config["node_dumps"].
+    Read config["file"] and search for restricted syntax.
     If blacklist is True, return RestrictedSyntaxMatch objects for every match.
     Else return RestrictedSyntaxMatch for every miss.
     If linenumbers are not valid for some node (e.g. function arguments node), -1 is used as the linenumber.
@@ -40,13 +40,17 @@ def _check_python_restricted_syntax(config, blacklist=True):
     See the test_config.yaml for examples and format.
     """
     if "node_names" in config:
-        names = config["node_names"].keys()
+        restricted_names = config["node_names"].keys()
     else:
-        names = set()
+        restricted_names = set()
     if "node_dumps" in config:
-        dumps = config["node_dumps"].keys()
+        restricted_dumps = config["node_dumps"].keys()
     else:
-        dumps = set()
+        restricted_dumps = set()
+    if "node_dump_regexp" in config:
+        restricted_regexp = [(re.compile(expr), message) for expr, message in config["node_regexp"].items()]
+    else:
+        restricted_regexp = []
 
     filename = config["file"]
 
@@ -65,20 +69,28 @@ def _check_python_restricted_syntax(config, blacklist=True):
         linenumber = getattr(node, "lineno", -1)
         line_content = submitted_lines[linenumber-1] if linenumber > 0 else ""
         if blacklist:
-            if node_dump in dumps:
+            if node_dump in restricted_dumps:
                 # This node has a dump representation that is not allowed.
                 message = config["node_dumps"][node_dump]
                 matches.append(RestrictedSyntaxMatch(
                         filename, linenumber,
                         line_content, message))
-            elif node_name in names:
+            if node_name in restricted_names:
                 # This node has a name that is not allowed.
                 message = config["node_names"][node_name]
                 matches.append(RestrictedSyntaxMatch(
                         filename, linenumber,
                         line_content, message))
+            for pattern, message in restricted_regexp:
+                if re.search(pattern, node_dump):
+                    # This node has a dump representation that matches a given node dump regular expression.
+                    matches.append(RestrictedSyntaxMatch(
+                            filename, linenumber,
+                            line_content, message))
         else:
-            if node_name not in names and node_dump not in dumps:
+            if (node_name not in restricted_names and
+                node_dump not in restricted_dumps and
+                not any(re.search(pat, node_dump) for pat, _ in restricted_regexp):
                 # This node has a name or dump representation that is not allowed.
                 message = node_name
                 matches.append(RestrictedSyntaxMatch(

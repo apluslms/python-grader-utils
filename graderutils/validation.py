@@ -1,8 +1,10 @@
 """
 Simple file validation for various file formats.
-Can be used for checking if a file is valid before starting the grading.
-May also be useful as a trivial grader to give points for submitting correct filetypes.
+Can be used before grading for checking if a file is valid.
+May also be useful as a trivial grader to give a point or points for submitting correct filetypes.
 Enable by using the 'validation' key in the test_config.yaml.
+
+Detailed examples available in the readme.
 """
 import ast
 import collections
@@ -189,14 +191,48 @@ def get_image_type_errors(image, expected_type):
     return errors
 
 
+def _import_module_from_python_file(filename):
+    return importlib.import_module(filename.split(".py")[0])
+
+
 def get_python_import_errors(filename):
     errors = {}
     try:
-        module = filename.split(".py")[0]
-        importlib.import_module(module)
+        _import_module_from_python_file(filename)
     except Exception as error:
         errors["type"] = error.__class__.__name__
         errors["message"] = str(error)
+    return errors
+
+
+def _hasattr_path(obj, attr_path):
+    """
+    Return True if obj has some attr path.
+    >>> # object().__class__
+    >>> _hasattr_path(object(), "__class__")
+    True
+    >>> # object().__class__.__class__
+    >>> _hasattr_path(object(), "__class__.__class__")
+    True
+    >>> # object().x.y
+    >>> _hasattr_path(object(), "x.y")
+    False
+    """
+    for attr in attr_path.split("."):
+        obj = getattr(obj, attr, None)
+        if obj is None:
+            return False
+    return True
+
+
+def get_python_missing_attr_errors(filename, expected_attr_paths):
+    errors = {}
+    module = _import_module_from_python_file(filename)
+    missing_attrs = [path for path in expected_attr_paths
+                     if not _hasattr_path(module, path)]
+    if missing_attrs:
+        errors["type"] = "missing attributes"
+        errors["message"] = "\n".join(missing_attrs)
     return errors
 
 
@@ -257,6 +293,9 @@ def get_validation_errors(validation_configs):
             # import matplotlib
             # matplotlib.use(MATPLOTLIB_RENDERER_BACKEND)
             error = get_python_import_errors(filename)
+            if not error and "attrs" in config:
+                # Import succeeded, now check that module has all required attributes.
+                error = get_python_missing_attr_errors(filename, config["attrs"])
 
         elif validation_type == "python_syntax":
             error = get_python_syntax_errors(filename)

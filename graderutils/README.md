@@ -33,15 +33,15 @@ Do nothing if import succeeds.
 ```
 
 If the import succeeds, it is possible to check that the module contains some required attributes.
-This is specified as a list of attribute names.
-For example, if you want to assert that a submitted module `my_solution` contains the attributes `GLOBAL_VAR`, `MyClass.value` and `my_function`, they can be specified like this:
+This is specified as a dictionary of attribute names with messages that are shown if the name is not found.
+For example, if you want to assert that a submitted module `my_solution` contains the attributes `GLOBAL_VAR`, `MyClass.value` and `calculate`, they can be specified like this:
 ```
   type: python_import
   file: my_solution.py
   attrs:
-    - GLOBAL_VAR
-    - MyClass.value
-    - my_function
+    GLOBAL_VAR: global variable
+    MyClass.value: class variable
+    calculate: function
 ```
 All missing attributes will be shown using the error template.
 Does nothing if the module contains all names listed in `attrs`.

@@ -225,14 +225,14 @@ def _hasattr_path(obj, attr_path):
     return True
 
 
-def get_python_missing_attr_errors(filename, expected_attr_paths):
+def get_python_missing_attr_errors(filename, expected_attributes):
     errors = {}
     module = _import_module_from_python_file(filename)
-    missing_attrs = [path for path in expected_attr_paths
+    missing_attrs = [(path, msg) for path, msg in expected_attributes.items()
                      if not _hasattr_path(module, path)]
     if missing_attrs:
         errors["type"] = "missing attributes"
-        errors["message"] = "\n".join(missing_attrs)
+        errors["missing_attrs"] = missing_attrs
     return errors
 
 

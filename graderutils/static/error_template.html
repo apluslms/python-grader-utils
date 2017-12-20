@@ -108,7 +108,7 @@
       <div id="missing-attributes-error-{{ loop.index }}" class="panel-collapse collapse in">
         <div class="panel-body">
           <p>The submitted Python module was expected to contain the following attributes, but they were not found:</p>
-          {% for attribute, msg in errors.missing_attrs %}
+          {% for attribute, msg in error.missing_attrs %}
             <p><code>{{ attribute }}</code>, {{ msg }}</p>
           {% endfor %}
         </div>

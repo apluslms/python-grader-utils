@@ -244,9 +244,9 @@ def get_python_syntax_errors(filename):
         ast.parse(source)
     except SyntaxError as syntax_error:
         errors["type"] = "SyntaxError"
-        errors["message"] = "{}:\n{}".format(
-                str(syntax_error),
-                syntax_error.text.rstrip())
+        errors["filename"] = syntax_error.filename
+        errors["lineno"] = syntax_error.lineno
+        errors["text"] = syntax_error.text
     except Exception as error:
         errors["type"] = "Exception"
         errors["message"] = str(error)

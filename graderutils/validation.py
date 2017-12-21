@@ -242,11 +242,14 @@ def get_python_syntax_errors(filename):
         with open(filename, encoding="utf-8") as submitted_file:
             source = submitted_file.read()
         ast.parse(source)
+    except SyntaxError as syntax_error:
+        errors["type"] = "SyntaxError"
+        errors["message"] = "{}:\n{}".format(
+                str(syntax_error),
+                syntax_error.text.rstrip())
     except Exception as error:
-        errors["type"] = error.__class__.__name__
+        errors["type"] = "Exception"
         errors["message"] = str(error)
-        if isinstance(error, SyntaxError):
-            errors["message"] += ": " + error.text.strip()
     return errors
 
 

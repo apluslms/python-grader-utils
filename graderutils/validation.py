@@ -12,6 +12,7 @@ import html5lib
 import imghdr
 import importlib
 import re
+import traceback
 
 from graderutils.main import GraderUtilsError
 
@@ -200,8 +201,8 @@ def get_python_import_errors(filename):
     try:
         _import_module_from_python_file(filename)
     except Exception as error:
-        errors["type"] = error.__class__.__name__
-        errors["message"] = str(error)
+        errors["type"] = "failed python import"
+        errors["message"] = traceback.format_exc()
     return errors
 
 
@@ -247,9 +248,6 @@ def get_python_syntax_errors(filename):
         errors["filename"] = syntax_error.filename
         errors["lineno"] = syntax_error.lineno
         errors["text"] = syntax_error.text
-    except Exception as error:
-        errors["type"] = "Exception"
-        errors["message"] = str(error)
     return errors
 
 
@@ -281,55 +279,69 @@ def get_html_errors(filename):
     return errors
 
 
+def _get_validation_error(validation, filename, config):
+    error = {}
+
+    if validation == "python_import":
+        # import matplotlib
+        # matplotlib.use(MATPLOTLIB_RENDERER_BACKEND)
+        error = get_python_import_errors(filename)
+        if not error and "attrs" in config:
+            # Import succeeded, now check that module has all required attributes.
+            error = get_python_missing_attr_errors(filename, config["attrs"])
+
+    elif validation == "python_syntax":
+        error = get_python_syntax_errors(filename)
+
+    elif validation == "python_blacklist":
+        get_matches = _get_python_blacklist_matches
+        error = get_restricted_syntax_matches(config, get_matches)
+
+    elif validation == "python_whitelist":
+        get_matches = _get_python_whitelist_misses
+        error = get_restricted_syntax_matches(config, get_matches)
+
+    elif validation == "plain_text_blacklist":
+        get_matches = _get_plain_text_blacklist_matches
+        error = get_restricted_syntax_matches(config, get_matches)
+
+    elif validation == "plain_text_whitelist":
+        get_matches = _get_plain_text_whitelist_misses
+        error = get_restricted_syntax_matches(config, get_matches)
+
+    elif validation == "image_validation_type":
+        error = get_image_type_errors(filename)
+
+    elif validation == "labview":
+        error = get_labview_errors(filename)
+
+    elif validation == "html":
+        error = get_html_errors(filename)
+
+    return error
+
+
 def get_validation_errors(validation_configs):
     errors = []
     for config in validation_configs:
         validation_type = config.get("type", None)
+        if validation_type not in SUPPORTED_VALIDATION_CHOICES:
+            raise ValidationError(
+                    "Unknown validation_type '{}', choose from '{}'."
+                    .format(validation_type, SUPPORTED_VALIDATION_CHOICES))
         filename = config.get("file", None)
-        break_on_fail = config.get("break_on_fail", True)
         if not filename:
             raise ValidationError("No file given to perform validation of validation_type '{}'.".format(validation_type))
+        break_on_fail = config.get("break_on_fail", True)
 
-        error = {}
-
-        if validation_type == "python_import":
-            # import matplotlib
-            # matplotlib.use(MATPLOTLIB_RENDERER_BACKEND)
-            error = get_python_import_errors(filename)
-            if not error and "attrs" in config:
-                # Import succeeded, now check that module has all required attributes.
-                error = get_python_missing_attr_errors(filename, config["attrs"])
-
-        elif validation_type == "python_syntax":
-            error = get_python_syntax_errors(filename)
-
-        elif validation_type == "python_blacklist":
-            get_matches = _get_python_blacklist_matches
-            error = get_restricted_syntax_matches(config, get_matches)
-
-        elif validation_type == "python_whitelist":
-            get_matches = _get_python_whitelist_misses
-            error = get_restricted_syntax_matches(config, get_matches)
-
-        elif validation_type == "plain_text_blacklist":
-            get_matches = _get_plain_text_blacklist_matches
-            error = get_restricted_syntax_matches(config, get_matches)
-
-        elif validation_type == "plain_text_whitelist":
-            get_matches = _get_plain_text_whitelist_misses
-            error = get_restricted_syntax_matches(config, get_matches)
-
-        elif validation_type == "image_validation_type":
-            error = get_image_type_errors(filename)
-
-        elif validation_type == "labview":
-            error = get_labview_errors(filename)
-
-        elif validation_type == "html":
-            error = get_html_errors(filename)
-
-        else:
-            raise ValidationError("Unknown validation_type '{}', choose from '{}'.".format(validation_type, SUPPORTED_VALIDATION_CHOICES))
+        error = None
+        try:
+            error = _get_validation_error(validation_type, filename, config)
+        except Exception as e:
+            error = {
+                "type": e.__class__.__name__,
+                "message": traceback.format_exc(),
+            }
 
         if error:
             errors.append(error)

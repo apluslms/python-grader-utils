@@ -12,18 +12,18 @@
 
 {% for error in errors %}
 
-{% if error.type == "ImportError" %}
+{% if error.type == "failed python import"%}
 <div class="grading-task">
   <div class="panel panel-default">
 
     <div class="panel-heading">
       <h4 class="panel-title">
-        <a data-toggle="collapse" href="#import-error-{{ loop.index }}">Import error</a>
+        <a data-toggle="collapse" href="#failed-import-{{ loop.index }}">Failed to import module</a>
         <span class="label feedback-label label-danger">Error</span>
       </h4>
     </div>
 
-      <div id="import-error-{{ loop.index }}" class="panel-collapse collapse in">
+      <div id="failed-import-{{ loop.index }}" class="panel-collapse collapse in">
         <div class="panel-body">
           <p>The submitted file could not be imported for execution, reason:</p>
           <pre>{{ error.message }}</pre>
@@ -181,40 +181,19 @@
   </div>
 </div>
 
-{% elif error.type == "Exception" %}
-<div class="grading-task">
-  <div class="panel panel-default">
-
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" href="#exception-{{ loop.index }}">Exception</a>
-        <span class="label feedback-label label-danger">Error</span>
-      </h4>
-    </div>
-
-      <div id="exception-{{ loop.index }}" class="panel-collapse collapse in">
-        <div class="panel-body">
-          <pre>{{ error.message }}</pre>
-        </div>
-      </div>
-
-  </div>
-</div>
-
 {% else %}
 <div class="grading-task">
   <div class="panel panel-default">
 
     <div class="panel-heading">
       <h4 class="panel-title">
-        <a data-toggle="collapse" href="#grader-test-error-{{ loop.index }}">Grader test error</a>
-        <span class="label feedback-label label-default">Error</span>
+        <a data-toggle="collapse" href="#unexpected-error-{{ loop.index }}">Unexpected error</a>
+        <span class="label feedback-label label-default">{{ error.type }}</span>
       </h4>
     </div>
 
-      <div id="grader-test-error-{{ loop.index }}" class="panel-collapse collapse in">
+      <div id="unexpected-error-{{ loop.index }}" class="panel-collapse collapse in">
         <div class="panel-body">
-          <p>An unexpected error of type {{ error.type }} has occurred:</p>
           <pre>{{ error.message }}</pre>
         </div>
       </div>

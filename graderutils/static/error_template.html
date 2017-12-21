@@ -66,8 +66,8 @@
 
       <div id="syntax-error-{{ loop.index }}" class="panel-collapse collapse in">
         <div class="panel-body">
-          <p>Invalid syntax in <code>{{ error.filename }}</code> at line {{ error.lineno }}:</p>
-          <pre>{{ error.text }}</pre>
+          <p>Invalid syntax {% if error.filename != "<unknown>" %} in <code>{{ error.filename|e }}</code> {% endif %} at line {{ error.lineno }}:</p>
+          <pre>{{ error.text|e }}</pre>
         </div>
       </div>
 

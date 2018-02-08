@@ -28,6 +28,7 @@ SUPPORTED_VALIDATION_CHOICES = (
         "plain_text_whitelist",
         "image_type",
         "labview",
+        "xlsm",
         "html")
 
 RestrictedSyntaxMatch = collections.namedtuple("RestrictedSyntaxMatch", ["filename", "linenumber", "line_content", "message"])
@@ -260,6 +261,14 @@ def get_labview_errors(filename):
             errors["message"] = "The file wasn't a proper labVIEW-file"
     return errors
 
+def get_xlsm_errors(filename):
+    errors = {}
+    with open(filename, "rb") as f:
+        header = f.read(14)
+        if header != b'PK\x03\x04\x14\x00\x06\x00\x08\x00\x00\x00!\x00':
+            errors["type"] = "filetype error"
+            errors["message"] = "The file wasn't a proper Excel-file with macros!"
+    return errors
 
 def get_html_errors(filename):
     errors = {}
@@ -315,6 +324,9 @@ def _get_validation_error(validation, filename, config):
     elif validation == "labview":
         error = get_labview_errors(filename)
 
+    elif validation == "xlsm":
+        error = get_xlsm_errors(filename)
+
     elif validation == "html":
         error = get_html_errors(filename)
 
@@ -349,4 +361,3 @@ def get_validation_errors(validation_configs):
                 break
 
     return errors
-

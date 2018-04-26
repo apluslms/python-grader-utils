@@ -52,7 +52,7 @@ def _run_test_modules(test_modules_data):
     return results
 
 
-def main(test_modules_data, error_template, feedback_template, no_default_css):
+def main(test_modules_data, error_template, feedback_template, no_default_css, feedback_out, points_out):
     """TODO docs"""
     # If there are any exceptions during running, render the traceback into HTML using the provided error_template.
     try:
@@ -68,10 +68,10 @@ def main(test_modules_data, error_template, feedback_template, no_default_css):
             html_results = htmlformat.no_tests_html(feedback_template, no_default_css)
 
         # Show feedback.
-        print(html_results, file=sys.stderr)
+        print(html_results, file=feedback_out)
 
         # A+ gives these points to the student if the two last lines written to stdout after grading are in the following format.
-        print("TotalPoints: {}\nMaxPoints: {}".format(total_points, total_max_points))
+        print("TotalPoints: {}\nMaxPoints: {}".format(total_points, total_max_points), file=points_out)
 
     except MemoryError:
         # Testing used up all provided memory.
@@ -95,11 +95,19 @@ if __name__ == "__main__":
             default=False,
             help="By default, exceptions related to improperly configured tests are catched and hidden behind a generic error message to prevent possible grader test information to be shown to the user. This flag lets them through unformatted."
     )
+    parser.add_argument(
+            "--container",
+            action="store_true",
+            help="This flag should be used when running graderutils inside docker container based on apluslms/grading-base"
+    )
     args = parser.parse_args()
+
+    feedback_out = sys.stdout if args.container else sys.stderr
+    points_out = sys.stdout
 
     if args.allow_exceptions:
         debug_warning = "Graderutils main module called with the <code>--allow_exceptions</code> flag, all graderutils exceptions will be shown to the user!"
-        print(htmlformat.wrap_div_alert(debug_warning), file=sys.stderr)
+        print(htmlformat.wrap_div_alert(debug_warning), file=feedback_out)
 
     # Starting from here, hide infrastructure exceptions (not validation exceptions) if args.allow_exceptions is given and True.
     try:
@@ -119,16 +127,16 @@ if __name__ == "__main__":
             errors = validation.get_validation_errors(config["validation"])
             # Pre-grading validation failed, print errors and exit.
             if errors:
-                print(htmlformat.errors_as_html(errors, error_template, no_default_css), file=sys.stderr)
+                print(htmlformat.errors_as_html(errors, error_template, no_default_css), file=feedback_out)
                 sys.exit(1)
 
-        sys.exit(main(test_modules_data, error_template, feedback_template, no_default_css))
+        sys.exit(main(test_modules_data, error_template, feedback_template, no_default_css, feedback_out, points_out))
 
     except Exception as e:
-        if args.allow_exceptions:
+        if args.allow_exceptions or args.container:
             raise
         else:
             error_msg = "Something went wrong during the grader tests... Please contact course staff."
-            print(htmlformat.wrap_div_alert(error_msg), file=sys.stderr)
+            print(htmlformat.wrap_div_alert(error_msg), file=feedback_out)
             sys.exit(1)
 

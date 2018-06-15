@@ -27,11 +27,3 @@ Customizing
 * [Custom HTML](graderutils/static/README.md)
 * [Test configuration](graderutils/README.md#test-configuration)
 
-
-TODO
-----
-
-* RegExp support for black- and whitelisted Python ast node dumps (or some other modular way of specifying restricted node contents).
-* Docs iteration
-* An elegant way of loading external JavaScript when showing feedback.
-

@@ -68,16 +68,19 @@ def collapse_traceback(traceback_string):
 
 
 def hide_exception_traceback(traceback_string, exception_names, replacement_string):
-    # Create pattern which matches the beginning of each traceback and each exception name that begins a line
+    """
+    Find all tracebacks caused by exceptions specified in exception_names and return a string where all traceback occurrences in traceback_string have been replaced with replacement_string.
+    In other words, everything starting with 'Traceback (most recent call last)' up until the exception line is replaced.
+    """
     traceback_header = "Traceback (most recent call last)"
-    # Pattern starting at the traceback header and ending in any of the given exception names
+    # Pattern starting at the traceback header and ending in any of the given exception names, spanning multiple lines
     pattern_hide = re.compile(
         ('^' + re.escape(traceback_header)
-         + r'(.|[\n\r])*?' # Non-greedy match of any possible character
+         + r'(.|[\n\r])*?' # Non-greedy match of all possible characters
          + '(' + '|'.join('^' + re.escape(e) for e in exception_names) + ')'),
         re.MULTILINE
     )
-    # Append the captured exception name from the second capture group to the replacement
+    # Append the captured exception name from the second capture group
     replacement_string += r'\2'
     # Return traceback_string with tracebacks from given exceptions removed
     return re.sub(pattern_hide, replacement_string, traceback_string)

@@ -52,7 +52,7 @@ def _run_test_modules(test_modules_data):
     return results
 
 
-def main(test_modules_data, error_template, feedback_template, no_default_css, feedback_out, points_out):
+def main(test_modules_data, error_template, feedback_template, no_default_css, feedback_out, points_out, exceptions_to_hide):
     """TODO docs"""
     # If there are any exceptions during running, render the traceback into HTML using the provided error_template.
     try:
@@ -62,7 +62,7 @@ def main(test_modules_data, error_template, feedback_template, no_default_css, f
             for result in results:
                 total_points += result.points
                 total_max_points += result.max_points
-            html_results = htmlformat.test_results_as_html(results, feedback_template, no_default_css)
+            html_results = htmlformat.test_results_as_html(results, feedback_template, no_default_css, exceptions_to_hide)
         else:
             total_points = total_max_points = 1
             html_results = htmlformat.no_tests_html(feedback_template, no_default_css)
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     parser.add_argument(
             "config_file",
             type=str,
-            help="Path to a YAML-file containing grading settings.",
+            help="Path to a YAML-file containing grading settings. Example settings provided in graderutils/test_config.yaml",
     )
     parser.add_argument(
             "--allow_exceptions",
@@ -119,6 +119,7 @@ if __name__ == "__main__":
         error_template = config.get("error_template", None)
         feedback_template = config.get("feedback_template", None)
         no_default_css = config.get("no_default_css", False)
+        exceptions_to_hide = config.get("exceptions_to_hide", [])
         test_modules_data = config.get("test_modules_data", [])
         if not test_modules_data:
             test_modules_data = config.get("test_modules", [])
@@ -130,7 +131,7 @@ if __name__ == "__main__":
                 print(htmlformat.errors_as_html(errors, error_template, no_default_css), file=feedback_out)
                 sys.exit(1)
 
-        sys.exit(main(test_modules_data, error_template, feedback_template, no_default_css, feedback_out, points_out))
+        sys.exit(main(test_modules_data, error_template, feedback_template, no_default_css, feedback_out, points_out, exceptions_to_hide))
 
     except Exception as e:
         if args.allow_exceptions or args.container:

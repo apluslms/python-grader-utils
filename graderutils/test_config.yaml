@@ -12,9 +12,29 @@ test_modules:
 # Optional
 # Paths to custom Jinja2 HTML templates to be used instead of the default ones.
 
-# error_template: ./my_error_template.html
-# feedback_template: ./my_feedback_template.html
+error_template: ./my_error_template.html
+feedback_template: ./my_feedback_template.html
 
+# If an exception from this list of exception classes is raised, remove its traceback from the output and leave only the exception line.
+#
+# e.g. with AssertionError:
+#
+# Traceback (most recent call last):
+#   File "local_tests.py", line 33, in test_is_prime_with_no_primes
+#    "{:d} is not a prime number, but your function says it is".format(value)
+# AssertionError: True is not false : -1 is not a prime number, but your function says it is
+#
+# only the following will be displayed:
+#
+# AssertionError: True is not false : -1 is not a prime number, but your function says it is
+#
+exceptions_to_hide:
+    # Specify names of exception classes
+    class_names:
+        - AssertionError
+    # Optionally customize the string that the hidden tracebacks will be replaced with.
+    # Default is an empty string
+    replacement_string: "## Traceback removed ##"
 
 # Optional file validation
 # All errors from failed validation are passed to the error template.

@@ -67,6 +67,22 @@ def collapse_traceback(traceback_string):
     return traceback_string
 
 
+def hide_exception_traceback(traceback_string, exception_names, replacement_string):
+    # Create pattern which matches the beginning of each traceback and each exception name that begins a line
+    traceback_header = "Traceback (most recent call last)"
+    # Pattern starting at the traceback header and ending in any of the given exception names
+    pattern_hide = re.compile(
+        ('^' + re.escape(traceback_header)
+         + r'(.|[\n\r])*?' # Non-greedy match of any possible character
+         + '(' + '|'.join('^' + re.escape(e) for e in exception_names) + ')'),
+        re.MULTILINE
+    )
+    # Append the captured exception name from the second capture group to the replacement
+    replacement_string += r'\2'
+    # Return traceback_string with tracebacks from given exceptions removed
+    return re.sub(pattern_hide, replacement_string, traceback_string)
+
+
 def parsed_assertion_message(assertion_error_traceback, split_at=None):
     """
     Remove traceback and 'AssertionError: ' starting from assertion_error_traceback.
@@ -84,7 +100,7 @@ ParsedTestResult = collections.namedtuple("ParsedTestResult",
          "full_traceback"))
 
 
-def test_result_as_template_context(result_object):
+def test_result_as_template_context(result_object, exceptions_to_hide):
     """Return the attribute values from result_object that are needed for HTML template rendering in a dictionary.
     @param (PointsResultObject) Result object from running PointsTestRunner. Expected to contain attributes:
         errors,
@@ -95,8 +111,17 @@ def test_result_as_template_context(result_object):
         points,
         max_points,
         test_description,
+    @param (dict) Exceptions for which traceback should be replaced with a given string.
     @return (dict) Context dictionary for HTML rendering.
     """
+    def _hide_exception_traceback(s):
+        return hide_exception_traceback(s,
+                exceptions_to_hide["class_names"],
+                exceptions_to_hide.get("replacement_string", ''))
+
+    if not exceptions_to_hide:
+        _hide_exception_traceback = lambda s: s
+
     # Create generators for all result types
 
     successes = (ParsedTestResult("SUCCESS",
@@ -108,7 +133,7 @@ def test_result_as_template_context(result_object):
 
     failures = (ParsedTestResult("FAIL",
                     test_case.shortDescription(),
-                    parsed_assertion_message(full_assert_msg),
+                    _hide_exception_traceback(full_assert_msg),
                     getattr(test_case, "user_data", None),
                     "")
                 for test_case, full_assert_msg in result_object.failures)
@@ -116,9 +141,9 @@ def test_result_as_template_context(result_object):
     # Tests which had exceptions other than AssertionError
     errors = (ParsedTestResult("ERROR",
                    test_case.shortDescription(),
-                   collapse_traceback(full_traceback),
+                   collapse_traceback(_hide_exception_traceback(full_traceback)),
                    getattr(test_case, "user_data", None),
-                   full_traceback)
+                   _hide_exception_traceback(full_traceback))
               for test_case, full_traceback in result_object.errors)
 
     # Evaluate all generators into a single list
@@ -126,6 +151,9 @@ def test_result_as_template_context(result_object):
 
     # Get unittest console output from the StringIO instance
     unittest_output = result_object.stream.getvalue()
+
+    # Hide tracebacks (if any are specified)
+    unittest_output = _hide_exception_traceback(unittest_output)
 
     context = {
         "results": results,
@@ -153,7 +181,7 @@ def _load_package_template(name):
 
 
 # TODO undry with no_tests_html and no_default_css
-def test_results_as_html(results, custom_template_name=None, no_default_css=False):
+def test_results_as_html(results, custom_template_name=None, no_default_css=False, exceptions_to_hide=None):
     """Render the list of results as HTML and return the HTML as a string.
     @param results List of TestResult objects.
     @return Raw HTML as a string.
@@ -162,7 +190,7 @@ def test_results_as_html(results, custom_template_name=None, no_default_css=Fals
     total_points = total_max_points = total_tests_run = 0
 
     for res in results:
-        result_context = test_result_as_template_context(res)
+        result_context = test_result_as_template_context(res, exceptions_to_hide)
         result_context_dicts.append(result_context)
         total_points += result_context["points"]
         total_max_points += result_context["max_points"]

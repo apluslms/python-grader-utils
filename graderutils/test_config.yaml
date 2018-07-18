@@ -32,7 +32,15 @@ exceptions_to_hide:
     # Specify names of exception classes
     class_names:
         - AssertionError
-    # Optionally customize the string that the hidden tracebacks will be replaced with.
+    # (Optional) amount of fields separated by ':' that will be dropped from the beginning of the traceback string.
+    # Default is 0
+    # e.g. with left_strip_fields: 2 and an AssertionError is thrown, the following:
+    # AssertionError: True is not false : -1 is not a prime number, but your function says it is
+    # becomes
+    # -1 is not a prime number, but your function says it is
+    # Be careful with ':' characters in the custom message since these are counted too
+    left_strip_fields: 2
+    # (Optional) customize the string that the hidden tracebacks will be replaced with.
     # Default is an empty string
     replacement_string: "## Traceback removed ##"
 

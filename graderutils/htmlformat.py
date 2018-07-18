@@ -67,10 +67,13 @@ def collapse_traceback(traceback_string):
     return traceback_string
 
 
-def hide_exception_traceback(traceback_string, exception_names, replacement_string):
+def hide_exception_traceback(traceback_string, exception_names, left_strip_fields, replacement_string):
     """
     Find all tracebacks caused by exceptions specified in exception_names and return a string where all traceback occurrences in traceback_string have been replaced with replacement_string.
-    In other words, everything starting with 'Traceback (most recent call last)' up until the exception line is replaced.
+    In other words, everything starting with 'Traceback (most recent call last)' up until the exception message is replaced.
+    If left_strip_fields is larger than 0, then left_strip_fields count of fields separated with ':' will be dropped from the beginning of the exception message.
+    E.g. with 2:
+    "AssertionError : True is not False : no it isn't" -> "no it isn't"
     """
     traceback_header = "Traceback (most recent call last)"
     # Pattern starting at the traceback header and ending in any of the given exception names, spanning multiple lines
@@ -81,9 +84,19 @@ def hide_exception_traceback(traceback_string, exception_names, replacement_stri
         re.MULTILINE
     )
     # Append the captured exception name from the second capture group
-    replacement_string += r'\2'
-    # Return traceback_string with tracebacks from given exceptions removed
-    return re.sub(pattern_hide, replacement_string, traceback_string)
+    replacement_string_with_exc_class = replacement_string + r"\2"
+    # Remove tracebacks
+    traceback_string = re.sub(pattern_hide, replacement_string_with_exc_class, traceback_string)
+    # Remove default fields from the beginning of the exception message, if specified
+    if left_strip_fields > 0:
+        # Matches at most left_strip_fields count of fields separated by ':'
+        fields_pattern = "([^:]*?:){," + str(left_strip_fields) + "}\s?"
+        pattern_hide = re.compile(
+            '(' + '|'.join('^' + re.escape(replacement_string + e) + fields_pattern for e in exception_names) + ')',
+            re.MULTILINE
+        )
+        traceback_string = re.sub(pattern_hide, '', traceback_string)
+    return traceback_string
 
 
 def parsed_assertion_message(assertion_error_traceback, split_at=None):
@@ -120,6 +133,7 @@ def test_result_as_template_context(result_object, exceptions_to_hide):
     def _hide_exception_traceback(s):
         return hide_exception_traceback(s,
                 exceptions_to_hide["class_names"],
+                exceptions_to_hide.get("left_strip_fields", 0),
                 exceptions_to_hide.get("replacement_string", ''))
 
     if not exceptions_to_hide:

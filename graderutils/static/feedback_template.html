@@ -68,6 +68,10 @@ Something weird happened at the server, this test has no title...
         <div class="panel-body">
           {% block success_panel_body scoped %}
 
+          {% if result.short_message %}
+          <p>{{ result.short_message }}</p>
+          {% endif %}
+
             {% if result.user_data %}
               {% if result.user_data.raw_html %}
                 <div class="user-data-raw-html well">
@@ -91,7 +95,11 @@ Something weird happened at the server, this test has no title...
       <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
         <div class="panel-body feedback-failed">
           {% block failed_panel_body_feedback scoped %}
+          {% if result.short_message %}
+          <p>{{ result.short_message }}</p>
+          {% else %}
           <p>The test failed, reason:</p>
+          {% endif %}
           <pre class="feedback">{{ result.assertion_message|e }}</pre>
           {% endblock %}
 
@@ -126,7 +134,11 @@ Something weird happened at the server, this test has no title...
         <div class="panel-body">
           {% block error_panel_body scoped %}
 
+          {% if result.short_message %}
+          <p>{{ result.short_message }}</p>
+          {% else %}
           <p>Errors occurred during testing. Click 'Show full traceback' if you want to see the full traceback. </p>
+          {% endif %}
 
           {% if result.assertion_message|length == 0 %}
           <pre>Error in grader server, please notify course staff.</pre>

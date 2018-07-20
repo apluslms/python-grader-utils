@@ -112,8 +112,8 @@ def parsed_assertion_message(assertion_error_traceback, split_at=None):
 
 ParsedTestResult = collections.namedtuple("ParsedTestResult",
         ("test_outcome", "method_name",
-         "assertion_message", "user_data",
-         "full_traceback"))
+         "short_message", "assertion_message",
+         "user_data", "full_traceback"))
 
 
 def test_result_as_template_context(result_object, exceptions_to_hide):
@@ -139,32 +139,37 @@ def test_result_as_template_context(result_object, exceptions_to_hide):
     if not exceptions_to_hide:
         _hide_exception_traceback = lambda s: s
 
-    # Create generators for all result types
-
-    successes = (ParsedTestResult("SUCCESS",
+    def parsed_results_iter():
+        # Successful tests, no exceptions thrown
+        for test_case in result_object.successes:
+            yield ParsedTestResult(
+                    "SUCCESS",
                     test_case.shortDescription(),
+                    getattr(test_case, "_short_message", None),
                     "",
                     getattr(test_case, "user_data", None),
                     "")
-                 for test_case in result_object.successes)
-
-    failures = (ParsedTestResult("FAIL",
+            # Failed tests, AssertionError thrown
+        for test_case, full_assert_msg in result_object.failures:
+            yield ParsedTestResult(
+                    "FAIL",
                     test_case.shortDescription(),
+                    getattr(test_case, "_short_message", None),
                     _hide_exception_traceback(full_assert_msg),
                     getattr(test_case, "user_data", None),
                     "")
-                for test_case, full_assert_msg in result_object.failures)
-
-    # Tests which had exceptions other than AssertionError
-    errors = (ParsedTestResult("ERROR",
-                   test_case.shortDescription(),
-                   collapse_traceback(_hide_exception_traceback(full_traceback)),
-                   getattr(test_case, "user_data", None),
-                   _hide_exception_traceback(full_traceback))
-              for test_case, full_traceback in result_object.errors)
+            # Errored tests, exceptions other than AssertionError thrown
+        for test_case, full_traceback in result_object.errors:
+            yield ParsedTestResult(
+                    "ERROR",
+                    test_case.shortDescription(),
+                    getattr(test_case, "_short_message", None),
+                    _hide_exception_traceback(collapse_traceback(full_traceback)),
+                    getattr(test_case, "user_data", None),
+                    _hide_exception_traceback(full_traceback))
 
     # Evaluate all generators into a single list
-    results = list(itertools.chain(successes, failures, errors))
+    results = list(parsed_results_iter())
 
     # Get unittest console output from the StringIO instance
     unittest_output = result_object.stream.getvalue()

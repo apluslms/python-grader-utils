@@ -1,10 +1,11 @@
 # Original from
 # https://github.com/Aalto-LeTech/mooc-grader-course/blob/master/exercises/hello_python/graderunittest.py
 
-import unittest
+import functools
 import re
 import signal
 import time
+import unittest
 
 
 class _PointsTestResult(unittest.TextTestResult):
@@ -17,9 +18,21 @@ class _PointsTestResult(unittest.TextTestResult):
         self.successes = []
 
 
-    def addSuccess(self, test):
-        super().addSuccess(test)
+    def addSuccess(self, test, *args, **kwargs):
+        super().addSuccess(test, *args, **kwargs)
+        if hasattr(test, "_points_data"):
+            test._short_message = test._points_data["messages"]["on_success"]
         self.successes.append(test)
+
+    def addFailure(self, test, *args, **kwargs):
+        super().addFailure(test, *args, **kwargs)
+        if hasattr(test, "_points_data"):
+            test._short_message = test._points_data["messages"]["on_fail"]
+
+    def addError(self, test, *args, **kwargs):
+        super().addError(test, *args, **kwargs)
+        if hasattr(test, "_points_data"):
+            test._short_message = test._points_data["messages"]["on_error"]
 
 
 # TODO
@@ -57,9 +70,24 @@ class ParameterTestCase(unittest.TestCase):
         self.test_config_data = read_yaml(test_config_name)
 
 
-# TODO
-# Make points in docstrings optional and gather the actual
-# points from test method decorators.
+def points(points_on_success, msg_on_success='', msg_on_fail='', msg_on_error=''):
+    points_data = {
+        "points": points_on_success,
+        "messages": {
+            "on_success": msg_on_success,
+            "on_fail": msg_on_fail,
+            "on_error": msg_on_error,
+        }
+    }
+    def points_decorator(testmethod):
+        @functools.wraps(testmethod)
+        def points_patching_testmethod(case, *args, **kwargs):
+            case._points_data = points_data
+            return testmethod(case, *args, **kwargs)
+        return points_patching_testmethod
+    return points_decorator
+
+
 class PointsTestRunner(unittest.TextTestRunner):
     """
     Prints out test grading points in addition to normal text test runner.
@@ -72,11 +100,14 @@ class PointsTestRunner(unittest.TextTestRunner):
 
 
     def get_points(self, result):
-        """Parse points as integers from the first lines of the docstrings of all test methods and return the result as a tuple."""
-
+        """Parse points as integers and return a 2-tuple (points, max_points)."""
+        # If a test case does not have a _points_data attribute, patched by the points-decorator, parse points from test case docstring for backwards compability
         # Search for (Np), where N is an integer
         point_re = re.compile('.*\((\d+)p\)$')
         def parse_points(case):
+            print("parsing points from", case, "has points", str(hasattr(case, "_points_data")), dir(case))
+            if hasattr(case, "_points_data"):
+                return case._points_data["points"]
             if case.shortDescription():
                 match = point_re.search(case.shortDescription().strip())
             else:

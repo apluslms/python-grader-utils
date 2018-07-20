@@ -40,6 +40,8 @@ exceptions_to_hide:
     # -1 is not a prime number, but your function says it is
     # Be careful with ':' characters in the custom message since these are counted too
     left_strip_fields: 2
+    # (Optional) If given and True, exception tracebacks in the full console output string will not be hidden, only in feedback for individual test cases
+    keep_tracebacks_in_full_output: True
     # (Optional) customize the string that the hidden tracebacks will be replaced with.
     # Default is an empty string
     replacement_string: "## Traceback removed ##"

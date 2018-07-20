@@ -174,8 +174,9 @@ def test_result_as_template_context(result_object, exceptions_to_hide):
     # Get unittest console output from the StringIO instance
     unittest_output = result_object.stream.getvalue()
 
-    # Hide tracebacks (if any are specified)
-    unittest_output = _hide_exception_traceback(unittest_output)
+    # Hide tracebacks also in the unittest output, unless configured otherwise
+    if exceptions_to_hide and not exceptions_to_hide.get("keep_tracebacks_in_full_output", False):
+        unittest_output = _hide_exception_traceback(unittest_output)
 
     context = {
         "results": results,

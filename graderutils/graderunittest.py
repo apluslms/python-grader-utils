@@ -105,7 +105,6 @@ class PointsTestRunner(unittest.TextTestRunner):
         # Search for (Np), where N is an integer
         point_re = re.compile('.*\((\d+)p\)$')
         def parse_points(case):
-            print("parsing points from", case, "has points", str(hasattr(case, "_points_data")), dir(case))
             if hasattr(case, "_points_data"):
                 return case._points_data["points"]
             if case.shortDescription():

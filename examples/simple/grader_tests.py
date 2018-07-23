@@ -17,7 +17,7 @@ class TestPrimes(unittest.TestCase):
             self.assertFalse(is_prime(x), "{} is not a prime number but your function says it is.".format(x))
 
     @points(10)
-    def test2_is__prime_with_small_set(self):
+    def test2_small(self):
         """Integers in the range [100, 200]."""
         for x in range(100, 201):
             if model_is_prime(x):
@@ -25,9 +25,8 @@ class TestPrimes(unittest.TestCase):
             else:
                 self.assertFalse(is_prime(x), "{} is not a prime number but your function says it is.".format(x))
 
-
     @points(20)
-    def test3_is__prime_with_large_set(self):
+    def test3_large_random(self):
         """Randomly picked integers in the range [0, 1 000 000]."""
         for _ in range(1000):
             x = random.randint(0, 10**6)

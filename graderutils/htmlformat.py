@@ -1,9 +1,8 @@
 """
-Functions for parsing TestResult objects into HTML.
+Functions for parsing TestResult objects and unittest output into HTML.
 Uses Jinja2 for template rendering.
 """
 import collections
-import itertools
 import re
 
 import jinja2
@@ -170,7 +169,7 @@ ParsedTestResult = collections.namedtuple("ParsedTestResult",
          "user_data", "full_traceback"))
 
 
-def test_result_as_template_context(result_object, exceptions_to_hide):
+def test_result_as_template_context(result_object, tracebacks_to_hide):
     """Return the attribute values from result_object that are needed for HTML template rendering in a dictionary.
     @param (PointsResultObject) Result object from running PointsTestRunner. Expected to contain attributes:
         errors,
@@ -186,11 +185,11 @@ def test_result_as_template_context(result_object, exceptions_to_hide):
     """
     def _hide_exception_traceback(s):
         return hide_exception_traceback(s,
-                exceptions_to_hide["class_names"],
-                exceptions_to_hide.get("remove_more_sentinel", ''),
-                exceptions_to_hide.get("replacement_string", ''))
+                tracebacks_to_hide["class_names"],
+                tracebacks_to_hide.get("remove_more_sentinel", ''),
+                tracebacks_to_hide.get("replacement_string", ''))
 
-    if not exceptions_to_hide:
+    if not tracebacks_to_hide:
         _hide_exception_traceback = lambda s: s
 
     def parsed_results_iter():
@@ -229,7 +228,7 @@ def test_result_as_template_context(result_object, exceptions_to_hide):
     unittest_output = result_object.stream.getvalue()
 
     # Hide tracebacks also in the unittest output, unless configured otherwise
-    if exceptions_to_hide and not exceptions_to_hide.get("keep_tracebacks_in_full_output", False):
+    if tracebacks_to_hide and not tracebacks_to_hide.get("keep_tracebacks_in_full_output", False):
         unittest_output = _hide_exception_traceback(unittest_output)
 
     context = {
@@ -258,7 +257,7 @@ def _load_package_template(name):
 
 
 # TODO undry with no_tests_html and no_default_css
-def test_results_as_html(results, custom_template_name=None, no_default_css=False, exceptions_to_hide=None):
+def test_results_as_html(results, custom_template_name=None, no_default_css=False, tracebacks_to_hide=None):
     """Render the list of results as HTML and return the HTML as a string.
     @param results List of TestResult objects.
     @return Raw HTML as a string.
@@ -267,7 +266,7 @@ def test_results_as_html(results, custom_template_name=None, no_default_css=Fals
     total_points = total_max_points = total_tests_run = 0
 
     for res in results:
-        result_context = test_result_as_template_context(res, exceptions_to_hide)
+        result_context = test_result_as_template_context(res, tracebacks_to_hide)
         result_context_dicts.append(result_context)
         total_points += result_context["points"]
         total_max_points += result_context["max_points"]

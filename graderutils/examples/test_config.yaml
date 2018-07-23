@@ -1,25 +1,29 @@
+# This is an example of a graderutils configuration file that you use to control test execution and result parsing
+# This file is very verbose on purpose.
+# The only required key in a test config yaml is the list of Python module names that should be executed as tests, everything else is optional
+
 # List of test modules which should be executed.
-# The modules are executed and results shown in the given order.
+# At least one must be specified.
+# Modules are executed in the same order as they have been specified in this list.
 test_modules:
     # The module key should contain the name of an importable Python module which contains at least one unittest.TestCase class.
-    # This key also functions as an uuid for the test module.
   - module: local_tests
     description: Local tests
+    # You can use several modules to group tests of different types
   - module: grader_tests
     description: Grader tests
 
-# Optional
-# Paths to custom Jinja2 HTML templates to be used instead of the default ones.
-
+# (Optional)
+# Paths to custom Jinja2 HTML templates to be used instead of the default ones found in graderutils/static.
 error_template: ./my_error_template.html
 feedback_template: ./my_feedback_template.html
 
 # Optional file validation
 # All errors from failed validation are passed to the error template.
-# If there are no errors, nothing is done.
+# If there are no errors, i.e. all validations pass, nothing is done.
 
 validation:
-  # Try importing my_solution, catch all exceptions and pass them to the error template.
+  # Try importing my_solution as a Python module, catch all exceptions and pass them to the error template.
   - type: python_import
     file: my_solution.py
   # Set restricted syntax which should not be found in file.
@@ -96,20 +100,25 @@ validation:
 #
 # e.g. with AssertionError and remove_more_sentinel [remove-stop]:
 #
+# Traceback (most recent call last):
+#   File "local_tests.py", line 33, in test_is_prime_with_no_primes
+#    "{:d} is not a prime number, but your function says it is".format(value)
 # AssertionError: True is not false : [remove-stop]-1 is not a prime number, but your function says it is
 #
-# turns into:
+# turns into just:
 #
 # -1 is not a prime number, but your function says it is
 #
-exceptions_to_hide:
-    # Specify names of exception classes
+traceback_to_hide:
+    # Specify names of exception classes that should have their traceback hidden
     class_names:
         - AssertionError
-    # (Optional) Sentinel string for hiding more than just the traceback.
+        - mymodule.ClassifiedException
+    # (Optional) If given and of non-zero length, strip beginning of each exception line up until and including this string.
+    # See example above
     remove_more_sentinel: "[remove-stop]"
     # (Optional) If given and True, exception tracebacks in the full console output string will not be hidden, only in feedback for individual test cases
     keep_tracebacks_in_full_output: True
-    # (Optional) customize the string that the hidden tracebacks will be replaced with.
-    # Default is an empty string
+    # (Optional) If given and of non-zero length, hidden tracebacks will be replaced with this string.
+    # Does not insert a newline.
     replacement_string: "## Traceback removed ##"

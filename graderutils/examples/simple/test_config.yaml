@@ -1,0 +1,3 @@
+test_modules:
+  - module: grader_tests
+    description: Grader tests

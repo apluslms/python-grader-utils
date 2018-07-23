@@ -17,7 +17,7 @@ Python library for test suite management, file validation and test feedback form
 git clone --depth 1 https://github.com/Aalto-LeTech/python-grader-utils.git
 cd python-grader-utils
 pip install .
-cd graderutils/examples/simple
+cd examples/simple
 python3 -m graderutils.main test_config.yaml --allow_exceptions 2> results.html
 ```
 View `results.html` in a browser.

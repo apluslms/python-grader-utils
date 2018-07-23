@@ -13,7 +13,7 @@ class TestPrimes(unittest.TestCase):
     @points(5)
     def test1_negative_integers(self):
         """Integers in the range [-100, 0)."""
-        for x in range(-100, 0, -5):
+        for x in range(-100, 0, 5):
             self.assertFalse(is_prime(x), "{} is not a prime number but your function says it is.".format(x))
 
     @points(10)

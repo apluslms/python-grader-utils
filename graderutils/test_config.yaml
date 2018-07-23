@@ -8,43 +8,11 @@ test_modules:
   - module: grader_tests
     description: Grader tests
 
-
 # Optional
 # Paths to custom Jinja2 HTML templates to be used instead of the default ones.
 
 error_template: ./my_error_template.html
 feedback_template: ./my_feedback_template.html
-
-# If an exception from this list of exception classes is raised, remove its traceback from the output and leave only the exception line.
-#
-# e.g. with AssertionError:
-#
-# Traceback (most recent call last):
-#   File "local_tests.py", line 33, in test_is_prime_with_no_primes
-#    "{:d} is not a prime number, but your function says it is".format(value)
-# AssertionError: True is not false : -1 is not a prime number, but your function says it is
-#
-# only the following will be displayed:
-#
-# AssertionError: True is not false : -1 is not a prime number, but your function says it is
-#
-exceptions_to_hide:
-    # Specify names of exception classes
-    class_names:
-        - AssertionError
-    # (Optional) amount of fields separated by ':' that will be dropped from the beginning of the traceback string.
-    # Default is 0
-    # e.g. with left_strip_fields: 2 and an AssertionError is thrown, the following:
-    # AssertionError: True is not false : -1 is not a prime number, but your function says it is
-    # becomes
-    # -1 is not a prime number, but your function says it is
-    # Be careful with ':' characters in the custom message since these are counted too
-    left_strip_fields: 2
-    # (Optional) If given and True, exception tracebacks in the full console output string will not be hidden, only in feedback for individual test cases
-    keep_tracebacks_in_full_output: True
-    # (Optional) customize the string that the hidden tracebacks will be replaced with.
-    # Default is an empty string
-    replacement_string: "## Traceback removed ##"
 
 # Optional file validation
 # All errors from failed validation are passed to the error template.
@@ -110,3 +78,38 @@ validation:
       Mod: Modulo
       Pow: Power
 
+# Optional traceback hiding
+# If an exception from the class_names list of exception classes is raised, its traceback is removed from the output and leave only the exception line.
+#
+# e.g. with AssertionError:
+#
+# Traceback (most recent call last):
+#   File "local_tests.py", line 33, in test_is_prime_with_no_primes
+#    "{:d} is not a prime number, but your function says it is".format(value)
+# AssertionError: True is not false : -1 is not a prime number, but your function says it is
+#
+# only the following will be displayed:
+#
+# AssertionError: True is not false : -1 is not a prime number, but your function says it is
+#
+# If remove_more_sentinel is given, then everything starting from the exception line ending at the sentinel, will also be removed.
+#
+# e.g. with AssertionError and remove_more_sentinel [remove-stop]:
+#
+# AssertionError: True is not false : [remove-stop]-1 is not a prime number, but your function says it is
+#
+# turns into:
+#
+# -1 is not a prime number, but your function says it is
+#
+exceptions_to_hide:
+    # Specify names of exception classes
+    class_names:
+        - AssertionError
+    # (Optional) Sentinel string for hiding more than just the traceback.
+    remove_more_sentinel: "[remove-stop]"
+    # (Optional) If given and True, exception tracebacks in the full console output string will not be hidden, only in feedback for individual test cases
+    keep_tracebacks_in_full_output: True
+    # (Optional) customize the string that the hidden tracebacks will be replaced with.
+    # Default is an empty string
+    replacement_string: "## Traceback removed ##"

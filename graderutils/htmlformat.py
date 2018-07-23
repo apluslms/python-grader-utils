@@ -67,36 +67,90 @@ def collapse_traceback(traceback_string):
     return traceback_string
 
 
-def hide_exception_traceback(traceback_string, exception_names, left_strip_fields, replacement_string):
+def _redacted_lines(lines, remove_lines, replacement_string):
+    """
+    Return an iterator over lines that are not part of line chunks specified by remove_lines.
+    remove_lines must be an iterator of pairs (match_begin, match_length), where match_begin indexes are in ascending order.
+    If replacement_string is of non-zero length, it is yielded once in place of each removed chunk of lines.
+    """
+    is_removing = False
+    remove_start, left_to_remove = next(remove_lines, (-1, 0))
+    for lineno, line in enumerate(lines):
+        if is_removing:
+            if left_to_remove == 0:
+                # All lines of this chunk have been removed
+                is_removing = False
+                # Take next chunk to be removed, if available
+                remove_start, left_to_remove = next(remove_lines, (-1, 0))
+                # Replace the removed chunk of lines, if a replacement string was given
+                if replacement_string:
+                    yield replacement_string
+            else:
+                # Still removing
+                left_to_remove -= 1
+                continue
+        elif remove_start >= 0 and lineno == remove_start and left_to_remove > 0:
+            # Not yet removing, but this is the first line in a chunk to be removed
+            is_removing = True
+            left_to_remove -= 1
+            continue
+        # Got this far without a continue, this line is not part of a chunk of lines to be removed
+        yield line
+
+
+def hide_exception_traceback(traceback_string, exception_names, remove_more_sentinel, replacement_string):
     """
     Find all tracebacks caused by exceptions specified in exception_names and return a string where all traceback occurrences in traceback_string have been replaced with replacement_string.
     In other words, everything starting with 'Traceback (most recent call last)' up until the exception message is replaced.
-    If left_strip_fields is larger than 0, then left_strip_fields count of fields separated with ':' will be dropped from the beginning of the exception message.
-    E.g. with 2:
-    "AssertionError : True is not False : no it isn't" -> "no it isn't"
+
+    If remove_more_sentinel is given, then even more is removed.
+    E.g. with [remove-stop]:
+    "AssertionError : True is not False : [remove-stop]no it isn't"
+    turns into:
+    "no it isn't"
     """
     traceback_header = "Traceback (most recent call last)"
-    # Pattern starting at the traceback header and ending in any of the given exception names, spanning multiple lines
-    pattern_hide = re.compile(
-        ('^' + re.escape(traceback_header)
-         + r'(.|[\n\r])*?' # Non-greedy match of all possible characters
-         + '(' + '|'.join('^' + re.escape(e) for e in exception_names) + ')'),
-        re.MULTILINE
-    )
-    # Append the captured exception name from the second capture group
-    replacement_string_with_exc_class = replacement_string + r"\2"
-    # Remove tracebacks
-    traceback_string = re.sub(pattern_hide, replacement_string_with_exc_class, traceback_string)
-    # Remove default fields from the beginning of the exception message, if specified
-    if left_strip_fields > 0:
-        # Matches at most left_strip_fields count of fields separated by ':'
-        fields_pattern = "([^:]*?:){," + str(left_strip_fields) + "}\s?"
-        pattern_hide = re.compile(
-            '(' + '|'.join('^' + re.escape(replacement_string + e) + fields_pattern for e in exception_names) + ')',
-            re.MULTILINE
-        )
-        traceback_string = re.sub(pattern_hide, '', traceback_string)
-    return traceback_string
+    begin_traceback = re.compile('^' + re.escape(traceback_header))
+    end_traceback = re.compile('(' + '|'.join('^' + re.escape(e) for e in exception_names) + ')')
+
+    # Find all lines that match the pattern range
+
+    is_matching = False
+    # Pending match, pair of (start_index, line_count)
+    match = []
+    # Finalized matches to be removed, pairs of (start_index, line_count)
+    matches = []
+
+    traceback_lines = traceback_string.splitlines(keepends=True)
+
+    for lineno, line in enumerate(traceback_lines):
+        if is_matching:
+            if re.match(end_traceback, line):
+                # Fully matched one traceback
+                matches.append(tuple(match))
+                match = []
+                is_matching = False
+            elif re.match(begin_traceback, line):
+                # This match overlaps 2 traceback strings, and the first one is from an exception not specified in exception_names
+                # Drop first match and start a new one from here
+                match = [lineno, 1]
+            else:
+                # Accumulate match with one line
+                match[1] += 1
+        elif re.match(begin_traceback, line):
+            # Found a traceback header, start accumulating traceback string
+            is_matching = True
+            match = [lineno, 1]
+
+    # Replace matching line chunks with the replacement_string
+    new_traceback_lines = _redacted_lines(traceback_lines, iter(matches), replacement_string)
+    # Apply remove sentinel, if given
+    if remove_more_sentinel:
+        # For each line that contains the remove sentinel, strip everything up until and including the sentinel
+        remove_pattern = re.compile(end_traceback.pattern + '.*?' + re.escape(remove_more_sentinel))
+        new_traceback_lines = (re.sub(remove_pattern, '', line) for line in new_traceback_lines)
+
+    return ''.join(new_traceback_lines)
 
 
 def parsed_assertion_message(assertion_error_traceback, split_at=None):
@@ -133,7 +187,7 @@ def test_result_as_template_context(result_object, exceptions_to_hide):
     def _hide_exception_traceback(s):
         return hide_exception_traceback(s,
                 exceptions_to_hide["class_names"],
-                exceptions_to_hide.get("left_strip_fields", 0),
+                exceptions_to_hide.get("remove_more_sentinel", ''),
                 exceptions_to_hide.get("replacement_string", ''))
 
     if not exceptions_to_hide:

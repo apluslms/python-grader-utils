@@ -120,5 +120,5 @@ traceback_to_hide:
     # (Optional) If given and True, exception tracebacks in the full console output string will not be hidden, only in feedback for individual test cases
     keep_tracebacks_in_full_output: True
     # (Optional) If given and of non-zero length, hidden tracebacks will be replaced with this string.
-    # Does not insert a newline.
+    # Does not insert a newline, append '\n' if e.g. AssertionError should be on its one line.
     replacement_string: "## Traceback removed ##"

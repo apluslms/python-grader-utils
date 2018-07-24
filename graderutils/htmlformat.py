@@ -66,7 +66,7 @@ def collapse_traceback(traceback_string):
     return traceback_string
 
 
-def _redacted_lines(lines, remove_lines, replacement_string):
+def _iter_redacted_lines(lines, remove_lines, replacement_string):
     """
     Return an iterator over lines that are not part of line chunks specified by remove_lines.
     remove_lines must be an iterator of pairs (match_begin, match_length), where match_begin indexes are in ascending order.
@@ -110,7 +110,7 @@ def hide_exception_traceback(traceback_string, exception_names, remove_more_sent
     """
     traceback_header = "Traceback (most recent call last)"
     begin_traceback = re.compile('^' + re.escape(traceback_header))
-    end_traceback = re.compile('(' + '|'.join('^' + re.escape(e) for e in exception_names) + ')')
+    end_traceback = re.compile('^(' + '|'.join(re.escape(e) for e in exception_names) + ')')
 
     # Find all lines that match the pattern range
 
@@ -142,14 +142,20 @@ def hide_exception_traceback(traceback_string, exception_names, remove_more_sent
             match = [lineno, 1]
 
     # Replace matching line chunks with the replacement_string
-    new_traceback_lines = _redacted_lines(traceback_lines, iter(matches), replacement_string)
-    # Apply remove sentinel, if given
-    if remove_more_sentinel:
-        # For each line that contains the remove sentinel, strip everything up until and including the sentinel
-        remove_pattern = re.compile(end_traceback.pattern + '.*?' + re.escape(remove_more_sentinel))
-        new_traceback_lines = (re.sub(remove_pattern, '', line) for line in new_traceback_lines)
+    cleaned_traceback_string = ''.join(_iter_redacted_lines(traceback_lines, iter(matches), replacement_string))
 
-    return ''.join(new_traceback_lines)
+    # Remove even more starting at the replacement string if a sentinel is given
+    if remove_more_sentinel:
+        if replacement_string and not replacement_string.endswith('\n'):
+            # Exception names will be on the same line with the last line of the replacement string, which starts the line
+            begin_pattern_str = '^' + re.escape(replacement_string.splitlines()[-1]) + end_traceback.pattern[1:]
+        else:
+            # Exception names will start new lines immediately below the last line of the replacement string
+            begin_pattern_str = end_traceback.pattern
+        remove_pattern = re.compile(begin_pattern_str + '(.|[\r\n])*?' + re.escape(remove_more_sentinel), re.MULTILINE)
+        cleaned_traceback_string = re.sub(remove_pattern, '', cleaned_traceback_string)
+
+    return cleaned_traceback_string
 
 
 def parsed_assertion_message(assertion_error_traceback, split_at=None):

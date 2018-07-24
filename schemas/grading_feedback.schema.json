@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/v2.10.1/schemas/grading_feedback.schema.json",
+    "$id": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/schemas/grading_feedback.schema.json",
     "title": "Grading feedback",
     "description": "Grading feedback for a completed grader test for a single exercise. Contains all information required to display grader test results.",
     "type": "object",
@@ -35,7 +35,7 @@
             "description": "Test result groups",
             "type": "array",
             "items": {
-                "$ref": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/v2.10.1/schemas/test_result_group.schema.json"
+                "$ref": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/schemas/test_result_group.schema.json"
             },
             "minItems": 1,
             "uniqueItems": true

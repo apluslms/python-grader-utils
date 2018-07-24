@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/v2.10.1/schemas/test_result.schema.json",
+    "$id": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/schemas/test_result.schema.json",
     "title": "Test result",
     "description": "Test result for a single test. Smallest unit of all result objects.",
     "type": "object",

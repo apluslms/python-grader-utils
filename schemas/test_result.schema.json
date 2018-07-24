@@ -24,15 +24,15 @@
             "description": "Maximum amount of possible points from passing this test.",
             "type": "integer",
             "minimum": 0
-        }
+        },
         "testOutput": {
             "description": "Preformatted string that contains all output produced by this test",
             "type": "string"
-        }
+        },
         "header": {
             "description": "Optional message to display above testOutput",
             "type": "string"
-        }
+        },
         "footer": {
             "description": "Optional message to display below testOutput",
             "type": "string"

@@ -11,10 +11,6 @@
         "resultGroups"
     ],
     "properties": {
-        "resultId": {
-            "description": "Unique identifier of the result that should be embedded into the output",
-            "type": "string"
-        },
         "theme": {
             "description": "Test output theme",
             "enum": [
@@ -39,6 +35,14 @@
             },
             "minItems": 1,
             "uniqueItems": true
+        },
+        "resultId": {
+            "description": "Unique identifier of the result that should be embedded into the output",
+            "type": "string"
+        },
+        "fullOutput": {
+            "description": "Full, unmodified console output from the test suite",
+            "type": "string"
         }
     }
 }

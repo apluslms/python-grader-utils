@@ -6,6 +6,7 @@
     "type": "object",
     "required": [
         "name",
+        "state",
         "points",
         "maxPoints",
         "testOutput"
@@ -14,6 +15,14 @@
         "name": {
             "description": "Display name of the test. E.g. name of a test function/method/procedure/script.",
             "type": "string"
+        },
+        "state": {
+            "description": "The state this result terminated in.",
+            "enum": [
+                "pass",
+                "fail",
+                "error"
+            ]
         },
         "points": {
             "description": "Amount of points awarded for this test.",
@@ -36,6 +45,10 @@
         "footer": {
             "description": "Optional message to display below testOutput",
             "type": "string"
+        },
+        "userData": {
+            "description": "Arbitrary data",
+            "type": "object"
         }
     }
 }

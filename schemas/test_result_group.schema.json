@@ -5,6 +5,7 @@
     "description": "Test results from a test group of arbitrary taxonomy.",
     "type": "object",
     "required": [
+        "name",
         "points",
         "maxPoints",
         "testResults"
@@ -32,6 +33,11 @@
             },
             "minItems": 1,
             "uniqueItems": true
+        },
+        "testsRun": {
+            "description": "Amount of tests run from this group",
+            "type": "integer",
+            "minimum": 0
         }
     }
 }

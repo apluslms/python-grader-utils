@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/schemas/test_config.schema.json",
+    "title": "Graderutils runtime configuration",
+    "description": "Graderutils runtime configuration file",
+    "type": "object",
+    "required": [
+        "test_groups"
+    ],
+    "properties": {
+        "test_groups": {
+            "description": "Python test modules grouped by different testing charasteristics",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "module": {
+                        "description": "Name of an importable Python module that contains at least one unittest.TestCase",
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "display_name": {
+                        "description": "Display name for the test group",
+                        "type": "string"
+                    },
+                    "description": {
+                        "description": "Longer description for the test group, in case the display name is too short",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "group"
+                ]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        }
+    }
+}

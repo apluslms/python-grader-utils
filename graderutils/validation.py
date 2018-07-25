@@ -19,19 +19,12 @@ from graderutils import GraderUtilsError
 
 class ValidationError(GraderUtilsError): pass
 
-SUPPORTED_VALIDATION_CHOICES = (
-        "python_import",
-        "python_syntax",
-        "python_blacklist",
-        "python_whitelist",
-        "plain_text_blacklist",
-        "plain_text_whitelist",
-        "image_type",
-        "labview",
-        "xlsm",
-        "html")
 
 RestrictedSyntaxMatch = collections.namedtuple("RestrictedSyntaxMatch", ["filename", "linenumber", "line_content", "message"])
+
+def syntax_matches_to_message(matches):
+    msg = '\n\n'.join('\n'.join(field + ": " + repr(getattr(match, field)) for field in match._fields) for match in matches)
+    return "Restricted syntax found:\n\n" + msg
 
 
 def _check_python_restricted_syntax(config, blacklist=True):
@@ -165,14 +158,10 @@ def _get_plain_text_whitelist_misses(whitelist):
 
 
 def get_restricted_syntax_matches(config, get_matches):
-    match_data = {}
     matches = get_matches(config)
     if matches:
-        message = config.get("message", "")
-        match_data = {"type": "restricted_syntax",
-                      "message": message,
-                      "matches": matches}
-    return match_data
+        return {"message": syntax_matches_to_message(matches)}
+    return None
 
 
 def ast_dump(source):
@@ -188,7 +177,6 @@ def get_image_type_errors(image, expected_type):
     errors = {}
     actual_type = imghdr.what(image)
     if actual_type != expected_type:
-        errors["type"] = "filetype error"
         errors["message"] = "Expected type '{}' but got '{}'.".format(expected_type, actual_type)
     return errors
 
@@ -202,7 +190,6 @@ def get_python_import_errors(filename):
     try:
         _import_module_from_python_file(filename)
     except Exception as error:
-        errors["type"] = "failed python import"
         errors["message"] = traceback.format_exc()
     return errors
 
@@ -233,7 +220,6 @@ def get_python_missing_attr_errors(filename, expected_attributes):
     missing_attrs = [(path, msg) for path, msg in expected_attributes.items()
                      if not _hasattr_path(module, path)]
     if missing_attrs:
-        errors["type"] = "missing attributes"
         errors["missing_attrs"] = missing_attrs
     return errors
 
@@ -245,10 +231,11 @@ def get_python_syntax_errors(filename):
             source = submitted_file.read()
         ast.parse(source)
     except SyntaxError as syntax_error:
-        errors["type"] = "SyntaxError"
-        errors["filename"] = syntax_error.filename
-        errors["lineno"] = syntax_error.lineno
-        errors["text"] = syntax_error.text
+        errors["message"] = "Syntax error in {!r} at line {}:\n{}".format(
+            syntax_error.filename,
+            syntax_error.lineno,
+            syntax_error.text
+        )
     return errors
 
 
@@ -257,7 +244,6 @@ def get_labview_errors(filename):
     with open(filename, "rb") as f:
         header = f.read(16)
         if header != b'RSRC\r\n\x00\x03LVINLBVW':
-            errors["type"] = "filetype error"
             errors["message"] = "The file wasn't a proper labVIEW-file"
     return errors
 
@@ -266,7 +252,6 @@ def get_xlsm_errors(filename):
     with open(filename, "rb") as f:
         header = f.read(14)
         if header != b'PK\x03\x04\x14\x00\x06\x00\x08\x00\x00\x00!\x00':
-            errors["type"] = "filetype error"
             errors["message"] = "The file wasn't a proper Excel-file with macros!"
     return errors
 
@@ -282,14 +267,13 @@ def get_html_errors(filename):
                 err += "Line {0}: {1}: {2} \n".format(e[0][0], e[1], e[2])
 
         if err:
-            errors["type"] = "html style error"
             errors["message"] = err
 
     return errors
 
 
 def _get_validation_error(validation, filename, config):
-    error = {}
+    error = None
 
     if validation == "python_import":
         # import matplotlib
@@ -333,31 +317,27 @@ def _get_validation_error(validation, filename, config):
     return error
 
 
-def get_validation_errors(validation_configs):
-    errors = []
-    for config in validation_configs:
-        validation_type = config.get("type", None)
-        if validation_type not in SUPPORTED_VALIDATION_CHOICES:
-            raise ValidationError(
-                    "Unknown validation_type '{}', choose from '{}'."
-                    .format(validation_type, SUPPORTED_VALIDATION_CHOICES))
-        filename = config.get("file", None)
-        if not filename:
-            raise ValidationError("No file given to perform validation of validation_type '{}'.".format(validation_type))
-        break_on_fail = config.get("break_on_fail", True)
-
+def run_validation_tasks(tasks):
+    """
+    Generator that runs all validation tasks specified by a list of task configs and yields error dicts for failed tasks.
+    """
+    for task in tasks:
+        validation_type, filename = task["type"], task["file"]
         error = None
         try:
-            error = _get_validation_error(validation_type, filename, config)
+            error = _get_validation_error(validation_type, filename, task)
         except Exception as e:
+            traceback_str = ''.join(traceback.TracebackException.from_exception(e).format())
             error = {
-                "type": e.__class__.__name__,
-                "message": traceback.format_exc(),
+                "message": traceback_str,
             }
-
         if error:
-            errors.append(error)
-            if break_on_fail:
+            error["type"] = validation_type
+            error["file"] = filename
+            if "description" in task:
+                error["description"] = task["description"]
+            if "display_name" in task:
+                error["display_name"] = task["display_name"]
+            yield error
+            if task.get("break_on_fail", True):
                 break
-
-    return errors

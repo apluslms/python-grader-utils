@@ -8,7 +8,7 @@ import unittest
 # Specify test method points and test method level feedback with the points decorator
 from graderutils.graderunittest import points
 # Strategies for generating random data, more info:
-from hypothesis import strategies, given, settings, PrintSettings
+from hypothesis import strategies, given, settings, PrintSettings, Verbosity
 
 # Use a model solution model.py to check the correct behaviour for the submitted file primes.py
 from model import is_prime as model_is_prime
@@ -48,7 +48,7 @@ class TestPrimes(unittest.TestCase):
     # This falsification process ends when 100 instances of x have been found that did not fail the test, i.e. max_examples.
     # We also disable the Hypothesis database, i.e. cache, because we are not interested in remembering how the tests behaved for data generated on previous test executions
     # https://hypothesis.readthedocs.io/en/latest/settings.html#available-settings
-    @settings(max_examples=100, database=None, print_blob=PrintSettings.NEVER)
+    @settings(max_examples=100, database=None, print_blob=PrintSettings.NEVER, verbosity=Verbosity.quiet)
     def test3_large_positive_random_integers(self, x):
         """Randomly picked integers in the range [0, 1 000 000]."""
         if model_is_prime(x):

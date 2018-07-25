@@ -1,8 +1,7 @@
-# Original from
-# https://github.com/Aalto-LeTech/mooc-grader-course/blob/master/exercises/hello_python/graderunittest.py
-
+"""
+Extensions for unittest tests.
+"""
 import functools
-import re
 import signal
 import time
 import unittest
@@ -17,57 +16,25 @@ class _PointsTestResult(unittest.TextTestResult):
         super().__init__(stream, descriptions, verbosity)
         self.successes = []
 
+    def patch_message(self, case, key):
+        """
+        If the finished test method `case` had a user-defined short message, extract it from the points data and shove it into `case`.
+        """
+        if hasattr(case, "graderutils_points"):
+            case.graderutils_msg = case.graderutils_points["messages"][key]
 
     def addSuccess(self, test, *args, **kwargs):
         super().addSuccess(test, *args, **kwargs)
-        if hasattr(test, "_points_data"):
-            test._short_message = test._points_data["messages"]["on_success"]
         self.successes.append(test)
+        self.patch_message(test, "on_success")
 
     def addFailure(self, test, *args, **kwargs):
         super().addFailure(test, *args, **kwargs)
-        if hasattr(test, "_points_data"):
-            test._short_message = test._points_data["messages"]["on_fail"]
+        self.patch_message(test, "on_fail")
 
     def addError(self, test, *args, **kwargs):
         super().addError(test, *args, **kwargs)
-        if hasattr(test, "_points_data"):
-            test._short_message = test._points_data["messages"]["on_error"]
-
-
-# TODO
-class ParameterTestCaseLoader(unittest.TestLoader):
-    """
-    Initializes test cases with arbitrary extra parameters.
-    """
-
-    def __init__(self, test_parameters):
-        super().__init__()
-        self.test_parameters = test_parameters
-
-    def loadTestsFromTestCase(self, parameterTestCaseClass):
-        if issubclass(parameterTestCaseClass, unittest.suite.TestSuite):
-            raise TypeError("Test cases should not be derived from "
-                            "TestSuite. Maybe you meant to derive from "
-                            "TestCase?")
-        testCaseNames = self.getTestCaseNames(parameterTestCaseClass)
-        if not testCaseNames and hasattr(parameterTestCaseClass, 'runTest'):
-            testCaseNames = ['runTest']
-        test_instances = (parameterTestCaseClass(name, self.test_parameters) for name in testCaseNames)
-        loaded_suite = self.suiteClass(test_instances)
-        return loaded_suite
-
-
-# TODO
-class ParameterTestCase(unittest.TestCase):
-    """
-    Inherit this to access the config data.
-    """
-
-    def __init__(self, name, test_config_name):
-        super().__init__(name)
-        from plain_text_validator import read_yaml
-        self.test_config_data = read_yaml(test_config_name)
+        self.patch_message(test, "on_error")
 
 
 def points(points_on_success, msg_on_success='', msg_on_fail='', msg_on_error=''):
@@ -82,7 +49,7 @@ def points(points_on_success, msg_on_success='', msg_on_fail='', msg_on_error=''
     def points_decorator(testmethod):
         @functools.wraps(testmethod)
         def points_patching_testmethod(case, *args, **kwargs):
-            case._points_data = points_data
+            case.graderutils_points = points_data
             return testmethod(case, *args, **kwargs)
         return points_patching_testmethod
     return points_decorator
@@ -90,9 +57,11 @@ def points(points_on_success, msg_on_success='', msg_on_fail='', msg_on_error=''
 
 class PointsTestRunner(unittest.TextTestRunner):
     """
-    Prints out test grading points in addition to normal text test runner.
-    Passing a test will grant the points added to the end of the test
-    docstring in following format. (10p)
+    unittest.TextTestRunner that extract points from test methods.
+    Points are added to unittest.TestCase test method with the points decorator, e.g.
+    @graderunittest.points(100)
+    def test_and_get_100_points(self):
+        pass
     """
 
     def _makeResult(self):
@@ -100,23 +69,14 @@ class PointsTestRunner(unittest.TextTestRunner):
 
 
     def get_points(self, result):
-        """Parse points as integers and return a 2-tuple (points, max_points)."""
-        # If a test case does not have a _points_data attribute, patched by the points-decorator, parse points from test case docstring for backwards compability
-        # Search for (Np), where N is an integer
-        point_re = re.compile('.*\((\d+)p\)$')
+        """Extract points from all test cases as integers and return a 2-tuple (points, max_points) of totals."""
         def parse_points(case):
-            if hasattr(case, "_points_data"):
-                return case._points_data["points"]
-            if case.shortDescription():
-                match = point_re.search(case.shortDescription().strip())
-            else:
-                match = None
-            return int(match.group(1)) if match else 0
+            return case.graderutils_points["points"]
 
         points = sum(parse_points(case) for case in result.successes)
-        max_points = points\
-            + sum(parse_points(case) for case, exc in result.failures)\
-            + sum(parse_points(case) for case, exc in result.errors)
+        max_points = (points
+                + sum(parse_points(case) for case, exc in result.failures)
+                + sum(parse_points(case) for case, exc in result.errors))
 
         return points, max_points
 
@@ -157,3 +117,37 @@ def result_or_timeout(timed_function, args=(), kwargs=None, timeout=1, timer=tim
     return running_time, result
 
 
+# disgusting monkey patch hacks
+
+# TODO
+class ParameterTestCaseLoader(unittest.TestLoader):
+    """
+    Initializes test cases with arbitrary extra parameters.
+    """
+
+    def __init__(self, test_parameters):
+        super().__init__()
+        self.test_parameters = test_parameters
+
+    def loadTestsFromTestCase(self, parameterTestCaseClass):
+        if issubclass(parameterTestCaseClass, unittest.suite.TestSuite):
+            raise TypeError("Test cases should not be derived from "
+                            "TestSuite. Maybe you meant to derive from "
+                            "TestCase?")
+        testCaseNames = self.getTestCaseNames(parameterTestCaseClass)
+        if not testCaseNames and hasattr(parameterTestCaseClass, 'runTest'):
+            testCaseNames = ['runTest']
+        test_instances = (parameterTestCaseClass(name, self.test_parameters) for name in testCaseNames)
+        loaded_suite = self.suiteClass(test_instances)
+        return loaded_suite
+
+# TODO
+class ParameterTestCase(unittest.TestCase):
+    """
+    Inherit this to access the config data.
+    """
+
+    def __init__(self, name, test_config_name):
+        super().__init__(name)
+        from plain_text_validator import read_yaml
+        self.test_config_data = read_yaml(test_config_name)

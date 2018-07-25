@@ -1,60 +1,73 @@
 # This is an example of a graderutils configuration file that you use to control test execution and result parsing
-# This file is very verbose on purpose.
+# This file is very verbose on purpose, ../examples/simple/test_config.yaml contains a minimal example.
 # The only required key in a test config yaml is the list of Python module names that should be executed as tests, everything else is optional
 
-# List of test modules which should be executed.
+# List of test groups, i.e. definitions of Python modules containing at least one unittest.TestCase.
 # At least one must be specified.
 # Modules are executed in the same order as they have been specified in this list.
-test_modules:
+test_groups:
     # The module key should contain the name of an importable Python module which contains at least one unittest.TestCase class.
   - module: local_tests
-    description: Local tests
-    # You can use several modules to group tests of different types
+    display_name: Local tests
+    description: Tests that were distributed with the exercise template
+    # You can use an arbitrary amount of modules to group tests of different characteristics
   - module: grader_tests
-    description: Grader tests
+    display_name: Grader tests
+    description: Tests that were distributed with the exercise template
+  - module: compile_tests
+    display_name: Compilation tests
+    description: Tests for checking that the submitted source code compiles on multiple platforms
 
 # (Optional)
 # Paths to custom Jinja2 HTML templates to be used instead of the default ones found in graderutils/static.
 error_template: ./my_error_template.html
 feedback_template: ./my_feedback_template.html
 
-# Optional file validation
-# All errors from failed validation are passed to the error template.
-# If there are no errors, i.e. all validations pass, nothing is done.
+# Optional input validation before running test groups.
+# Successful validation is silent, i.e. if all validation tasks pass, no output is generated from the validation.
+# If at least one validation task fails, no test groups will be run, and instead the validation errors will be shown.
 
 validation:
-  # Try importing my_solution as a Python module, catch all exceptions and pass them to the error template.
-  - type: python_import
-    file: my_solution.py
-  # Set restricted syntax which should not be found in file.
-  # If such syntax is found, pass data of found matches to the error template.
-  - type: python_blacklist
-    file: my_solution.py
-    # By default, if a validation task fails, validation is stopped and feedback is shown for the failed task.
-    # break_on_fail allows showing several failed validation tasks after validation is complete.
-    break_on_fail: False
-    message: "In this exercise, some builtin syntax related to lists is not allowed, since you should make you own list implementation."
-    # Names of abstract syntax tree nodes and custom messages which are shown if nodes are found in the submitted file.
-    # A comprehensive list of AST nodes can be found here: https://greentreesnakes.readthedocs.io/en/latest/nodes.html
-    node_names:
-      ListComp: List comprehensions
-      For: For loops
-    # Optionally, define exact strings returned by ast.dump, which are not allowed.
-    # The graderutils.validation module contains a simple ast_dump function for dumping all ast nodes of a given source string.
-    node_dumps:
-      "Name(id='list', ctx=Load())": Loading the list builtin
-    # If a full ast.dump string match is too specific, it can be 'softened' using regexp.
-    # You have to do escaping by yourself, though.
-    node_dump_regexp:
-      "^Attribute.*attr\\=\\'sort\\'\\,\\ ctx\\=Load\\(\\)": Loading the sort method
-  # Simple regexp-based substring blacklisting.
-  - type: plain_text_blacklist
-    file: my_solution.sql
-    # If ignorecase is True, all keys in strings dict must be in lowercase
-    ignorecase: True
-    strings:
-      drop: Dropping tables
-      delete: Deleting entries
+    display_name: Input validation
+    tasks:
+      # Try importing my_solution as a Python module, catch all exceptions and pass them to the error template.
+      - type: python_import
+        # Name of this validation task, e.g. formulated as an assertion like in a test method
+        display_name: "The file is a Python module that can be imported"
+        file: my_solution.py
+      # Set restricted syntax which should not be found in file.
+      # If such syntax is found, pass data of found matches to the error template.
+      - type: python_blacklist
+        display_name: "Module does not contain restricted syntax"
+        description: "In this exercise, some builtin syntax related to lists is not allowed, since you should make you own list implementation."
+        file: my_solution.py
+        # By default, if a validation task fails, validation is stopped and feedback is shown for the failed task.
+        # If break_on_fail is given and False, and this validation task fails,
+        # the failed validation result is appended into a list and the next task will run as if this one passed.
+        break_on_fail: False
+        # Names of abstract syntax tree nodes and custom messages which are shown if nodes are found in the submitted file.
+        # A comprehensive list of AST nodes can be found here: https://greentreesnakes.readthedocs.io/en/latest/nodes.html
+        node_names:
+          ListComp: List comprehensions
+          For: For loops
+        # Optionally, define exact strings returned by ast.dump, which are not allowed.
+        # The graderutils.validation module contains a simple ast_dump function for dumping all ast nodes of a given source string.
+        node_dumps:
+          "Name(id='list', ctx=Load())": Loading the list builtin
+        # If a full ast.dump string match is too specific, it can be 'softened' using regexp.
+        # You have to do escaping by yourself, though.
+        node_dump_regexp:
+          "^Attribute.*attr\\=\\'sort\\'\\,\\ ctx\\=Load\\(\\)": Loading the sort method
+      # Simple regexp-based substring blacklisting.
+      - type: plain_text_blacklist
+        display_name: "Module does not contain restricted syntax"
+        description: "The solution contains restricted keywords"
+        file: my_solution.sql
+        # If ignorecase is True, all keys in strings dict must be in lowercase
+        ignorecase: True
+        strings:
+          drop: Dropping tables
+          delete: Deleting entries
 
   # More validation options
 
@@ -62,8 +75,9 @@ validation:
   # There are no exceptions, if the node is not in included in the whitelist and it is in the submitted module, it will not be accepted.
   # The messages in node_names and node_dumps are ignored, but you can provide a message in 'message'.
   - type: python_whitelist
+    display_name: "Module does not contain restricted syntax"
     file: my_solution.py
-    message: "You should only submit closed form equations, other kind of syntax is not allowed in this exercise."
+    description: "You should only submit closed form equations, other kind of syntax is not allowed in this exercise."
     node_names:
       # Node messages are ignored for whitelists and the name of the missed node will be used instead.
       Module: Module

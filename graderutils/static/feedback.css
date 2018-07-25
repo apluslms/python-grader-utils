@@ -2,7 +2,7 @@
 span.feedback-label {
   float: right;
 }
-/* Add space between different test suite types */
+/* Add space between different test groups */
 div.grading-task {
   margin-top: 40px;
   margin-bottom: 40px;

@@ -1,2 +1,2 @@
 def is_prime(n):
-    return n != 1
+    return n > 1

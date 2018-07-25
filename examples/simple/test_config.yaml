@@ -1,3 +1,3 @@
-test_modules:
+test_groups:
   - module: grader_tests
-    description: Grader tests
+    display_name: Grader tests

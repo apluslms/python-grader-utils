@@ -18,6 +18,11 @@
             "type": "integer",
             "minimum": 0
         },
+        "testsRun": {
+            "description": "Amount of tests run in total",
+            "type": "integer",
+            "minimum": 0
+        },
         "resultGroups":  {
             "description": "Test result groups",
             "type": "array",
@@ -29,10 +34,6 @@
         },
         "resultId": {
             "description": "Unique identifier of the result that should be embedded into the output",
-            "type": "string"
-        },
-        "fullOutput": {
-            "description": "Full, unmodified console output from the test suite",
             "type": "string"
         },
         "warningMessages": {

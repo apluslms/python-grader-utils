@@ -36,6 +36,10 @@
             "description": "Amount of tests run from this group",
             "type": "integer",
             "minimum": 0
+        },
+        "fullOutput": {
+            "description": "Full, unmodified console output from running all tests in the group as a single test suite.",
+            "type": "string"
         }
     }
 }

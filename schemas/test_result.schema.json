@@ -17,7 +17,7 @@
         "state": {
             "description": "The state this result terminated in.",
             "enum": [
-                "pass",
+                "success",
                 "fail",
                 "error"
             ]

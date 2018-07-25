@@ -2,13 +2,15 @@
 Python grader test runner with pre-grade validation and post-grade feedback styling.
 """
 import argparse
-import gc
 import importlib
 import io
+import os
 import sys
+import traceback
 import unittest
 
 import yaml
+import jsonschema
 
 
 from graderutils import graderunittest, schemaobjects, validation
@@ -33,111 +35,143 @@ def _run_suite(test_suite):
     return runner.run(test_suite)
 
 
-def _run_test_modules(test_modules_data):
+def run_test_groups(config):
     """
-    Load and run all test modules and their descriptions given as parameter.
-    Return a list of TestResult objects.
+    Generator that runs all test groups specified by the given configuration and yields test group result dicts.
     """
-    results = []
-    for test_module in test_modules_data:
-        test_module_name = test_module["module"]
-        suite = _load_tests_from_module_name(test_module_name)
-        result = _run_suite(suite)
-        result.test_key = test_module_name
-        result.test_description = test_module["description"]
-        results.append(result)
-    return results
+    test_groups_data = config["test_groups"]
+    for test_group in test_groups_data:
+        # Load suite of tests from module
+        test_suite = _load_tests_from_module_name(test_group["module"])
+        # Run all test cases in suite, producing a result with points
+        points_results = _run_suite(test_suite)
+        # Convert all test results in group results into JSON schema serializable dicts
+        group_result = schemaobjects.test_group_result_as_dict(points_results)
+        group_result["name"] = test_group["display_name"]
+        yield group_result
 
 
-def main(test_modules_data, error_template, feedback_template, no_default_css, feedback_out, points_out, tracebacks_to_hide):
-    """TODO docs"""
-    # If there are any exceptions during running, render the traceback into HTML using the provided error_template.
+def do_everything(config, grading_data):
+    """
+    Run test pipeline using a given configuration and aggregate results into the grading_data dict.
+    If validation is specified, it is run before tests.
+    If validation is run and any task fails, no tests are run.
+    """
+    if "validation" in config:
+        errors = list(validation.run_validation_tasks(config["validation"]["tasks"]))
+        if errors:
+            # Pre-grading validation failed, convert validation errors into a test result group with no points
+            validation_results = {
+                "name": config["validation"]["display_name"],
+                "testResults": list(schemaobjects.validation_errors_as_test_results(errors)),
+            }
+            grading_data["resultGroups"] = [validation_results]
+            return
+    result_groups = []
+    points_total = max_points_total = tests_run = 0
+    for group_result in run_test_groups(config):
+        result_groups.append(group_result)
+        points_total += group_result["points"]
+        max_points_total += group_result["maxPoints"]
+        tests_run += group_result["testsRun"]
+    grading_data["resultGroups"] = result_groups
+    grading_data["points"] = points_total
+    grading_data["maxPoints"] = max_points_total
+    grading_data["testsRun"] = tests_run
+
+
+def run(config_file, novalidate, container, json_results, develop_mode):
+    """
+    Graderutils main entrypoint.
+    Runs the full test pipeline and writes results and points to standard stream.
+    For accepted arguments, see make_argparser.
+    """
+    # All relevant grading data will be accumulated into this dict, and then serialized into JSON as a "Grading feedback" schema object
+    grading_data = {"warningMessages": []}
+
+    if develop_mode:
+        grading_data["warningMessages"].append("Graderutils is running in develop mode, all unhandled exceptions will be displayed unformatted.")
+
+    feedback_out = sys.stdout if container else sys.stderr
+    points_out = sys.stdout
+
+    schemas = schemaobjects.build_schemas()
+
+    # Run tests and hide infrastructure exceptions (not validation exceptions) if develop_mode is given and True.
     try:
-        if test_modules_data:
-            results = _run_test_modules(test_modules_data)
-            total_points = total_max_points = 0
-            for result in results:
-                total_points += result.points
-                total_max_points += result.max_points
-            html_results = htmlformat.test_results_as_html(results, feedback_template, no_default_css, tracebacks_to_hide)
+        # Load and validate the configuration yaml
+        with open(config_file, encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+        if not novalidate:
+            try:
+                jsonschema.validate(config, schemas["test_config"]["schema"])
+            except jsonschema.ValidationError as e:
+                msg = "Graderutils was given an invalid configuration file {}, the validation error was: {}".format(config_file, e.message)
+                grading_data["warningMessages"].append(msg)
+        # Config file is valid, run validation and all test groups
+        do_everything(config, grading_data)
+    except Exception as e:
+        if container:
+            raise
+        if develop_mode:
+            # Format e as a string
+            tb_object = traceback.TracebackException.from_exception(e)
+            error_msg = ''.join(tb_object.format())
         else:
-            total_points = total_max_points = 1
-            html_results = htmlformat.no_tests_html(feedback_template, no_default_css)
+            # Develop mode not enabled, hide traceback
+            error_msg = "Errors occured during testing. Run graderutils with --develop-mode to show all errors."
+        grading_data["warningMessages"].append(error_msg)
 
-        # Show feedback.
-        print(html_results, file=feedback_out)
+    if not grading_data["warningMessages"]:
+        # No warning messages, do not serialize an empty array
+        del grading_data["warningMessages"]
 
-        # A+ gives these points to the student if the two last lines written to stdout after grading are in the following format.
-        print("TotalPoints: {}\nMaxPoints: {}".format(total_points, total_max_points), file=points_out)
+    # Serialize grading data into JSON, with validation against the "Grading feedback" schema
+    grading_json = schemaobjects.full_serialize(schemas, grading_data)
 
-    except MemoryError:
-        # Testing used up all provided memory.
-        # Attempt to clean up some room for rendering errors as HTML.
-        gc.collect()
-        raise
+    if json_results or os.environ.get("GRADER_EATS_JSON_RESULTS", '0').strip() in ('1', 'true', 'True'):
+        print(grading_json, file=points_out)
     else:
-        return 0
+        # Backward compatible, good ol' "HTML to stderr and points to stdout"
+        html_output = htmlformat.json_to_html(grading_json)
+        print(html_output, file=feedback_out)
+        print("TotalPoints: {}\nMaxPoints: {}".format(grading_data["points"], grading_data["maxPoints"]), file=points_out)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__)
+def make_argparser():
+    parser = argparse.ArgumentParser(
+        description="Graderutils runner",
+        epilog=__doc__
+    )
     parser.add_argument(
             "config_file",
             type=str,
-            help="Path to a YAML-file containing grading settings. Example settings provided in graderutils/test_config.yaml",
+            help="Path to a YAML-file containing runtime settings for grader tests. An example file is provided at graderutils/test_config.yaml and examples/simple/test_config.yaml",
     )
     parser.add_argument(
-            "--allow_exceptions",
+            "--novalidate",
             action="store_true",
-            default=False,
-            help="By default, exceptions related to improperly configured tests are catched and hidden behind a generic error message to prevent possible grader test information to be shown to the user. This flag lets them through unformatted."
+            help="Skip validation of config_file"
     )
     parser.add_argument(
             "--container",
             action="store_true",
             help="This flag should be used when running graderutils inside docker container based on apluslms/grading-base"
     )
-    args = parser.parse_args()
+    parser.add_argument(
+            "--json-results",
+            action="store_true",
+            help="Print results as a JSON schema 'Grading results' string into standard stream. If used with --container, stream is stderr, else stdout."
+    )
+    parser.add_argument(
+            "--develop-mode", '-d',
+            action="store_true",
+            help="Display all unhandled exceptions unformatted. By default, exceptions related to improperly configured tests are catched and hidden behind a generic error message. This is to prevent unwanted leaking of grader test details, which might reveal e.g. parts of the model solution, if one is used."
+    )
+    return parser
 
-    feedback_out = sys.stdout if args.container else sys.stderr
-    points_out = sys.stdout
 
-    if args.allow_exceptions:
-        debug_warning = "Graderutils main module called with the <code>--allow_exceptions</code> flag, all graderutils exceptions will be shown to the user!"
-        print(htmlformat.wrap_div_alert(debug_warning), file=feedback_out)
-
-    # Starting from here, hide infrastructure exceptions (not validation exceptions) if args.allow_exceptions is given and True.
-    try:
-        config_file_path = args.config_file
-
-        with open(config_file_path, encoding="utf-8") as config_file:
-            config = yaml.safe_load(config_file)
-
-        error_template = config.get("error_template", None)
-        feedback_template = config.get("feedback_template", None)
-        no_default_css = config.get("no_default_css", False)
-        tracebacks_to_hide = config.get("tracebacks_to_hide", [])
-        if not tracebacks_to_hide:
-            # Check deprecated key for backwards compability
-            tracebacks_to_hide = config.get("exceptions_to_hide", [])
-        test_modules_data = config.get("test_modules_data", [])
-        if not test_modules_data:
-            test_modules_data = config.get("test_modules", [])
-
-        if "validation" in config:
-            errors = validation.get_validation_errors(config["validation"])
-            # Pre-grading validation failed, print errors and exit.
-            if errors:
-                print(htmlformat.errors_as_html(errors, error_template, no_default_css), file=feedback_out)
-                sys.exit(1)
-
-        sys.exit(main(test_modules_data, error_template, feedback_template, no_default_css, feedback_out, points_out, tracebacks_to_hide))
-
-    except Exception as e:
-        if args.allow_exceptions or args.container:
-            raise
-        else:
-            error_msg = "Something went wrong during the grader tests... Please contact course staff."
-            print(htmlformat.wrap_div_alert(error_msg), file=feedback_out)
-            sys.exit(1)
-
+if __name__ == "__main__":
+    args = vars(make_argparser().parse_args())
+    config_file = args.pop("config_file")
+    run(config_file, **args)

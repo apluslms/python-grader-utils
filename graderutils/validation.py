@@ -14,7 +14,7 @@ import importlib
 import re
 import traceback
 
-from graderutils.main import GraderUtilsError
+from graderutils import GraderUtilsError
 
 
 class ValidationError(GraderUtilsError): pass

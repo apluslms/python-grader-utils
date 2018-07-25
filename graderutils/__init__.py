@@ -1,0 +1,2 @@
+class GraderUtilsError(Exception):
+    pass

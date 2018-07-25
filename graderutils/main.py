@@ -11,12 +11,9 @@ import unittest
 import yaml
 
 
-class GraderUtilsError(Exception): pass
-
-
-from graderutils import graderunittest
+from graderutils import graderunittest, schemaobjects, validation
+# TODO move to independent library
 from graderutils import htmlformat
-from graderutils import validation
 
 
 def _load_tests_from_module_name(module_name):

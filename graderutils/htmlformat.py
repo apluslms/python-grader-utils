@@ -7,7 +7,7 @@ import re
 
 import jinja2
 
-from graderutils.main import GraderUtilsError
+from graderutils import GraderUtilsError
 
 
 class HTMLFormatError(GraderUtilsError): pass

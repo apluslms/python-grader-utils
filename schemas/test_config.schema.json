@@ -34,6 +34,61 @@
             },
             "minItems": 1,
             "uniqueItems": true
+        },
+        "validation": {
+            "description": "Pre-testing validation step",
+            "type": "object",
+            "properties": {
+                "display_name": {
+                    "description": "Name to use for the validation tests, if validation errors occur.",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "tasks": {
+                    "description": "Validation tasks to run",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "description": "Type of the task",
+                                "enum": [
+                                    "python_import",
+                                    "python_syntax",
+                                    "python_blacklist",
+                                    "python_whitelist",
+                                    "plain_text_blacklist",
+                                    "plain_text_whitelist",
+                                    "image_type",
+                                    "labview",
+                                    "xlsm",
+                                    "html"
+                                ]
+                            },
+                            "file": {
+                                "description": "Filename of the file to be validated.",
+                                "type": "string"
+                            },
+                            "display_name": {
+                                "description": "Name of the validation task, e.g. as a requirement: 'The file is a Python module that can be imported'",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Description of the validation task if it fails. E.g. when using a syntax blacklist, an explanation why there are blacklisted syntax tokens.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "file"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "description",
+                "tasks"
+            ]
         }
     }
 }

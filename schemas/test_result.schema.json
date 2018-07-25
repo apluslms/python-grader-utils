@@ -5,14 +5,12 @@
     "description": "Test result for a single test. Smallest unit of all result objects.",
     "type": "object",
     "required": [
-        "name",
+        "display_name",
         "state",
-        "points",
-        "maxPoints",
         "testOutput"
     ],
     "properties": {
-        "name": {
+        "display_name": {
             "description": "Display name of the test. E.g. name of a test function/method/procedure/script.",
             "type": "string"
         },
@@ -48,7 +46,7 @@
         },
         "userData": {
             "description": "Arbitrary data",
-            "type": "object"
+            "type": "string"
         }
     }
 }

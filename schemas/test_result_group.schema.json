@@ -6,8 +6,6 @@
     "type": "object",
     "required": [
         "name",
-        "points",
-        "maxPoints",
         "testResults"
     ],
     "properties": {

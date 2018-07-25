@@ -3,6 +3,7 @@ Functions for parsing TestResult objects and unittest output into HTML.
 Uses Jinja2 for template rendering.
 """
 import collections
+import json
 import re
 
 import jinja2
@@ -263,39 +264,6 @@ def _load_package_template(name):
 
 
 # TODO undry with no_tests_html and no_default_css
-def test_results_as_html(results, custom_template_name=None, no_default_css=False, tracebacks_to_hide=None):
-    """Render the list of results as HTML and return the HTML as a string.
-    @param results List of TestResult objects.
-    @return Raw HTML as a string.
-    """
-    result_context_dicts = []
-    total_points = total_max_points = total_tests_run = 0
-
-    for res in results:
-        result_context = test_result_as_template_context(res, tracebacks_to_hide)
-        result_context_dicts.append(result_context)
-        total_points += result_context["points"]
-        total_max_points += result_context["max_points"]
-        total_tests_run += result_context["tests_run"]
-
-    context = {
-        "all_results": result_context_dicts,
-        "total_points": total_points,
-        "total_max_points": total_max_points,
-        "total_tests_run": total_tests_run,
-        "no_default_css": no_default_css
-    }
-
-    package_loader = jinja2.PackageLoader("graderutils", "static")
-    env = jinja2.Environment(loader=package_loader)
-    default_template = env.get_template("feedback_template.html")
-
-    if custom_template_name:
-        custom_template = _load_template_file(custom_template_name)
-        context["feedback_template"] = default_template
-        return custom_template.render(**context)
-
-    return default_template.render(**context)
 
 
 def no_tests_html(feedback_template=None, no_default_css=False):
@@ -335,3 +303,12 @@ def wrap_div_alert(string):
     return r"<div class='alert alert-danger'>{}</div>".format(string)
 
 
+def json_to_html(grading_feedback_json):
+    """
+    Format a "Grading feedback" JSON schema object as HTML.
+    """
+    package_loader = jinja2.PackageLoader("graderutils", "static")
+    env = jinja2.Environment(loader=package_loader, trim_blocks=True, lstrip_blocks=True)
+    default_template = env.get_template("feedback_template.html")
+    grading_data = json.loads(grading_feedback_json)
+    return default_template.render(**grading_data)

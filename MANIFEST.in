@@ -1,5 +1,6 @@
 include LICENSE
 include README.md
+include schemas
 
 recursive-include static *
 recursive-include graderutils *

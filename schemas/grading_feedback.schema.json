@@ -43,6 +43,14 @@
         "fullOutput": {
             "description": "Full, unmodified console output from the test suite",
             "type": "string"
+        },
+        "warningMessages": {
+            "description": "Warning messages about improperly configured tests and/or fatal errors that prevented the tests from completing correctly. These warnings should only be used if the testing pipeline itself throws unhandled exceptions, not when the modules being tested by the test pipeline throw errors.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1
         }
     }
 }

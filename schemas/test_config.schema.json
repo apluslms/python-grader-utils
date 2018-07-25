@@ -29,7 +29,7 @@
                     }
                 },
                 "required": [
-                    "group"
+                    "module"
                 ]
             },
             "minItems": 1,

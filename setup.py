@@ -15,13 +15,13 @@ here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+    readmefile_contents = f.read()
 
 setup(
     name='graderutils',
-    version='2.10.0',
+    version='3.0.0',
     description='Utilities for Python based grader test pipelines',
-    long_description=long_description,
+    long_description=readmefile_contents,
 
     url='https://github.com/Aalto-LeTech/python-grader-utils',
     author='Matias Lindgren',
@@ -45,6 +45,7 @@ setup(
         'Jinja2',       # Render HTML feedback with templates
         'html5lib',     # Parse HTML
         'hypothesis',   # Generics for UnitTests
+        'jsonschema',   # Validators for JSON schemas
+        'python_jsonschema_objects',   # JSON schema to Python object mappings
     ],
-
 )

@@ -1,196 +1,103 @@
-{% block feedback_start %}
-{% endblock %}
-
-{# TODO style inclusion repeated in error template, move to generic layout base template #}
-{% block styles %}
-{% if not no_default_css %}
 <style>
 {% include 'feedback.css' %}
 </style>
-{% endif %}
-{% endblock %}
-
-{% macro title_or_default(title) -%}
-{% if title %}
-{{ title }}
-{% else %}
-Something weird happened at the server, this test has no title...
-{% endif %}
-{%- endmacro %}
-
-
-{% if no_tests %}
-
-<div class="grading-task">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" href="#no_tests_success">Passed</a>
-        <span class="label feedback-label label-success">Success</span>
-      </h4>
-    </div>
-  </div>
-</div>
-
-{% else %}
 
 <div class="total-grading-results">
-
-  <h1>Total test points: {{ total_points }} of {{ total_max_points }}</h1>
-  <h1><small>Total tests run: {{ total_tests_run }}</small></h1>
+    {% if points and maxPoints %}
+    <h1>Total points: {{ points }} of {{ maxPoints }}</h1>
+    {% endif %}
+    {% if testsRun %}
+    <h1><small>Total tests run: {{ testsRun }}</small></h1>
+    {% endif %}
 </div>
 
+{% for result_group in resultGroups %}
+{% set result_group_loop = loop %}
 
-  {% for testsuite_results in all_results %}
-  {% set all_results_loop = loop %}
+<div class="grading-task">
+    {% if result_group.points and result_group.maxPoints %}
+    <h3 class="testgroup-header">{{ result_group.name }} points: {{ result_group.points }} of {{ result_group.maxPoints }}</h3>
+    {% else %}
+    <h3 class="testgroup-header">{{ result_group.name }}</h3>
+    {% endif %}
 
-  <div class="grading-task">
-
-  <h3 class="testsuite-header">{{ testsuite_results.test_description }} points: {{ testsuite_results.points }} of {{ testsuite_results.max_points }}</h3>
-
-  {% for result in testsuite_results.results %}
-  {% set testsuite_loop = loop %}
+    {% for result in result_group.testResults %}
+    {% set test_result_loop = loop %}
 
     <div class="panel panel-default">
-      <div class="panel-heading">
-
-        <h4 class="panel-title">
-            <a data-toggle="collapse" href="#result{{ all_results_loop.index }}-{{ testsuite_loop.index }}">
-            {{ title_or_default(result.method_name) }}</a>
-
-
-        {% if result.test_outcome == "SUCCESS" %}
-
-          <span class="label feedback-label label-success">Success</span>
-        </h4>
-      </div>
-      <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse {% if result.user_data %} collapse in {% else %} collapse {% endif %}">
-        <div class="panel-body">
-          {% block success_panel_body scoped %}
-
-          {% if result.short_message %}
-          <p>{{ result.short_message }}</p>
-          {% endif %}
-
-            {% if result.user_data %}
-              {% if result.user_data.raw_html %}
-                <div class="user-data-raw-html well">
-                {{ result.user_data.raw_html }}
-                </div>
-              {% endif %}
-              {% if result.user_data.preformatted_feedback %}
-                <pre>{{ result.user_data.preformatted_feedback|e }}</pre>
-              {% endif %}
-            {% endif %}
-
-          {% endblock %}
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" href="#result{{ result_group_loop.index }}-{{ test_result_loop.index }}">
+                    {{ result.name }}</a>
+                {% if result.state == "success" %}
+                <span class="label feedback-label label-success">Success</span>
+                {% elif result.state == "fail" %}
+                <span class="label feedback-label label-danger">Failed</span>
+                {% elif result.state == "error" %}
+                <span class="label feedback-label label-danger">Error</span>
+                {% endif %}
+            </h4>
         </div>
-      </div>
+        <div id="result{{ result_group_loop.index }}-{{ test_result_loop.index }}" class="panel-collapse {% if result.userData %} collapse in {% else %} collapse {% endif %}">
+            <div class="panel-body">
+                {% if result.header %}
+                <p>{{ result.header }}</p>
+                {% endif %}
+                {% if result.testOutput %}
+                <pre class="feedback">{{ result.testOutput|e }}</pre>
+                {% endif %}
 
-        {% elif result.test_outcome == "FAIL" %}
+                <!-- {% if result.userData %} -->
+                <!--   {% if result.userData.raw_html %} -->
+                <!--     <div class="user-data-raw-html well"> -->
+                <!--     {{ result.userData.raw_html }} -->
+                <!--     </div> -->
+                <!--   {% endif %} -->
+                <!--   {% if result.userData.preformatted_feedback %} -->
+                <!--     <pre>{{ result.userData.preformatted_feedback|e }}</pre> -->
+                <!--   {% endif %} -->
+                <!-- {% endif %} -->
 
-          <span class="label feedback-label label-danger">Failed</span>
-        </h4>
-      </div>
-      <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
-        <div class="panel-body feedback-failed">
-          {% block failed_panel_body_feedback scoped %}
-          {% if result.short_message %}
-          <p>{{ result.short_message }}</p>
-          {% else %}
-          <p>The test failed, reason:</p>
-          {% endif %}
-          <pre class="feedback">{{ result.assertion_message|e }}</pre>
-          {% endblock %}
+                <!-- {% if result.state == "error" %} -->
+                <!-- <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}"> -->
+                <!--   Show traceback</button> -->
+                <!-- <div id="traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}" class="collapse"> -->
+                <!--   <p><pre>{{ result.full_traceback }}</pre></p> -->
+                <!-- </div> -->
+                <!-- {% endif %} -->
 
-          {% block failed_panel_body_user_data scoped %}
-
-          {% if result.user_data %}
-            {% if result.user_data.raw_html %}
-              <div class="user-data-container well">
-              {{ result.user_data.raw_html }}
-              </div>
-            {% endif %}
-            {% if result.user_data.preformatted_feedback %}
-              <pre>{{ result.user_data.preformatted_feedback|e }}</pre>
-            {% endif %}
-          {% endif %}
-
-          {% endblock %}
+                {% if result.footer %}
+                <p>{{ result.footer }}</p>
+                {% endif %}
+            </div>
         </div>
-      </div>
-
-
-        {% elif result.test_outcome == "ERROR" %}
-
-          {% if result.assertion_message|length == 0 %}
-          <span class="label feedback-label label-default">Server error</span>
-          {% else %}
-          <span class="label feedback-label label-danger">Error</span>
-          {% endif %}
-        </h4>
-      </div>
-      <div id="result{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="panel-collapse collapse in">
-        <div class="panel-body">
-          {% block error_panel_body scoped %}
-
-          {% if result.short_message %}
-          <p>{{ result.short_message }}</p>
-          {% else %}
-          <p>Errors occurred during testing. Click 'Show full traceback' if you want to see the full traceback. </p>
-          {% endif %}
-
-          {% if result.assertion_message|length == 0 %}
-          <pre>Error in grader server, please notify course staff.</pre>
-          {% else %}
-          <pre>{{ result.assertion_message|e }}</pre>
-          {% endif %}
-
-          <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#traceback{{ all_results_loop.index }}-{{ testsuite_loop.index }}">
-            Show full traceback</button>
-          <div id="traceback{{ all_results_loop.index }}-{{ testsuite_loop.index }}" class="collapse">
-            <p><pre>{{ result.full_traceback }}</pre></p>
-          </div>
-
-          {% endblock %}
-        </div>
-      </div>
-
-        {% else %}
-
-          <span class="label feedback-label label-default">Unknown test result</span>
-        </h4>
-        <b>Error in feedback template, please notify course staff.</b>
-        <p>The test result output from the server tests should still be visible below.</p>
-      </div>
-
-        {% endif %}
-
-      </div>
-  {% endfor %}
-
-    <div class="panel panel-default full-test-output">
-      <div class="panel-heading">
-
-        <h5 class="panel-title">
-          <a data-toggle="collapse" href="#full-test-output{{ all_results_loop.index }}">
-              Full terminal output for {{ testsuite_results.test_description|lower }}</a>
-          <span class="label feedback-label label-info">Info</span>
-        </h5>
-      </div>
-
-      <div id="full-test-output{{ all_results_loop.index }}" class="panel-body collapse">
-        <p><pre class="feedback">{{ testsuite_results.unittest_output|e }}</pre></p>
-      </div>
     </div>
+    {% endfor %}
+</div>
 
-  </div>
-
-  {% endfor %}
-
+{% if result_group.fullOutput %}
+<div class="panel panel-default full-test-output">
+    <div class="panel-heading">
+        <h5 class="panel-title">
+            <a data-toggle="collapse" href="#full-test-output{{ result_group_loop.index }}">
+                Full terminal output for {{ result_group.name }}</a>
+            <span class="label feedback-label label-info">Info</span>
+        </h5>
+    </div>
+    <div id="full-test-output{{ result_group_loop.index }}" class="panel-body collapse">
+        <p><pre class="feedback">{{ result_group.fullOutput|e }}</pre></p>
+    </div>
+</div>
 {% endif %}
 
+{% endfor %}
 
-{% block feedback_end %}
-{% endblock %}
-
+{% if warningMessages %}
+<div class="container">
+    {% for warning in warningMessages %}
+    <div class="alert alert-danger" role="alert">
+        <strong>Warning</strong> {{ warning }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

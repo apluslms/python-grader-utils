@@ -11,6 +11,8 @@
         "test_groups": {
             "description": "Python test modules grouped by different testing charasteristics",
             "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
             "items": {
                 "title": "Test module",
                 "type": "object",
@@ -32,9 +34,7 @@
                         "type": "string"
                     }
                 }
-            },
-            "minItems": 1,
-            "uniqueItems": true
+            }
         },
         "validation": {
             "title": "Pre-test validation",
@@ -95,6 +95,8 @@
         "format_tracebacks": {
             "description": "Options for formatting traceback strings from specific exception classes",
             "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
             "items": {
                 "title": "Traceback config",
                 "description": "Configuration for formatting all traceback strings from an exception",

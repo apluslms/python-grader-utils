@@ -26,11 +26,11 @@
         "testResults": {
             "description": "Test results for all tests in a test group",
             "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
             "items": {
                 "$ref": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/schemas/test_result.schema.json"
-            },
-            "minItems": 1,
-            "uniqueItems": true
+            }
         },
         "testsRun": {
             "description": "Amount of tests run from this group",

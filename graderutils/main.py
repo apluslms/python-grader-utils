@@ -55,12 +55,11 @@ def _run_suite(test_suite):
     return runner.run(test_suite)
 
 
-def run_test_groups(config):
+def run_test_groups(test_groups):
     """
     Generator that runs all test groups specified by the given configuration and yields test group result dicts.
     """
-    test_groups_data = config["test_groups"]
-    for test_group in test_groups_data:
+    for test_group in test_groups:
         # Load suite of tests from module
         test_suite = _load_tests_from_module_name(test_group["module"])
         # Run all test cases in suite, producing a result with points
@@ -92,7 +91,7 @@ def do_everything(config):
     # Validation not specified, or all validation tasks succeeded, run tests
     result_groups = []
     points_total = max_points_total = tests_run = 0
-    for group_result in run_test_groups(config):
+    for group_result in run_test_groups(config["test_groups"]):
         result_groups.append(group_result)
         points_total += group_result["points"]
         max_points_total += group_result["maxPoints"]

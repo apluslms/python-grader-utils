@@ -189,7 +189,7 @@ def get_python_import_errors(filename):
     errors = {}
     try:
         _import_module_from_python_file(filename)
-    except Exception as error:
+    except Exception:
         errors["message"] = traceback.format_exc()
     return errors
 
@@ -327,10 +327,7 @@ def run_validation_tasks(tasks):
         try:
             error = _get_validation_error(validation_type, filename, task)
         except Exception as e:
-            traceback_str = ''.join(traceback.TracebackException.from_exception(e).format())
-            error = {
-                "message": traceback_str,
-            }
+            error = {"message": traceback.format_exc()}
         if error:
             error["type"] = validation_type
             error["file"] = filename

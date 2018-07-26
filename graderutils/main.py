@@ -133,10 +133,8 @@ def run(config_file, novalidate=False, container=False, json_results=False, deve
         if container:
             raise
         if develop_mode:
-            # Format e as a string
-            tb_object = traceback.TracebackException.from_exception(e)
             # Wrap multiline traceback string with repr and add prefix flag
-            error_msg = multiline_repr_prefix + repr(''.join(tb_object.format()))
+            error_msg = multiline_repr_prefix + repr(traceback.format_exc())
         else:
             # Develop mode not enabled, hide traceback
             error_msg = "Unhandled exceptions occured during testing, unable to complete tests. Please notify the author of the tests."

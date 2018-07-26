@@ -12,7 +12,11 @@
             "description": "Python test modules grouped by different testing charasteristics",
             "type": "array",
             "items": {
+                "title": "Test module",
                 "type": "object",
+                "required": [
+                    "module"
+                ],
                 "properties": {
                     "module": {
                         "description": "Name of an importable Python module that contains at least one unittest.TestCase",
@@ -27,17 +31,18 @@
                         "description": "Longer description for the test group, in case the display name is too short",
                         "type": "string"
                     }
-                },
-                "required": [
-                    "module"
-                ]
+                }
             },
             "minItems": 1,
             "uniqueItems": true
         },
         "validation": {
-            "title": "Pre-testing validation tasks",
+            "title": "Pre-test validation",
             "type": "object",
+            "required": [
+                "display_name",
+                "tasks"
+            ],
             "properties": {
                 "display_name": {
                     "description": "Name to use for the validation tests, if validation errors occur.",
@@ -48,7 +53,12 @@
                     "description": "Validation tasks to run",
                     "type": "array",
                     "items": {
+                        "title": "Validation task",
                         "type": "object",
+                        "required": [
+                            "type",
+                            "file"
+                        ],
                         "properties": {
                             "type": {
                                 "description": "Type of the task",
@@ -77,18 +87,10 @@
                                 "description": "Description of the validation task if it fails. E.g. when using a syntax blacklist, an explanation why there are blacklisted syntax tokens.",
                                 "type": "string"
                             }
-                        },
-                        "required": [
-                            "type",
-                            "file"
-                        ]
+                        }
                     }
                 }
-            },
-            "required": [
-                "display_name",
-                "tasks"
-            ]
+            }
         },
         "format_tracebacks": {
             "description": "Options for formatting traceback strings from specific exception classes",
@@ -97,6 +99,9 @@
                 "title": "Traceback config",
                 "description": "Configuration for formatting all traceback strings from an exception",
                 "type": "object",
+                "required": [
+                    "class_name"
+                ],
                 "properties": {
                     "class_name": {
                         "description": "Name of the exception class as it would be catched with the 'except' keyword. E.g. AssertionError.",
@@ -120,10 +125,7 @@
                         "type": "string",
                         "minLength": 1
                     }
-                },
-                "required": [
-                    "class_name"
-                ]
+                }
             }
         }
     }

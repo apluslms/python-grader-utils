@@ -3,59 +3,8 @@ Functions for parsing and cleaning output strings from unittest test case result
 """
 import re
 
-
-def suffix_after(string, split_at):
-    """Return suffix of string after first occurrence of split_at."""
-    return string.split(split_at, 1)[-1]
-
-
-def prefix_before(string, split_at):
-    """Return prefix of string before first occurrence of split_at."""
-    return string.split(split_at, 1)[0]
-
-
-def collapse_max_recursion_exception(string, repeat_threshold=20):
-    """Replace identical lines in a max recursion error traceback
-    with a message and the amount lines removed."""
-    # Well this turned out to be quite awful.
-    result = []
-    repeats = 0
-    previous_repeat_count = 0
-    found_lines = set()
-    is_repeating = False
-    for line in string.splitlines():
-        if line in found_lines:
-            repeats += 1
-        else:
-            if is_repeating:
-                found_lines = set()
-                previous_repeat_count = repeats
-            repeats = 0
-            found_lines.add(line)
-        if repeats > repeat_threshold:
-            # Continue until we find an unique line
-            is_repeating = True
-            continue
-        if is_repeating:
-            is_repeating = False
-            # TODO localize message
-            msg = (
-                2*"\n   .    " +
-                "\n   .    \n"
-                "\n  and {0} more hidden lines\n".format(previous_repeat_count) +
-                2*"\n   .    " +
-                "\n   .    \n\n"
-            )
-            result.append(msg)
-        result.append(line + '\n')
-    return ''.join(result)
-
-
-def collapse_traceback(traceback_string):
-    if re.search(r"RecursionError|MemoryError", traceback_string):
-        traceback_string = collapse_max_recursion_exception(traceback_string)
-    return traceback_string
-
+# TODO save traceback objects during tests and use the std lib traceback module
+# then a lot of code in here can probably be dropped
 
 def _iter_redacted_lines(lines, remove_lines, replacement_string):
     """
@@ -88,9 +37,9 @@ def _iter_redacted_lines(lines, remove_lines, replacement_string):
         yield line
 
 
-def hide_exception_traceback(traceback_string, exception_names, remove_more_sentinel, replacement_string):
+def hide_exception_traceback(lines, exception_class_name, remove_more_sentinel=None, replacement_string=None):
     """
-    Find all tracebacks caused by exceptions specified in exception_names and return a string where all traceback occurrences in traceback_string have been replaced with replacement_string.
+    Find all tracebacks caused by exceptions specified by exception_class_name and return a string where all traceback occurrences in traceback_string have been replaced with replacement_string.
     In other words, everything starting with 'Traceback (most recent call last)' up until the exception message is replaced.
 
     If remove_more_sentinel is given, then even more is removed.
@@ -101,7 +50,7 @@ def hide_exception_traceback(traceback_string, exception_names, remove_more_sent
     """
     traceback_header = "Traceback (most recent call last)"
     begin_traceback = re.compile('^' + re.escape(traceback_header))
-    end_traceback = re.compile('^(' + '|'.join(re.escape(e) for e in exception_names) + ')')
+    end_traceback = re.compile('^' + re.escape(exception_class_name))
 
     # Find all lines that match the pattern range
 
@@ -111,9 +60,7 @@ def hide_exception_traceback(traceback_string, exception_names, remove_more_sent
     # Finalized matches to be removed, pairs of (start_index, line_count)
     matches = []
 
-    traceback_lines = traceback_string.splitlines(keepends=True)
-
-    for lineno, line in enumerate(traceback_lines):
+    for lineno, line in enumerate(lines):
         if is_matching:
             if re.match(end_traceback, line):
                 # Fully matched one traceback
@@ -121,7 +68,7 @@ def hide_exception_traceback(traceback_string, exception_names, remove_more_sent
                 match = []
                 is_matching = False
             elif re.match(begin_traceback, line):
-                # This match overlaps 2 traceback strings, and the first one is from an exception not specified in exception_names
+                # This match overlaps 2 traceback strings, and the first one is from an exception not specified by exception_class_name
                 # Drop first match and start a new one from here
                 match = [lineno, 1]
             else:
@@ -133,7 +80,7 @@ def hide_exception_traceback(traceback_string, exception_names, remove_more_sent
             match = [lineno, 1]
 
     # Replace matching line chunks with the replacement_string
-    cleaned_traceback_string = ''.join(_iter_redacted_lines(traceback_lines, iter(matches), replacement_string))
+    cleaned_traceback_string = ''.join(_iter_redacted_lines(lines, iter(matches), replacement_string))
 
     # Remove even more starting at the replacement string if a sentinel is given
     if remove_more_sentinel:
@@ -143,18 +90,30 @@ def hide_exception_traceback(traceback_string, exception_names, remove_more_sent
         else:
             # Exception names will start new lines immediately below the last line of the replacement string
             begin_pattern_str = end_traceback.pattern
-        remove_pattern = re.compile(begin_pattern_str + '(.|[\r\n])*?' + re.escape(remove_more_sentinel), re.MULTILINE)
+        remove_pattern = re.compile(begin_pattern_str + r'(.|[\r\n])*?' + re.escape(remove_more_sentinel), re.MULTILINE)
         cleaned_traceback_string = re.sub(remove_pattern, '', cleaned_traceback_string)
 
     return cleaned_traceback_string
 
 
-def parsed_assertion_message(assertion_error_traceback, split_at=None):
+def clean_feedback(result_groups, config):
     """
-    Remove traceback and 'AssertionError: ' starting from assertion_error_traceback.
-    Optionally split the resulting string at split_at and return the prefix.
+    Run traceback cleaning for finished grading feedback.
     """
-    without_traceback = suffix_after(assertion_error_traceback, "AssertionError: ")
-    if split_at:
-        without_traceback = prefix_before(without_traceback, split_at)
-    return without_traceback
+    for group in result_groups:
+        for result in group["testResults"]:
+            # Run all cleaning tasks for traceback string lines
+            output_lines = result["testOutput"].splitlines(keepends=True)
+            for task in config:
+                if task.get("hide_tracebacks", False):
+                    # This task defines that exceptions from some class must be hidden
+                    if task.get("hide_tracebacks_short_only", False):
+                        # This task defines that full, unformatted output should be left untouched
+                        result["fullTestOutput"] = result["testOutput"]
+                    exception_class_name = task["class_name"]
+                    result["testOutput"] = hide_exception_traceback(
+                        output_lines,
+                        exception_class_name,
+                        remove_more_sentinel=task.get("remove_more_sentinel", ''),
+                        replacement_string=task.get("hide_tracebacks_replacement", '')
+                    )

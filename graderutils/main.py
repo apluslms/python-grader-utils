@@ -18,7 +18,7 @@ multiline_repr_prefix = "#MULTILINE-REPR#"
 import yaml
 import jsonschema
 
-from graderutils import graderunittest, schemaobjects, validation
+from graderutils import graderunittest, schemaobjects, validation, tracebackformat
 # TODO move to independent library
 from graderutils import htmlformat
 
@@ -77,13 +77,16 @@ def do_everything(config):
         points_total += group_result["points"]
         max_points_total += group_result["maxPoints"]
         tests_run += group_result["testsRun"]
-    grading_feedback = {
+    if "format_tracebacks" in config:
+        # Traceback formatting specified, run all formatting on all results
+        # Unmodified traceback strings are backed up into key fullTestOutput for each test result.
+        tracebackformat.clean_feedback(result_groups, config["format_tracebacks"])
+    return {
         "resultGroups": result_groups,
         "points": points_total,
         "maxPoints": max_points_total,
         "testsRun": tests_run,
     }
-    return grading_feedback
 
 
 def run(config_file, novalidate=False, container=False, quiet=False, json_results=False, show_config=False, develop_mode=False):

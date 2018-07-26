@@ -159,36 +159,26 @@ def make_argparser():
             type=str,
             help="Path to a YAML-file containing runtime settings for grader tests. An example file is provided at graderutils/test_config.yaml and examples/simple/test_config.yaml",
     )
-    parser.add_argument(
-            "--novalidate",
-            action="store_true",
-            help="Skip validation of config_file"
+    flags = (
+        ("novalidate",
+            "Skip validation of config_file"),
+        ("container",
+            "This flag should be used when running graderutils inside docker container based on apluslms/grading-base"),
+        ("quiet",
+            "Suppress warnings."),
+        ("json-results",
+            "Print results as a JSON schema 'Grading results' string into standard stream."
+            " If used with --container, stream is stderr, else stdout."),
+        ("show-config",
+            "Print test configuration into warnings."),
+        ("develop-mode",
+            "Display all unhandled exceptions unformatted."
+            " Also implies --show-config."
+            " By default, exceptions related to improperly configured tests are catched and hidden behind a generic error message."
+            " This is to prevent unwanted leaking of grader test details, which might reveal e.g. parts of the model solution, if one is used."),
     )
-    parser.add_argument(
-            "--container",
-            action="store_true",
-            help="This flag should be used when running graderutils inside docker container based on apluslms/grading-base"
-    )
-    parser.add_argument(
-            "--quiet", "-q",
-            action="store_true",
-            help="Suppress warnings."
-    )
-    parser.add_argument(
-            "--json-results",
-            action="store_true",
-            help="Print results as a JSON schema 'Grading results' string into standard stream. If used with --container, stream is stderr, else stdout."
-    )
-    parser.add_argument(
-            "--show-config",
-            action="store_true",
-            help="Print test configuration into warnings."
-    )
-    parser.add_argument(
-            "--develop-mode", '-d',
-            action="store_true",
-            help="Display all unhandled exceptions unformatted. Also implies --show-config. By default, exceptions related to improperly configured tests are catched and hidden behind a generic error message. This is to prevent unwanted leaking of grader test details, which might reveal e.g. parts of the model solution, if one is used."
-    )
+    for flag, help in flags:
+        parser.add_argument('--' + flag, action="store_true", help=help)
     return parser
 
 

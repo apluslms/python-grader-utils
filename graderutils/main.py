@@ -113,15 +113,12 @@ def run(config_file, novalidate, container, json_results, develop_mode, quiet):
     if develop_mode:
         logger.warning("Graderutils is running in develop mode, all unhandled exceptions will be displayed unformatted. Run with --quiet to continue running in develop mode, while disabling these warnings.")
 
-    feedback_out = sys.stdout if container else sys.stderr
-    points_out = sys.stdout
-
-    schemas = schemaobjects.build_schemas()
-
-    grading_data = {}
+    # Kwargs dict for top level "Grading feedback" JSON schema object
+    grading_feedback = {}
 
     # Run tests and hide infrastructure exceptions (not validation exceptions) if develop_mode is given and True.
     try:
+        schemas = schemaobjects.build_schemas()
         # Load and validate the configuration yaml
         with open(config_file, encoding="utf-8") as f:
             config = yaml.safe_load(f)
@@ -131,7 +128,7 @@ def run(config_file, novalidate, container, json_results, develop_mode, quiet):
             except jsonschema.ValidationError as e:
                 logger.warning("Graderutils was given an invalid configuration file {}, the validation error was: {}".format(config_file, e.message))
         # Config file is valid, run validation and all test groups
-        grading_data = do_everything(config)
+        grading_feedback = do_everything(config)
     except Exception as e:
         if container:
             raise
@@ -148,10 +145,13 @@ def run(config_file, novalidate, container, json_results, develop_mode, quiet):
     if not quiet:
         warning_messages = list(parse_warnings(logger))
         if warning_messages:
-            grading_data["warningMessages"] = warning_messages
+            grading_feedback["warningMessages"] = warning_messages
 
     # Serialize grading data into JSON, with validation against the "Grading feedback" schema
-    grading_json = schemaobjects.full_serialize(schemas, grading_data)
+    grading_json = schemaobjects.full_serialize(schemas, grading_feedback)
+
+    feedback_out = sys.stdout if container else sys.stderr
+    points_out = sys.stdout
 
     if json_results or os.environ.get("GRADER_EATS_JSON_RESULTS", '0').strip() in ('1', 'true', 'True'):
         print(grading_json, file=points_out)
@@ -159,7 +159,7 @@ def run(config_file, novalidate, container, json_results, develop_mode, quiet):
         # Backward compatible, good ol' "HTML to stderr and points to stdout"
         html_output = htmlformat.json_to_html(grading_json)
         print(html_output, file=feedback_out)
-        print("TotalPoints: {}\nMaxPoints: {}".format(grading_data["points"], grading_data["maxPoints"]), file=points_out)
+        print("TotalPoints: {}\nMaxPoints: {}".format(grading_feedback["points"], grading_feedback["maxPoints"]), file=points_out)
 
 
 def make_argparser():

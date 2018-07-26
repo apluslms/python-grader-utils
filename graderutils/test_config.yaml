@@ -71,30 +71,30 @@ validation:
 
   # More validation options
 
-  # Whitelists are inverted blacklists, where all node names and node dumps are restricted, unless specified in the whitelist.
-  # There are no exceptions, if the node is not in included in the whitelist and it is in the submitted module, it will not be accepted.
-  # The messages in node_names and node_dumps are ignored, but you can provide a message in 'message'.
-  - type: python_whitelist
-    display_name: "Module does not contain restricted syntax"
-    file: my_solution.py
-    description: "You should only submit closed form equations, other kind of syntax is not allowed in this exercise."
-    node_names:
-      # Node messages are ignored for whitelists and the name of the missed node will be used instead.
-      Module: Module
-      Assign: Assigning values to names
-      # Storing and loading names/variables
-      Name: Using names
-      Load: Loading a name
-      Store: Storing a name
-      # Bitwise operations and matrix multiplication are not included
-      BinOp: Binary operations
-      Add: Addition
-      Sub: Subtraction
-      Mult: Multiplication
-      Div: Division
-      FloorDiv: Floor division
-      Mod: Modulo
-      Pow: Power
+              # Whitelists are inverted blacklists, where all node names and node dumps are restricted, unless specified in the whitelist.
+              # There are no exceptions, if the node is not in included in the whitelist and it is in the submitted module, it will not be accepted.
+              # The messages in node_names and node_dumps are ignored, but you can provide a message in 'message'.
+      - type: python_whitelist
+        display_name: "Module does not contain restricted syntax"
+        file: my_solution.py
+        description: "You should only submit closed form equations, other kind of syntax is not allowed in this exercise."
+        node_names:
+            # Node messages are ignored for whitelists and the name of the missed node will be used instead.
+            Module: Module
+        Assign: Assigning values to names
+            # Storing and loading names/variables
+        Name: Using names
+        Load: Loading a name
+        Store: Storing a name
+            # Bitwise operations and matrix multiplication are not included
+        BinOp: Binary operations
+        Add: Addition
+        Sub: Subtraction
+        Mult: Multiplication
+        Div: Division
+        FloorDiv: Floor division
+        Mod: Modulo
+        Pow: Power
 
 # Optional traceback hiding
 # If an exception from the class_names list of exception classes is raised, its traceback is removed from the output and leave only the exception line.

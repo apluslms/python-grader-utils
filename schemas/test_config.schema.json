@@ -116,11 +116,11 @@
                     },
                     "hide_tracebacks": {
                         "description": "Remove all tracebacks",
-                        "type": "bool"
+                        "type": "boolean"
                     },
                     "hide_tracebacks_short_only": {
                         "description": "If hide_tracebacks is given and true, prevent traceback hiding in fullTestOutput strings. Else, this flag is ignored silently.",
-                        "type": "bool"
+                        "type": "boolean"
                     },
                     "hide_tracebacks_replacement": {
                         "description": "If hide_tracebacks is given and true, hidden tracebacks will be replaced with this string. Else, ignore this string. Does not append a newline.",

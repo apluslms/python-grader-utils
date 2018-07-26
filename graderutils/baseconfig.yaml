@@ -1,0 +1,10 @@
+# Default configuration.
+# User configuration will be applied on top of this one, overwriting existing keys
+format_tracebacks:
+    - class_name: AssertionError
+      hide_tracebacks: true
+      hide_tracebacks_short_only: true
+    - class_name: RecursionError
+      repeating_lines_threshold: 20
+    - class_name: MemoryError
+      repeating_lines_threshold: 20

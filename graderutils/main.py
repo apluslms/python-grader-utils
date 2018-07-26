@@ -4,10 +4,11 @@ Python grader test runner with pre-grade validation and post-grade feedback styl
 import argparse
 import ast
 import io
+import logging
 import os
+import pprint
 import sys
 import traceback
-import logging
 
 # Log deprecation warnings into a single, global stream
 logger = logging.getLogger("warnings")
@@ -17,10 +18,11 @@ multiline_repr_prefix = "#MULTILINE-REPR#"
 import yaml
 import jsonschema
 
-
 from graderutils import graderunittest, schemaobjects, validation
 # TODO move to independent library
 from graderutils import htmlformat
+
+BASECONFIG = os.path.join(os.path.dirname(__file__), "baseconfig.yaml")
 
 
 def parse_warnings(logger):
@@ -75,15 +77,16 @@ def do_everything(config):
         points_total += group_result["points"]
         max_points_total += group_result["maxPoints"]
         tests_run += group_result["testsRun"]
-    return {
+    grading_feedback = {
         "resultGroups": result_groups,
         "points": points_total,
         "maxPoints": max_points_total,
         "testsRun": tests_run,
     }
+    return grading_feedback
 
 
-def run(config_file, novalidate=False, container=False, json_results=False, develop_mode=False, quiet=False):
+def run(config_file, novalidate=False, container=False, quiet=False, json_results=False, show_config=False, develop_mode=False):
     """
     Graderutils main entrypoint.
     Runs the full test pipeline and writes results and points to standard stream.
@@ -107,7 +110,10 @@ def run(config_file, novalidate=False, container=False, json_results=False, deve
                 jsonschema.validate(config, schemas["test_config"]["schema"])
             except jsonschema.ValidationError as e:
                 logger.warning("Graderutils was given an invalid configuration file {}, the validation error was: {}".format(config_file, e.message))
-        # Config file is valid, run validation and all test groups
+        # Config file is valid, merge with baseconfig
+        with open(BASECONFIG, encoding="utf-8") as f:
+            config = dict(yaml.safe_load(f), **config)
+        # Run validation and all test groups
         grading_feedback = do_everything(config)
     except Exception as e:
         if container:
@@ -121,6 +127,9 @@ def run(config_file, novalidate=False, container=False, json_results=False, deve
         logger.warning(error_msg)
 
     if not quiet:
+        if develop_mode or show_config:
+            msg = "The test configuration was:\n" + pprint.PrettyPrinter(indent=2).pformat(config)
+            logger.warning(multiline_repr_prefix + repr(msg))
         warning_messages = list(parse_warnings(logger))
         if warning_messages:
             grading_feedback["warningMessages"] = warning_messages
@@ -171,9 +180,14 @@ def make_argparser():
             help="Print results as a JSON schema 'Grading results' string into standard stream. If used with --container, stream is stderr, else stdout."
     )
     parser.add_argument(
+            "--show-config",
+            action="store_true",
+            help="Print test configuration into warnings."
+    )
+    parser.add_argument(
             "--develop-mode", '-d',
             action="store_true",
-            help="Display all unhandled exceptions unformatted. By default, exceptions related to improperly configured tests are catched and hidden behind a generic error message. This is to prevent unwanted leaking of grader test details, which might reveal e.g. parts of the model solution, if one is used."
+            help="Display all unhandled exceptions unformatted. Also implies --show-config. By default, exceptions related to improperly configured tests are catched and hidden behind a generic error message. This is to prevent unwanted leaking of grader test details, which might reveal e.g. parts of the model solution, if one is used."
     )
     return parser
 

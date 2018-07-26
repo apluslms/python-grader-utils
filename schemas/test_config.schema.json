@@ -89,6 +89,42 @@
                 "display_name",
                 "tasks"
             ]
+        },
+        "format_tracebacks": {
+            "description": "Options for formatting traceback strings from specific exception classes",
+            "type": "array",
+            "items": {
+                "title": "Traceback config",
+                "description": "Configuration for formatting all traceback strings from an exception",
+                "type": "object",
+                "properties": {
+                    "class_name": {
+                        "description": "Name of the exception class as it would be catched with the 'except' keyword. E.g. AssertionError.",
+                        "type": "string"
+                    },
+                    "repeating_lines_threshold": {
+                        "description": "Minimum amount of consequtive, identical lines or line chunks to enable line collapsing for the repeating range. Enabled by default for RecursionError with value 20.",
+                        "type": "integer",
+                        "minimum": 2
+                    },
+                    "hide_tracebacks": {
+                        "description": "Remove all tracebacks",
+                        "type": "bool"
+                    },
+                    "hide_tracebacks_short_only": {
+                        "description": "If hide_tracebacks is given and true, prevent traceback hiding in fullTestOutput strings. Else, this flag is ignored silently.",
+                        "type": "bool"
+                    },
+                    "hide_tracebacks_replacement": {
+                        "description": "If hide_tracebacks is given and true, hidden tracebacks will be replaced with this string. Else, ignore this string. Does not append a newline.",
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "required": [
+                    "class_name"
+                ]
+            }
         }
     }
 }

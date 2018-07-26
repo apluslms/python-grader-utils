@@ -13,8 +13,8 @@ class SchemaError(GraderUtilsError): pass
 
 
 SCHEMA_KEYS = (
-    "test_config",
-    "test_result",
+    "test_config",       # No references
+    "test_result",       # No references
     "test_result_group", # Depends on test_result
     "grading_feedback",  # Depends on test_result_group
 )

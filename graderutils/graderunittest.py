@@ -173,8 +173,8 @@ def run_test_suite_in_named_module(module_name):
     loader = unittest.defaultTestLoader
     test_module = importlib.import_module(module_name)
     test_suite = loader.loadTestsFromModule(test_module)
-    # Redirect output to string stream, increase verbosity, and retain all traceback objects
-    runner = PointsTestRunner(stream=io.StringIO(), verbosity=2, tb_locals=True)
+    # Redirect output to string stream and increase verbosity
+    runner = PointsTestRunner(stream=io.StringIO(), verbosity=2)
     result = runner.run(test_suite)
     return result
 

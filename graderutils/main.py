@@ -71,13 +71,15 @@ def run_test_groups(config):
         yield group_result
 
 
-def do_everything(config, grading_data):
+def do_everything(config):
     """
-    Run test pipeline using a given configuration and aggregate results into the grading_data dict.
+    Run test pipeline using a given configuration and aggregate results into a dict.
     If validation is specified, it is run before tests.
     If validation is run and any task fails, no tests are run.
+    Returns a JSON serializable dict of a "Grading feedback" JSON object.
     """
     if "validation" in config:
+        # Validation specified, run all tasks
         errors = list(validation.run_validation_tasks(config["validation"]["tasks"]))
         if errors:
             # Pre-grading validation failed, convert validation errors into a test result group with no points
@@ -85,8 +87,9 @@ def do_everything(config, grading_data):
                 "name": config["validation"]["display_name"],
                 "testResults": list(schemaobjects.validation_errors_as_test_results(errors)),
             }
-            grading_data["resultGroups"] = [validation_results]
-            return
+            # Will not run tests since a validation task failed
+            return {"resultGroups": [validation_results]}
+    # Validation not specified, or all validation tasks succeeded, run tests
     result_groups = []
     points_total = max_points_total = tests_run = 0
     for group_result in run_test_groups(config):
@@ -94,10 +97,12 @@ def do_everything(config, grading_data):
         points_total += group_result["points"]
         max_points_total += group_result["maxPoints"]
         tests_run += group_result["testsRun"]
-    grading_data["resultGroups"] = result_groups
-    grading_data["points"] = points_total
-    grading_data["maxPoints"] = max_points_total
-    grading_data["testsRun"] = tests_run
+    return {
+        "resultGroups": result_groups,
+        "points": points_total,
+        "maxPoints": max_points_total,
+        "testsRun": tests_run,
+    }
 
 
 def run(config_file, novalidate, container, json_results, develop_mode, quiet):
@@ -106,9 +111,6 @@ def run(config_file, novalidate, container, json_results, develop_mode, quiet):
     Runs the full test pipeline and writes results and points to standard stream.
     For accepted arguments, see make_argparser.
     """
-    # All relevant grading data will be accumulated into this dict, and then serialized into JSON as a "Grading feedback" schema object
-    grading_data = {"warningMessages": []}
-
     if develop_mode:
         logger.warning("Graderutils is running in develop mode, all unhandled exceptions will be displayed unformatted. Run with --quiet to continue running in develop mode, while disabling these warnings.")
 
@@ -116,6 +118,8 @@ def run(config_file, novalidate, container, json_results, develop_mode, quiet):
     points_out = sys.stdout
 
     schemas = schemaobjects.build_schemas()
+
+    grading_data = {}
 
     # Run tests and hide infrastructure exceptions (not validation exceptions) if develop_mode is given and True.
     try:
@@ -128,7 +132,7 @@ def run(config_file, novalidate, container, json_results, develop_mode, quiet):
             except jsonschema.ValidationError as e:
                 logger.warning("Graderutils was given an invalid configuration file {}, the validation error was: {}".format(config_file, e.message))
         # Config file is valid, run validation and all test groups
-        do_everything(config, grading_data)
+        grading_data = do_everything(config)
     except Exception as e:
         if container:
             raise

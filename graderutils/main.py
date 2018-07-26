@@ -2,12 +2,19 @@
 Python grader test runner with pre-grade validation and post-grade feedback styling.
 """
 import argparse
+import ast
 import importlib
 import io
 import os
 import sys
 import traceback
 import unittest
+import logging
+
+# Log deprecation warnings into a single, global stream
+logger = logging.getLogger("warnings")
+logger.addHandler(logging.StreamHandler(stream=io.StringIO()))
+multiline_repr_prefix = "#MULTILINE-REPR#"
 
 import yaml
 import jsonschema
@@ -16,6 +23,19 @@ import jsonschema
 from graderutils import graderunittest, schemaobjects, validation
 # TODO move to independent library
 from graderutils import htmlformat
+
+
+def parse_warnings(logger):
+    """
+    Return an iterator over all warnings written into the stream handler of a logger.
+    """
+    stream = logger.handlers[0].stream
+    stream.seek(0)
+    for warning in stream:
+        if warning.startswith(multiline_repr_prefix):
+            # warning contains a multiline string wrapped with repr, eval into string with newlines
+            warning = ast.literal_eval(warning.lstrip(multiline_repr_prefix))
+        yield warning.strip()
 
 
 def _load_tests_from_module_name(module_name):
@@ -80,7 +100,7 @@ def do_everything(config, grading_data):
     grading_data["testsRun"] = tests_run
 
 
-def run(config_file, novalidate, container, json_results, develop_mode):
+def run(config_file, novalidate, container, json_results, develop_mode, quiet):
     """
     Graderutils main entrypoint.
     Runs the full test pipeline and writes results and points to standard stream.
@@ -90,7 +110,7 @@ def run(config_file, novalidate, container, json_results, develop_mode):
     grading_data = {"warningMessages": []}
 
     if develop_mode:
-        grading_data["warningMessages"].append("Graderutils is running in develop mode, all unhandled exceptions will be displayed unformatted.")
+        logger.warning("Graderutils is running in develop mode, all unhandled exceptions will be displayed unformatted. Run with --quiet to continue running in develop mode, while disabling these warnings.")
 
     feedback_out = sys.stdout if container else sys.stderr
     points_out = sys.stdout
@@ -106,8 +126,7 @@ def run(config_file, novalidate, container, json_results, develop_mode):
             try:
                 jsonschema.validate(config, schemas["test_config"]["schema"])
             except jsonschema.ValidationError as e:
-                msg = "Graderutils was given an invalid configuration file {}, the validation error was: {}".format(config_file, e.message)
-                grading_data["warningMessages"].append(msg)
+                logger.warning("Graderutils was given an invalid configuration file {}, the validation error was: {}".format(config_file, e.message))
         # Config file is valid, run validation and all test groups
         do_everything(config, grading_data)
     except Exception as e:
@@ -116,15 +135,17 @@ def run(config_file, novalidate, container, json_results, develop_mode):
         if develop_mode:
             # Format e as a string
             tb_object = traceback.TracebackException.from_exception(e)
-            error_msg = ''.join(tb_object.format())
+            # Wrap multiline traceback string with repr and add prefix flag
+            error_msg = multiline_repr_prefix + repr(''.join(tb_object.format()))
         else:
             # Develop mode not enabled, hide traceback
-            error_msg = "Errors occured during testing. Run graderutils with --develop-mode to show all errors."
-        grading_data["warningMessages"].append(error_msg)
+            error_msg = "Unhandled exceptions occured during testing, unable to complete tests. Please notify the author of the tests."
+        logger.warning(error_msg)
 
-    if not grading_data["warningMessages"]:
-        # No warning messages, do not serialize an empty array
-        del grading_data["warningMessages"]
+    if not quiet:
+        warning_messages = list(parse_warnings(logger))
+        if warning_messages:
+            grading_data["warningMessages"] = warning_messages
 
     # Serialize grading data into JSON, with validation against the "Grading feedback" schema
     grading_json = schemaobjects.full_serialize(schemas, grading_data)
@@ -157,6 +178,11 @@ def make_argparser():
             "--container",
             action="store_true",
             help="This flag should be used when running graderutils inside docker container based on apluslms/grading-base"
+    )
+    parser.add_argument(
+            "--quiet", "-q",
+            action="store_true",
+            help="Suppress warnings."
     )
     parser.add_argument(
             "--json-results",

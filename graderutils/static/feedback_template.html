@@ -96,7 +96,8 @@
 <div class="container">
     {% for warning in warningMessages %}
     <div class="alert alert-danger" role="alert">
-        <strong>Warning</strong> {{ warning }}
+        <strong>Warning</strong>
+        <pre>{{ warning|e }}</pre>
     </div>
     {% endfor %}
 </div>

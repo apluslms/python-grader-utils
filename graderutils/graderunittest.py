@@ -2,9 +2,15 @@
 Extensions for unittest tests.
 """
 import functools
+import itertools
 import signal
 import time
+import re
 import unittest
+import logging
+
+
+logger = logging.getLogger("warnings")
 
 
 class _PointsTestResult(unittest.TextTestResult):
@@ -38,8 +44,12 @@ class _PointsTestResult(unittest.TextTestResult):
 
 
 def points(points_on_success, msg_on_success='', msg_on_fail='', msg_on_error=''):
-    points_data = {
-        "points": points_on_success,
+    """
+    Return a decorator for unittest.TestCase test methods, which patches each test method with a graderutils_points attribute.
+    """
+    graderutils_points = {
+        "points": 0,
+        "max_points": points_on_success,
         "messages": {
             "on_success": msg_on_success,
             "on_fail": msg_on_fail,
@@ -49,10 +59,36 @@ def points(points_on_success, msg_on_success='', msg_on_fail='', msg_on_error=''
     def points_decorator(testmethod):
         @functools.wraps(testmethod)
         def points_patching_testmethod(case, *args, **kwargs):
-            case.graderutils_points = points_data
+            case.graderutils_points = graderutils_points
             return testmethod(case, *args, **kwargs)
         return points_patching_testmethod
     return points_decorator
+
+def get_points(test_case):
+    return test_case.graderutils_points["points"], test_case.graderutils_points["max_points"]
+
+def set_full_points(test_case):
+    """
+    Award full points for a given test case by updating graderutils_points["points"] with max points of the test case.
+    Return the amount of points set.
+    """
+    _, max_points = get_points(test_case)
+    test_case.graderutils_points["points"] = max_points
+    return max_points
+
+def check_deprecated_points_syntax(test_case):
+    points_pattern = PointsTestRunner.points_pattern
+    docstring = test_case.shortDescription().strip()
+    if docstring:
+        match = points_pattern.search(docstring)
+        if match:
+            msg = (
+                "Found deprecated points syntax in test case {!r} in its docstring: {!r}. "
+                .format(test_case, match.group(0)) +
+                "Since version 3, points are no longer parsed from the docstrings. "
+                "Consider replacing the docstring points with a decorated test method: e.g. `from graderutils.graderunittest import points` and then decorate {!r} with `@points({})`"
+                .format(test_case, match.group(1)))
+            logger.warning(msg)
 
 
 class PointsTestRunner(unittest.TextTestRunner):
@@ -63,28 +99,34 @@ class PointsTestRunner(unittest.TextTestRunner):
     def test_and_get_100_points(self):
         pass
     """
+    points_pattern = re.compile(".*\((\d+)p\)$")
 
     def _makeResult(self):
         return _PointsTestResult(self.stream, self.descriptions, self.verbosity)
 
-
-    def get_points(self, result):
-        """Extract points from all test cases as integers and return a 2-tuple (points, max_points) of totals."""
-        def parse_points(case):
-            return case.graderutils_points["points"]
-
-        points = sum(parse_points(case) for case in result.successes)
-        max_points = (points
-                + sum(parse_points(case) for case, exc in result.failures)
-                + sum(parse_points(case) for case, exc in result.errors))
-
-        return points, max_points
-
+    def handle_points(self, result):
+        """
+        For all test case results, set points and max points according to final test state.
+        Successes get points == max_points, while failures and errors get points == 0.
+        Return a 2-tuple of (points, max_points) for all points in the test suite.
+        """
+        # Award points, while computing total points for this test suite
+        suite_points = suite_max_points = 0
+        for success in result.successes:
+            check_deprecated_points_syntax(success)
+            points = set_full_points(success)
+            suite_points += points
+            suite_max_points += points
+        for nosuccess, _ in itertools.chain(result.failures, result.errors):
+            check_deprecated_points_syntax(nosuccess)
+            _, max_points = get_points(nosuccess)
+            suite_max_points += max_points
+        return suite_points, suite_max_points
 
     def run(self, test):
-        """Run the result object through all test cases."""
+        """Run the result object through all test cases in a test suite."""
         result = unittest.TextTestRunner.run(self, test)
-        result.points, result.max_points = self.get_points(result)
+        result.points, result.max_points = self.handle_points(result)
         return result
 
 

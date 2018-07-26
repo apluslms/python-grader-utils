@@ -92,12 +92,13 @@ def run(config_file, novalidate=False, container=False, json_results=False, deve
     if develop_mode:
         logger.warning("Graderutils is running in develop mode, all unhandled exceptions will be displayed unformatted. Run with --quiet to continue running in develop mode, while disabling these warnings.")
 
+    # Build Python JSON schema object classes from schema files in package
+    schemas = schemaobjects.build_schemas()
     # Kwargs dict for top level "Grading feedback" JSON schema object
     grading_feedback = {}
 
     # Run tests and hide infrastructure exceptions (not validation exceptions) if develop_mode is given and True.
     try:
-        schemas = schemaobjects.build_schemas()
         # Load and validate the configuration yaml
         with open(config_file, encoding="utf-8") as f:
             config = yaml.safe_load(f)

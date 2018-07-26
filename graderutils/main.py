@@ -3,12 +3,10 @@ Python grader test runner with pre-grade validation and post-grade feedback styl
 """
 import argparse
 import ast
-import importlib
 import io
 import os
 import sys
 import traceback
-import unittest
 import logging
 
 # Log deprecation warnings into a single, global stream
@@ -38,32 +36,13 @@ def parse_warnings(logger):
         yield warning.strip()
 
 
-def _load_tests_from_module_name(module_name):
-    """
-    Load all tests from the named module into a TestSuite and return it.
-    """
-    loader = unittest.defaultTestLoader
-    test_module = importlib.import_module(module_name)
-    return loader.loadTestsFromModule(test_module)
-
-
-def _run_suite(test_suite):
-    """
-    Run given TestSuite with a runner gathering points and results into a stringstream and return the TestResult.
-    """
-    runner = graderunittest.PointsTestRunner(stream=io.StringIO(), verbosity=2)
-    return runner.run(test_suite)
-
-
 def run_test_groups(test_groups):
     """
     Generator that runs all test groups specified by the given configuration and yields test group result dicts.
     """
     for test_group in test_groups:
-        # Load suite of tests from module
-        test_suite = _load_tests_from_module_name(test_group["module"])
-        # Run all test cases in suite, producing a result with points
-        points_results = _run_suite(test_suite)
+        # Run all test cases in module, producing a result with points
+        points_results = graderunittest.run_test_suite_in_named_module(test_group["module"])
         # Convert all test results in group results into JSON schema serializable dicts
         group_result = schemaobjects.test_group_result_as_dict(points_results)
         group_result["name"] = test_group["display_name"]

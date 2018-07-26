@@ -2,18 +2,20 @@
 Extensions for unittest tests.
 """
 import functools
+import importlib
+import io
 import itertools
+import logging
+import re
 import signal
 import time
-import re
 import unittest
-import logging
 
 
 logger = logging.getLogger("warnings")
 
 
-class _PointsTestResult(unittest.TextTestResult):
+class PointsTestResult(unittest.TextTestResult):
     """
     Adds storing of successes for text result.
     """
@@ -64,8 +66,10 @@ def points(points_on_success, msg_on_success='', msg_on_fail='', msg_on_error=''
         return points_patching_testmethod
     return points_decorator
 
+
 def get_points(test_case):
     return test_case.graderutils_points["points"], test_case.graderutils_points["max_points"]
+
 
 def set_full_points(test_case):
     """
@@ -75,6 +79,7 @@ def set_full_points(test_case):
     _, max_points = get_points(test_case)
     test_case.graderutils_points["points"] = max_points
     return max_points
+
 
 def check_deprecated_points_syntax(test_case):
     points_pattern = PointsTestRunner.points_pattern
@@ -102,7 +107,7 @@ class PointsTestRunner(unittest.TextTestRunner):
     points_pattern = re.compile(".*\((\d+)p\)$")
 
     def _makeResult(self):
-        return _PointsTestResult(self.stream, self.descriptions, self.verbosity)
+        return PointsTestResult(self.stream, self.descriptions, self.verbosity)
 
     def handle_points(self, result):
         """
@@ -157,6 +162,21 @@ def result_or_timeout(timed_function, args=(), kwargs=None, timeout=1, timer=tim
         signal.alarm(0)
 
     return running_time, result
+
+
+def run_test_suite_in_named_module(module_name):
+    """
+    Load all test cases as a test suite from a test module with the given name.
+    Run the loaded test suite with a runner that gathers points, traceback objects, and stdout/err into a stringstream.
+    Return a PointsTestResult containing the results.
+    """
+    loader = unittest.defaultTestLoader
+    test_module = importlib.import_module(module_name)
+    test_suite = loader.loadTestsFromModule(test_module)
+    # Redirect output to string stream, increase verbosity, and retain all traceback objects
+    runner = PointsTestRunner(stream=io.StringIO(), verbosity=2, tb_locals=True)
+    result = runner.run(test_suite)
+    return result
 
 
 # disgusting monkey patch hacks

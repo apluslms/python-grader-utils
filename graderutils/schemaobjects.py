@@ -6,7 +6,7 @@ import os.path
 
 from python_jsonschema_objects import ObjectBuilder
 
-from graderutils import GraderUtilsError
+from graderutils import graderunittest, GraderUtilsError
 
 
 class SchemaError(GraderUtilsError): pass
@@ -47,10 +47,13 @@ def test_result_as_dict(test_case, output):
     """
     Return a JSON serializable dict of a "Test result" JSON object.
     """
+    # graderunittest.PointsTestRunner has handled all points
+    points, max_points = graderunittest.get_points(test_case)
     data = {
         "name": test_case.shortDescription(),
         "state": None,
-        "maxPoints": test_case.graderutils_points["points"],
+        "points": points,
+        "maxPoints": max_points,
         "testOutput": output,
     }
     if hasattr(test_case, "graderutils_msg") and test_case.graderutils_msg:
@@ -64,30 +67,23 @@ def test_results_as_dicts(result_object):
     """
     Return an iterator over JSON serializable dicts of "Test result" JSON objects.
     """
+    # Convert test case results into dicts and add 'state' key depending on test outcome.
     # Successful tests, no exceptions raised
     for test_case in result_object.successes:
-        result = test_result_as_dict(test_case, '')
-        result["state"] = "success"
-        result["points"] = result["maxPoints"]
-        yield result
+        yield dict(test_result_as_dict(test_case, ''), state="success")
     # Failed tests, AssertionError raised
     for test_case, full_assert_msg in result_object.failures:
-        result = test_result_as_dict(test_case, full_assert_msg)
-        result["state"] = "fail"
-        result["points"] = 0
-        yield result
+        yield dict(test_result_as_dict(test_case, full_assert_msg), state="fail")
     # Tests that raised exceptions other than AssertionError
     for test_case, full_traceback in result_object.errors:
-        result = test_result_as_dict(test_case, full_traceback)
-        result["state"] = "error"
-        result["points"] = 0
-        yield result
+        yield dict(test_result_as_dict(test_case, full_traceback), state="error")
 
 
 def test_group_result_as_dict(test_group_result):
     """
     Return a JSON serializable dict of a "Test result group" JSON object.
     """
+    # Convert all test case results in the test group into dicts
     test_results = list(test_results_as_dicts(test_group_result))
     # Get unittest console output from the StringIO instance
     unittest_output = test_group_result.stream.getvalue()

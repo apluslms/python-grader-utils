@@ -104,7 +104,7 @@ def do_everything(config):
     }
 
 
-def run(config_file, novalidate, container, json_results, develop_mode, quiet):
+def run(config_file, novalidate=False, container=False, json_results=False, develop_mode=False, quiet=False):
     """
     Graderutils main entrypoint.
     Runs the full test pipeline and writes results and points to standard stream.

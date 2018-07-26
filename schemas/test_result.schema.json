@@ -33,7 +33,11 @@
             "minimum": 0
         },
         "testOutput": {
-            "description": "Preformatted string that contains all output produced by this test",
+            "description": "Preformatted string that contains test output that should be shown as feedback. E.g. a single line from a full traceback string.",
+            "type": "string"
+        },
+        "fullTestOutput": {
+            "description": "Full output from a single test, useful e.g. if the test output printed by a test method is too verbose for testOutput.",
             "type": "string"
         },
         "header": {

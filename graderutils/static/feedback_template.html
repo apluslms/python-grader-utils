@@ -48,24 +48,13 @@
                 <pre class="feedback">{{ result.testOutput|e }}</pre>
                 {% endif %}
 
-                <!-- {% if result.userData %} -->
-                <!--   {% if result.userData.raw_html %} -->
-                <!--     <div class="user-data-raw-html well"> -->
-                <!--     {{ result.userData.raw_html }} -->
-                <!--     </div> -->
-                <!--   {% endif %} -->
-                <!--   {% if result.userData.preformatted_feedback %} -->
-                <!--     <pre>{{ result.userData.preformatted_feedback|e }}</pre> -->
-                <!--   {% endif %} -->
-                <!-- {% endif %} -->
-
-                <!-- {% if result.state == "error" %} -->
-                <!-- <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}"> -->
-                <!--   Show traceback</button> -->
-                <!-- <div id="traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}" class="collapse"> -->
-                <!--   <p><pre>{{ result.full_traceback }}</pre></p> -->
-                <!-- </div> -->
-                <!-- {% endif %} -->
+                {% if result.state == "error" %}
+                <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}">
+                  Show traceback</button>
+                <div id="traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}" class="collapse">
+                  <p><pre>{{ result.fullTestOutput|e }}</pre></p>
+                </div>
+                {% endif %}
 
                 {% if result.footer %}
                 <p>{{ result.footer }}</p>

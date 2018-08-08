@@ -50,7 +50,7 @@ def test_result_as_dict(test_case, output):
     # graderunittest.PointsTestRunner has handled all points
     points, max_points = graderunittest.get_points(test_case)
     data = {
-        "name": test_case.shortDescription(),
+        "name": test_case.shortDescription() or str(test_case),
         "state": None,
         "points": points,
         "maxPoints": max_points,

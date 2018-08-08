@@ -61,3 +61,7 @@ E.g.
 ```
 cat grader_results.json | python3 -m graderutils.htmlformat
 ```
+or
+```
+python3 -m graderutils.main test_config.yaml --json-output | python3 -m graderutils.htmlformat
+```

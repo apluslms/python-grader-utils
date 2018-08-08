@@ -89,10 +89,10 @@ def do_everything(config):
     }
 
 
-def run(config_file, novalidate=False, container=False, quiet=False, json_results=False, show_config=False, develop_mode=False):
+def run(config_path, novalidate=False, container=False, quiet=False, json_results=False, show_config=False, develop_mode=False):
     """
     Graderutils main entrypoint.
-    Runs the full test pipeline and writes results and points to standard stream.
+    Runs the full test pipeline and writes results and points to standard streams.
     For accepted arguments, see make_argparser.
     """
     if develop_mode:
@@ -106,13 +106,14 @@ def run(config_file, novalidate=False, container=False, quiet=False, json_result
     # Run tests and hide infrastructure exceptions (not validation exceptions) if develop_mode is given and True.
     try:
         # Load and validate the configuration yaml
-        with open(config_file, encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             config = yaml.safe_load(f)
         if not novalidate:
             try:
                 jsonschema.validate(config, schemas["test_config"]["schema"])
             except jsonschema.ValidationError as e:
-                logger.warning("Graderutils was given an invalid configuration file {}, the validation error was: {}".format(config_file, e.message))
+                logger.warning("Graderutils was given an invalid configuration file {}, the validation error was: {}".format(config_path, e.message))
+                raise
         # Config file is valid, merge with baseconfig
         with open(BASECONFIG, encoding="utf-8") as f:
             config = dict(yaml.safe_load(f), **config)
@@ -143,7 +144,7 @@ def run(config_file, novalidate=False, container=False, quiet=False, json_result
     feedback_out = sys.stdout if container else sys.stderr
     points_out = sys.stdout
 
-    if json_results or os.environ.get("GRADER_EATS_JSON_RESULTS", '0').strip() in ('1', 'true', 'True'):
+    if json_results or os.environ.get("GRADERUTILS_JSON_RESULTS", '0').strip() in ('1', 'true', 'True'):
         print(grading_json, file=points_out)
     else:
         # Backward compatible, good ol' "HTML to stderr and points to stdout"
@@ -158,13 +159,13 @@ def make_argparser():
         epilog=__doc__
     )
     parser.add_argument(
-            "config_file",
+            "config_path",
             type=str,
             help="Path to a YAML-file containing runtime settings for grader tests. An example file is provided at graderutils/test_config.yaml and examples/simple/test_config.yaml",
     )
     flags = (
         ("novalidate",
-            "Skip validation of config_file"),
+            "Skip validation of config_path"),
         ("container",
             "This flag should be used when running graderutils inside docker container based on apluslms/grading-base"),
         ("quiet",
@@ -187,5 +188,5 @@ def make_argparser():
 
 if __name__ == "__main__":
     args = vars(make_argparser().parse_args())
-    config_file = args.pop("config_file")
-    run(config_file, **args)
+    config_path = args.pop("config_path")
+    run(config_path, **args)

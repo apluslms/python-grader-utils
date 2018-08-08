@@ -7,7 +7,7 @@ python3 -m graderutils.main test_config.yaml --allow_exceptions 2> results.html
 ```
 Which should produce into standard output:
 ```
-Falsifying example: test3_large_positive_random_integers(self=<grader_tests.TestPrimes testMethod=test3_large_positive_random_integers>, x=0)
-TotalPoints: 0
+TotalPoints: 5
 MaxPoints: 35
 ```
+HTML results were written to standard error and directed to `results.html`.

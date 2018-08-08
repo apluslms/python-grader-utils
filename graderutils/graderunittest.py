@@ -71,6 +71,16 @@ def get_points(test_case):
     return test_case.graderutils_points["points"], test_case.graderutils_points["max_points"]
 
 
+def check_points(test_case):
+    if not hasattr(test_case, "graderutils_points"):
+        logger.warning(
+            "Found a test case with no points defined: {!r}.".format(test_case) +
+            " Use the graderunittest.points decorator to define non-zero points for test cases."
+        )
+        return False
+    return True
+
+
 def set_full_points(test_case):
     """
     Award full points for a given test case by updating graderutils_points["points"] with max points of the test case.
@@ -83,8 +93,9 @@ def set_full_points(test_case):
 
 def check_deprecated_points_syntax(test_case):
     points_pattern = PointsTestRunner.points_pattern
-    docstring = test_case.shortDescription().strip()
+    docstring = test_case.shortDescription()
     if docstring:
+        docstring = docstring.strip()
         match = points_pattern.search(docstring)
         if match:
             msg = (
@@ -119,11 +130,15 @@ class PointsTestRunner(unittest.TextTestRunner):
         suite_points = suite_max_points = 0
         for success in result.successes:
             check_deprecated_points_syntax(success)
+            if not check_points(success):
+                continue
             points = set_full_points(success)
             suite_points += points
             suite_max_points += points
         for nosuccess, _ in itertools.chain(result.failures, result.errors):
             check_deprecated_points_syntax(nosuccess)
+            if not check_points(nosuccess):
+                continue
             _, max_points = get_points(nosuccess)
             suite_max_points += max_points
         return suite_points, suite_max_points

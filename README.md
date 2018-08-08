@@ -1,16 +1,15 @@
 # Graderutils
 
 Python library that handles grader test suite management, file validation and test feedback formatting.
-Originally developed to enable HTML feedback for grading programming exercises served on the [A+](https://github.com/Aalto-LeTech/a-plus) platform, although A+ is not a requirement.
+Originally developed to enable HTML feedback for programming exercise grading output for courses served on the [A+](https://github.com/Aalto-LeTech/a-plus) platform.
+However, A+ is not a dependency for running graderutils.
 
 ## Features
 
 * Running `unittest.TestCase` tests and displaying results and feedback as HTML.
-* Optionally run [validation tasks](graderutils#validation-tasks) before running tests.
+* [Validation tasks](graderutils#validation-tasks) before running tests.
 * Restricting allowed Python syntax using black- and whitelists of [AST](https://docs.python.org/3/library/ast.html) node names.
-* Providing prettier exceptions and to-the-point feedback using an HTML error template.
-* Reducing the length of traceback strings to include only e.g. the assertion message.
-* Customizable HTML templates.
+* Formatting tracebacks and exception messages to include only essential information (by default the full, unformatted traceback is also available).
 
 ## Quickstart
 
@@ -39,7 +38,7 @@ MaxPoints: 35
 ```
 Unittest output was rendered as HTML and written into standard error and redirected to `results.html`, which you can now open in a browser.
 
-Note that the styles might be incomplete, since graderutils assumes all output will be embedded into a document that already has [Bootstrap](https://getbootstrap.com/) available.
+Note that the styles might be incomplete, since for now graderutils assumes all output will be embedded into a document that already has [Bootstrap](https://getbootstrap.com/) available.
 
 
 ## Customizing the output HTML

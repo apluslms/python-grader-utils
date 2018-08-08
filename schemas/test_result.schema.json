@@ -50,7 +50,7 @@
         },
         "userData": {
             "description": "Arbitrary data",
-            "type": "string"
+            "type": "object"
         }
     }
 }

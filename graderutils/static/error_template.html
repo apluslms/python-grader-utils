@@ -1,0 +1,206 @@
+{# TODO style inclusion repeated in feedback template, move to generic layout base template #}
+{% block styles %}
+{% if not no_default_css %}
+<style>
+{% include 'feedback.css' %}
+</style>
+{% endif %}
+{% endblock %}
+
+
+<h2>It seems that there were some errors</h2>
+
+{% for error in errors %}
+
+{% if error.type == "failed python import"%}
+<div class="grading-task">
+  <div class="panel panel-default">
+
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#failed-import-{{ loop.index }}">Failed to import module</a>
+        <span class="label feedback-label label-danger">Error</span>
+      </h4>
+    </div>
+
+      <div id="failed-import-{{ loop.index }}" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <p>The submitted file could not be imported for execution, reason:</p>
+          <pre>{{ error.message }}</pre>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+{% elif error.type == "MemoryError" %}
+<div class="grading-task">
+  <div class="panel panel-default">
+
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#memory-error-{{ loop.index }}">Memory error</a>
+        <span class="label feedback-label label-danger">Error</span>
+      </h4>
+    </div>
+
+      <div id="memory-error-{{ loop.index }}" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <pre>{{ error.message }}</pre>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+{% elif error.type == "SyntaxError" %}
+<div class="grading-task">
+  <div class="panel panel-default">
+
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#syntax-error-{{ loop.index }}">Syntax error</a>
+        <span class="label feedback-label label-danger">Error</span>
+      </h4>
+    </div>
+
+      <div id="syntax-error-{{ loop.index }}" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <p>Invalid syntax {% if error.filename != "<unknown>" %} in <code>{{ error.filename|e }}</code> {% endif %} at line {{ error.lineno }}:</p>
+          <pre>{{ error.text|e }}</pre>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+{% elif error.type == "filetype error" %}
+<div class="grading-task">
+  <div class="panel panel-default">
+
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#file-type-error-{{ loop.index }}">Wrong filetype error</a>
+        <span class="label feedback-label label-danger">Error</span>
+      </h4>
+    </div>
+
+      <div id="file-type-error-{{ loop.index }}" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <p>The submitted file could not be accepted, reason:</p>
+          <pre>{{ error.message }}</pre>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+{% elif error.type == "missing attributes" %}
+<div class="grading-task">
+  <div class="panel panel-default">
+
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#missing-attributes-{{ loop.index }}">Missing attributes</a>
+        <span class="label feedback-label label-danger">Error</span>
+      </h4>
+    </div>
+
+      <div id="missing-attributes-error-{{ loop.index }}" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <p>The submitted Python module was expected to contain the following attributes, but they were not found:</p>
+          {% for attribute, msg in error.missing_attrs %}
+            <p><code>{{ attribute }}</code>, {{ msg }}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+  </div>
+</div>
+
+{% elif error.type == "html style error" %}
+<div class="grading-task">
+  <div class="panel panel-default">
+
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#html-style-error-{{ loop.index }}">Invalid HTML error</a>
+        <span class="label feedback-label label-danger">Error</span>
+      </h4>
+    </div>
+
+      <div id="html-style-error-{{ loop.index }}" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <p>The HTML file contained following errors:</p>
+          <pre>{{ error.html_style_error }}</pre>
+            Tiedostosi sisälsi virheitä. Käytä oheisen linkin takaa löytyvää työkalua tutkimaan virheitä tarkemminen. http://validator.w3.org/#validate_by_input
+        </div>
+      </div>
+
+  </div>
+</div>
+
+{% elif error.type == "restricted_syntax" %}
+
+<div class="grading-task">
+  <div class="panel panel-default">
+
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#restricted-syntax-error-{{ loop.index }}">{{ error.message }}</a>
+        <span class="label feedback-label label-danger">Restricted syntax</span>
+      </h4>
+    </div>
+
+      <div id="restricted-syntax-error-{{ loop.index }}" class="panel-collapse collapse in">
+        <div class="panel-body">
+
+        {% for match in error.matches %}
+
+          <div>
+            <p>
+            The submitted file <code>{{ match.filename }}</code>
+            contains restricted syntax
+            {% if match.message|length > 0 %}
+            <code>{{ match.message }}</code>
+            {% endif %}
+            {% if match.linenumber > 0 %}
+            at line number <code>{{ match.linenumber }}</code>:
+            <pre><code class="python">{{ match.line_content }}</code></pre>
+            {% else %}
+            .
+            {% endif %}
+            </p>
+          </div>
+
+        {% endfor %}
+
+        </div>
+      </div>
+
+  </div>
+</div>
+
+{% else %}
+<div class="grading-task">
+  <div class="panel panel-default">
+
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#unexpected-error-{{ loop.index }}">Unexpected error</a>
+        <span class="label feedback-label label-default">{{ error.type }}</span>
+      </h4>
+    </div>
+
+      <div id="unexpected-error-{{ loop.index }}" class="panel-collapse collapse in">
+        <div class="panel-body">
+          <pre>{{ error.message }}</pre>
+        </div>
+      </div>
+
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+
+

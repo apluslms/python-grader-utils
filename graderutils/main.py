@@ -10,9 +10,10 @@ import pprint
 import sys
 import traceback
 
-# Log deprecation warnings into a single, global stream
+# Log all library errors into a single, global stream
 logger = logging.getLogger("warnings")
 logger.addHandler(logging.StreamHandler(stream=io.StringIO()))
+# Add prefix to multiline errors that have been repr'd in order to fit into a single line
 multiline_repr_prefix = "#MULTILINE-REPR#"
 
 import yaml

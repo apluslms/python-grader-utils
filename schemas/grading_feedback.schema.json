@@ -4,6 +4,22 @@
     "title": "Grading feedback",
     "description": "Grading feedback for a completed grader test for a single exercise. Contains all information required to display grader test results.",
     "type": "object",
+    "oneOf": [
+        {
+            "anyOf": [
+                {
+                    "required": [
+                        "resultGroups"
+                    ]
+                },
+                {
+                    "required": [
+                        "warningMessages"
+                    ]
+                }
+            ]
+        }
+    ],
     "properties": {
         "points": {
             "description": "Amount of points awarded in total from all test groups",

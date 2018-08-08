@@ -103,6 +103,8 @@ def run(config_path, novalidate=False, container=False, quiet=False, json_result
     # Kwargs dict for top level "Grading feedback" JSON schema object
     grading_feedback = {}
 
+    config = None
+
     # Run tests and hide infrastructure exceptions (not validation exceptions) if develop_mode is given and True.
     try:
         # Load and validate the configuration yaml
@@ -132,8 +134,11 @@ def run(config_path, novalidate=False, container=False, quiet=False, json_result
 
     if not quiet:
         if develop_mode or show_config:
-            msg = "The test configuration was:\n" + pprint.PrettyPrinter(indent=2).pformat(config)
-            logger.warning(multiline_repr_prefix + repr(msg))
+            if config is None:
+                logger.warning("Unable to load config file {}".format(config_path))
+            else:
+                msg = "The test configuration was:\n" + pprint.PrettyPrinter(indent=2).pformat(config)
+                logger.warning(multiline_repr_prefix + repr(msg))
         warning_messages = list(parse_warnings(logger))
         if warning_messages:
             grading_feedback["warningMessages"] = warning_messages

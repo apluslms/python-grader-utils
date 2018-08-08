@@ -1,6 +1,11 @@
+{% block feedback_start %}
+{% endblock %}
+
+{% block styles %}
 <style>
 {% include 'feedback.css' %}
 </style>
+{% endblock %}
 
 <div class="total-grading-results">
     {% if points and maxPoints %}
@@ -91,3 +96,6 @@
     {% endfor %}
 </div>
 {% endif %}
+
+{% block feedback_end %}
+{% endblock %}

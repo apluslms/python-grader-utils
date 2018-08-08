@@ -92,6 +92,11 @@
                 }
             }
         },
+        "feedback_template": {
+            "title": "Feedback template",
+            "description": "Custom Jinja2 template for rendering feedback",
+            "type": "string"
+        },
         "format_tracebacks": {
             "description": "Options for formatting traceback strings from specific exception classes",
             "type": "array",

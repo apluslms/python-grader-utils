@@ -154,7 +154,7 @@ def run(config_path, novalidate=False, container=False, quiet=False, json_result
         print(grading_json, file=points_out)
     else:
         # Backward compatible, good ol' "HTML to stderr and points to stdout"
-        html_output = htmlformat.json_to_html(grading_json)
+        html_output = htmlformat.json_to_html(grading_json, config.get("feedback_template", ''))
         print(html_output, file=feedback_out)
         print("TotalPoints: {}\nMaxPoints: {}".format(grading_feedback["points"], grading_feedback["maxPoints"]), file=points_out)
 

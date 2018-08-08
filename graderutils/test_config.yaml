@@ -19,14 +19,12 @@ test_groups:
     description: Tests for checking that the submitted source code compiles on multiple platforms
 
 # (Optional)
-# Paths to custom Jinja2 HTML templates to be used instead of the default ones found in graderutils/static.
-error_template: ./my_error_template.html
-feedback_template: ./my_feedback_template.html
+# Paths to custom Jinja2 HTML templates that extend or replace the default template at graderutils/static/feedback_template.html
+feedback_template: my_feedback_template.html
 
 # Optional input validation before running test groups.
 # Successful validation is silent, i.e. if all validation tasks pass, no output is generated from the validation.
 # If at least one validation task fails, no test groups will be run, and instead the validation errors will be shown.
-
 validation:
     display_name: Input validation
     tasks:

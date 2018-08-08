@@ -3,7 +3,7 @@ An incorrect solution can be found in `primes.py`, which is compared against the
 
 Running:
 ```
-python3 -m graderutils.main test_config.yaml --allow_exceptions 2> results.html
+python3 -m graderutils.main test_config.yaml --develop-mode 2> results.html
 ```
 Which should produce into standard output:
 ```

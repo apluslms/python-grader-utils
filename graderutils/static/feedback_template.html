@@ -25,6 +25,9 @@
     {% else %}
     <h3 class="testgroup-header">{{ result_group.name }}</h3>
     {% endif %}
+    {% if result_group.description %}
+    <div>{{ result_group.description }}</div>
+    {% endif %}
 
     {% for result in result_group.testResults %}
     {% set test_result_loop = loop %}

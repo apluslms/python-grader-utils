@@ -49,6 +49,8 @@ def run_test_groups(test_groups):
         # Convert all test results in group results into JSON schema serializable dicts
         group_result = schemaobjects.test_group_result_as_dict(points_results)
         group_result["name"] = test_group["display_name"]
+        if "description" in test_group:
+            group_result["description"] = test_group["description"]
         yield group_result
 
 

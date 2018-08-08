@@ -30,7 +30,7 @@
                         "type": "string"
                     },
                     "description": {
-                        "description": "Longer description for the test group, in case the display name is too short",
+                        "description": "Short description for the test group",
                         "type": "string"
                     }
                 }

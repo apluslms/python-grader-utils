@@ -52,3 +52,12 @@ To produce results as JSON into stdout, run with the flag `--json-output`, or se
 ```
 python3 -m graderutils.main test_config.yaml --json-output > results.json
 ```
+
+## Convert arbitrary test output JSON to HTML
+
+It is possible to convert any test result into HTML if the result is a JSON string that validates successfully against the ["Grading feedback"](schemas/grading_feedback.schema.json) JSON schema.
+
+E.g.
+```
+cat grader_results.json | python3 -m graderutils.htmlformat
+```

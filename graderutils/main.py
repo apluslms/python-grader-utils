@@ -51,25 +51,29 @@ def run_test_groups(test_groups):
         yield group_result
 
 
-def do_everything(config):
+def do_validation_tasks(validation_config):
+    """
+    Run all specified validation tasks and return errors as a "Grading feedback" JSON object without points.
+    Return an empty dict if all validation tasks pass.
+    """
+    validation_result = {}
+    errors = list(validation.run_validation_tasks(validation_config["tasks"]))
+    if errors:
+        # Pre-grading validation failed, convert validation errors into a test result group with no points
+        validation_result["resultGroups"] = [
+            {
+                "name": validation_config.get("display_name", "Input validation"),
+                "testResults": list(schemaobjects.validation_errors_as_test_results(errors))
+            }
+        ]
+    return validation_result
+
+
+def do_tests(config):
     """
     Run test pipeline using a given configuration and aggregate results into a dict.
-    If validation is specified, it is run before tests.
-    If validation is run and any task fails, no tests are run.
     Returns a JSON serializable dict of a "Grading feedback" JSON object.
     """
-    if "validation" in config:
-        # Validation specified, run all tasks
-        errors = list(validation.run_validation_tasks(config["validation"]["tasks"]))
-        if errors:
-            # Pre-grading validation failed, convert validation errors into a test result group with no points
-            validation_results = {
-                "name": config["validation"]["display_name"],
-                "testResults": list(schemaobjects.validation_errors_as_test_results(errors)),
-            }
-            # Will not run tests since a validation task failed
-            return {"resultGroups": [validation_results]}
-    # Validation not specified, or all validation tasks succeeded, run tests
     result_groups = []
     points_total = max_points_total = tests_run = 0
     for group_result in run_test_groups(config["test_groups"]):
@@ -120,8 +124,12 @@ def run(config_path, novalidate=False, container=False, quiet=False, show_config
         # Config file is valid, merge with baseconfig
         with open(BASECONFIG, encoding="utf-8") as f:
             config = dict(yaml.safe_load(f), **config)
-        # Run validation and all test groups
-        grading_feedback = do_everything(config)
+        # Run input validation
+        if "validation" in config:
+            grading_feedback = do_validation_tasks(config["validation"])
+        # Run tests, unless input validation produced errors
+        if not grading_feedback:
+            grading_feedback = do_tests(config)
     except Exception as e:
         if container:
             raise

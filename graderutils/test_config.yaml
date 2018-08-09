@@ -28,6 +28,7 @@ feedback_template: my_feedback_template.html
 # Successful validation is silent, i.e. if all validation tasks pass, no output is generated from the validation.
 # If at least one validation task fails, no test groups will be run, and instead the validation errors will be shown.
 validation:
+    # Failed validation tasks are shown as a test group with a default display_name "Input validation"
     display_name: Input validation
     tasks:
         # Try importing my_solution as a Python module, catch all exceptions and pass them to the error template.

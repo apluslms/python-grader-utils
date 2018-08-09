@@ -7,7 +7,6 @@ import io
 import logging
 import os
 import pprint
-import sys
 import traceback
 
 # Log all library errors into a single, global stream
@@ -93,7 +92,7 @@ def do_everything(config):
 def run(config_path, novalidate=False, container=False, quiet=False, show_config=False, develop_mode=False):
     """
     Graderutils main entrypoint.
-    Runs the full test pipeline and writes results and points to standard streams.
+    Runs the full test pipeline and returns a Grading feedback JSON schema object as a dict.
     For accepted arguments, see make_argparser.
     """
     if develop_mode:
@@ -145,8 +144,7 @@ def run(config_path, novalidate=False, container=False, quiet=False, show_config
             grading_feedback["warningMessages"] = warning_messages
 
     # Serialize grading data into JSON, with validation against the "Grading feedback" schema
-    grading_json = schemaobjects.full_serialize(schemas, grading_feedback)
-    print(grading_json)
+    return schemaobjects.full_serialize(schemas, grading_feedback)
 
 
 def make_argparser():
@@ -180,6 +178,8 @@ def make_argparser():
 
 
 if __name__ == "__main__":
-    args = vars(make_argparser().parse_args())
-    config_path = args.pop("config_path")
-    run(config_path, **args)
+    cli_args = vars(make_argparser().parse_args())
+    # Remove required command line argument, leaving only optional arguments
+    config_path = cli_args.pop("config_path")
+    grading_json = run(config_path, **cli_args)
+    print(grading_json)

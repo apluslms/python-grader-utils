@@ -1,10 +1,14 @@
-{% block feedback_start %}
-{% endblock %}
+{% if extends_base %}
+{% extends "base.html" %}
+{% endif %}
 
-{% block styles %}
+{% block body %}
+
 <style>
 {% include 'default.css' %}
 </style>
+
+{% block feedback_start %}
 {% endblock %}
 
 <div class="total-grading-results">
@@ -111,3 +115,5 @@
 
 {% block feedback_end %}
 {% endblock %}
+
+{% endblock %} {# body #}

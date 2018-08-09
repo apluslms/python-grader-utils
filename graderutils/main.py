@@ -94,14 +94,14 @@ def do_tests(config):
     }
 
 
-def run(config_path, novalidate=False, container=False, quiet=False, show_config=False, develop_mode=False):
+def run(config_path, novalidate=False, container=False, show_config=False, develop_mode=False):
     """
     Graderutils main entrypoint.
     Runs the full test pipeline and returns a Grading feedback JSON schema object as a dict.
     For accepted arguments, see make_argparser.
     """
     if develop_mode:
-        logger.warning("Graderutils is running in develop mode, all unhandled exceptions will be displayed unformatted. Run with --quiet to continue running in develop mode, while disabling these warnings.")
+        logger.warning("Graderutils is running in develop mode, all unhandled exceptions will be displayed unformatted here as messages.")
 
     # Build Python JSON schema object classes from schema files in package
     schemas = schemaobjects.build_schemas()
@@ -141,16 +141,15 @@ def run(config_path, novalidate=False, container=False, quiet=False, show_config
             error_msg = "Unhandled exceptions occured during testing, unable to complete tests. Please notify the author of the tests."
         logger.warning(error_msg)
 
-    if not quiet:
-        if develop_mode or show_config:
-            if config is None:
-                logger.warning("Unable to load config file {}".format(config_path))
-            else:
-                msg = "The test configuration was:\n" + pprint.PrettyPrinter(indent=2).pformat(config)
-                logger.warning(multiline_repr_prefix + repr(msg))
-        warning_messages = list(parse_warnings(logger))
-        if warning_messages:
-            grading_feedback["warningMessages"] = warning_messages
+    if develop_mode or show_config:
+        if config is None:
+            logger.warning("Unable to load config file {}".format(config_path))
+        else:
+            msg = "The test configuration was:\n" + pprint.PrettyPrinter(indent=2).pformat(config)
+            logger.warning(multiline_repr_prefix + repr(msg))
+    warning_messages = list(parse_warnings(logger))
+    if warning_messages:
+        grading_feedback["warningMessages"] = warning_messages
 
     # Serialize grading data into JSON, with validation against the "Grading feedback" schema
     return schemaobjects.full_serialize(schemas, grading_feedback)
@@ -171,8 +170,6 @@ def make_argparser():
             "Skip validation of config_path"),
         ("container",
             "This flag should be used when running graderutils inside docker container based on apluslms/grading-base"),
-        ("quiet",
-            "Suppress warnings."),
         ("show-config",
             "Print test configuration into warnings."),
         ("develop-mode",

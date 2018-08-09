@@ -1,3 +1,6 @@
+div.feedback-body {
+    margin-top: 15px;
+}
 /* Align all badges in grader result panels to the right side */
 span.feedback-badge {
     float: right;

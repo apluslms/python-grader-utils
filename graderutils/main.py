@@ -20,8 +20,6 @@ import yaml
 import jsonschema
 
 from graderutils import graderunittest, schemaobjects, validation, tracebackformat
-# TODO move to independent library
-from graderutils import htmlformat
 
 BASECONFIG = os.path.join(os.path.dirname(__file__), "baseconfig.yaml")
 
@@ -92,7 +90,7 @@ def do_everything(config):
     }
 
 
-def run(config_path, novalidate=False, container=False, quiet=False, json_results=False, show_config=False, develop_mode=False):
+def run(config_path, novalidate=False, container=False, quiet=False, show_config=False, develop_mode=False):
     """
     Graderutils main entrypoint.
     Runs the full test pipeline and writes results and points to standard streams.
@@ -148,17 +146,18 @@ def run(config_path, novalidate=False, container=False, quiet=False, json_result
 
     # Serialize grading data into JSON, with validation against the "Grading feedback" schema
     grading_json = schemaobjects.full_serialize(schemas, grading_feedback)
+    print(grading_json)
 
-    feedback_out = sys.stdout if container else sys.stderr
-    points_out = sys.stdout
+    # feedback_out = sys.stdout if container else sys.stderr
+    # points_out = sys.stdout
 
-    if json_results or os.environ.get("GRADERUTILS_JSON_RESULTS", '0').strip() in ('1', 'true', 'True'):
-        print(grading_json, file=points_out)
-    else:
-        # Backward compatible, good ol' "HTML to stderr and points to stdout"
-        html_output = htmlformat.json_to_html(grading_json, config.get("feedback_template", ''))
-        print(html_output, file=feedback_out)
-        print("TotalPoints: {}\nMaxPoints: {}".format(grading_feedback["points"], grading_feedback["maxPoints"]), file=points_out)
+    # if json_results or os.environ.get("GRADERUTILS_JSON_RESULTS", '0').strip() in ('1', 'true', 'True'):
+    #     print(grading_json, file=points_out)
+    # else:
+    #     # Backward compatible, good ol' "HTML to stderr and points to stdout"
+    #     html_output = htmlformat.json_to_html(grading_json, config.get("feedback_template", ''))
+    #     print(html_output, file=feedback_out)
+    #     print("TotalPoints: {}\nMaxPoints: {}".format(grading_feedback["points"], grading_feedback["maxPoints"]), file=points_out)
 
 
 def make_argparser():
@@ -178,9 +177,6 @@ def make_argparser():
             "This flag should be used when running graderutils inside docker container based on apluslms/grading-base"),
         ("quiet",
             "Suppress warnings."),
-        ("json-results",
-            "Print results as a JSON schema 'Grading results' string into standard stream."
-            " If used with --container, stream is stderr, else stdout."),
         ("show-config",
             "Print test configuration into warnings."),
         ("develop-mode",

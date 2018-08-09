@@ -9,7 +9,7 @@ In order to extend the feedback template, the child template should begin with t
 
 To completely replace the feedback template, simply exclude the above line.
 
-In order of appearance in `feedback_template_html`, the blocks that can be overridden are:
+In order of appearance in `feedback.html`, the blocks that can be overridden are:
 
 * `feedback_start`: Empty block in the beginning of the template.
 * `styles`: Includes a simple, [default stylesheet](default.css).

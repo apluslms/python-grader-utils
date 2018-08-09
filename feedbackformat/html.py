@@ -30,7 +30,7 @@ def grading_data_to_html(grading_data, custom_template_path, extends_base=False)
     Format a "Grading feedback" JSON schema object as HTML.
     """
     # Get default feedback template
-    feedback_template = _load_package_template("feedback_template.html")
+    feedback_template = _load_package_template("feedback.html")
     if custom_template_path:
         # Extend default template with given custom template
         grading_data["feedback_template"] = feedback_template

@@ -11,7 +11,7 @@ The A+ platform is not required to run graderutils.
 * Restricting allowed Python syntax using black- and whitelists of [AST](https://docs.python.org/3/library/ast.html) node names.
 * Formatting tracebacks and exception messages to include only essential information (by default the full, unformatted traceback is also available).
 
-Example results rendered with the default theme:
+Results from `examples/01_simple` rendered with the default theme:
 
 ![Grading feedback screenshot](screen_v3.0.png "Grading feedback")
 

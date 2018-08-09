@@ -1,20 +1,20 @@
 ## Test configuration
 
-The functionality of the pipeline is customized by supplying a [yaml](http://yaml.org/) file containing the desired configuration.
-The accepted keys are:
+The functionality of the test runner is customized by supplying a [yaml](http://yaml.org/) file containing the desired configuration.
+The file must conform to [this](../schemas/test_config.schema.json) JSON schema.
+Graderutils will output JSON schema validation errors if a given test configuration file is invalid.
 
-* `test_modules`: List of Python test modules and their descriptions.
-  * `module`: Name of an importable module. This should be unique since it is also used as a key for this test in graderutils.
-  * `description`: Short description for this test type.
-* `feedback_template`: (Optional) Defaults to `static/feedback_template.html`. Customized feedback template shown when there are no unexpected errors during grading. See [this](static/README.md) for details about extending or overriding.
-* `error_template`: (Optional) Defaults to `static/error_template.html`. Customized error template shown when there are unexpected errors during grading.
-* `no_default_css`: (Optional) Defaults to `False`. If given and `True`, do not include the [default styles](static/feedback.css) when rendering templates. Default styles can be disabled also by overriding the `styles` block in a child template.
 
-* `validation`: (Optional) List of validation tasks to be performed before the tests defined in `test_modules` are executed.
+### Feedback template
+
+Path to a [Jinja2](http://jinja.pocoo.org/docs/2.10/api/) HTML template.
+For replacing or extending the [default](static/feedback_template.html) feedback template.
+See [this](../examples/03_template_extension) for an example.
 
 ### Validation tasks
 
-Examples of all available validation task types accepted by the [validation](validation.py) module.
+Pre-testing validation.
+Testing will run only if all validation tasks pass.
 Common keys for all task types:
 
 * `type`: Validation type
@@ -24,7 +24,6 @@ Common keys for all task types:
 #### Python import
 
 Attempt to import `file` as a Python module and catch all exceptions during import.
-Show exceptions with the error template if there are any.
 Do nothing if import succeeds.
 
 ```
@@ -43,14 +42,12 @@ For example, if you want to assert that a submitted module `my_solution` contain
     MyClass.value: class variable
     calculate: function
 ```
-All missing attributes will be shown using the error template.
 Does nothing if the module contains all names listed in `attrs`.
 
 
 #### Python syntax check
 
 Read the contents of `file`, attempt to parse the contents using `ast.parse` and catch all exceptions.
-Show exceptions with the error template if there are any.
 Do nothing if there are no exceptions during parsing.
 
 ```
@@ -68,7 +65,6 @@ Syntax can be restricted using the following keys:
   * `node_dump_regexp`: Dict of escaped regexp string - message pairs. The regexp patterns are matched to the output of ast.dump.
 
 For each found match, the filename, line number, line content and the short message for the node are recorded.
-Matches are shown with the error template using the given message in `message`.
 Do nothing if there are no matches.
 
 ```
@@ -105,7 +101,6 @@ In the below example, finding for example an `ast.Call` node would be a match wi
     Add: Addition
 ```
 
-
 #### Plain text blacklist
 
 TODO
@@ -125,3 +120,6 @@ TODO
 #### HTML validation
 
 TODO
+
+
+### Traceback formatting

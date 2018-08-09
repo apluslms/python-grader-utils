@@ -79,7 +79,8 @@ def do_everything(config):
         tests_run += group_result["testsRun"]
     if "format_tracebacks" in config:
         # Traceback formatting specified, run all formatting on all results
-        # Unmodified traceback strings are backed up into key fullTestOutput for each test result.
+        # Unmodified traceback strings are backed up into key fullTestOutput for each test result,
+        # unless the full test output has also been specified to be removed.
         tracebackformat.clean_feedback(result_groups, config["format_tracebacks"])
     return {
         "resultGroups": result_groups,

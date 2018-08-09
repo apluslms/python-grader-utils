@@ -36,24 +36,24 @@
     {% for result in result_group.testResults %}
     {% set test_result_loop = loop %}
 
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h4 class="panel-title">
+    <div class="card card-default">
+        <div class="card-header">
+            <h5 class="mb-0">
                 <a data-toggle="collapse"
                    href="#result{{ result_group_loop.index }}-{{ test_result_loop.index }}">{{ result.name }}</a>
                 {% if result.state == "success" %}
-                <span class="label feedback-label label-success">Success</span>
+                <span class="badge feedback-badge badge-success">Success</span>
                 {% elif result.state == "fail" %}
-                <span class="label feedback-label label-danger">Failed</span>
+                <span class="badge feedback-badge badge-danger">Failed</span>
                 {% elif result.state == "error" %}
-                <span class="label feedback-label label-danger">Error</span>
+                <span class="badge feedback-badge badge-secondary">Error</span>
                 {% endif %}
-            </h4>
+            </h5>
         </div>
         <div id="result{{ result_group_loop.index }}-{{ test_result_loop.index }}"
-             class="panel-collapse {% if result.userData %} collapse in {% else %} collapse {% endif %}">
-            {% block result_panel scoped %}
-            <div class="panel-body">
+             class="collapse show">
+            {% block result_card scoped %}
+            <div class="card-body">
 
                 {% if result.header %}
                 <p>{{ result.header }}</p>
@@ -63,7 +63,7 @@
                 <pre class="feedback">{{ result.testOutput|e }}</pre>
                 {% endif %}
 
-                {% block result_panel_after_output scoped %}
+                {% block result_card_after_output scoped %}
                 {% endblock %}
 
                 {% if result.state == "error" %}
@@ -87,15 +87,15 @@
 </div>
 
 {% if result_group.fullOutput %}
-<div class="panel panel-default full-test-output">
-    <div class="panel-heading">
-        <h5 class="panel-title">
+<div class="card card-default full-test-output">
+    <div class="card-header">
+        <h5 class="mb-0">
             <a data-toggle="collapse" href="#full-test-output{{ result_group_loop.index }}">
                 Full terminal output for {{ result_group.name }}</a>
-            <span class="label feedback-label label-info">Info</span>
+            <span class="badge feedback-badge badge-info">Info</span>
         </h5>
     </div>
-    <div id="full-test-output{{ result_group_loop.index }}" class="panel-body collapse">
+    <div id="full-test-output{{ result_group_loop.index }}" class="card-body collapse">
         <p><pre class="feedback">{{ result_group.fullOutput|e }}</pre></p>
     </div>
 </div>
@@ -104,10 +104,20 @@
 {% endfor %}
 
 {% if warningMessages %}
-<div class="container">
+<div class="warning-messages">
     {% for warning in warningMessages %}
-    <div class="alert alert-danger" role="alert">
-        <pre>{{ warning|e }}</pre>
+    {% set warnings_loop = loop %}
+    <div class="card card-default">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <a data-toggle="collapse"
+                   href="#warning-message{{ warnings_loop.index }}">Develop mode message</a>
+                <span class="badge feedback-badge badge-warning">Warning</span>
+            </h5>
+        </div>
+        <div id="warning-message{{ warnings_loop.index }}" class="card-body collapse show">
+            <pre>{{ warning|e }}</pre>
+        </div>
     </div>
     {% endfor %}
 </div>

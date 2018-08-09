@@ -1,27 +1,24 @@
-/* Align all labels in grader result panels to the right side */
-span.feedback-label {
-  float: right;
+/* Align all badges in grader result panels to the right side */
+span.feedback-badge {
+    float: right;
 }
 /* Add space between different test groups */
 div.grading-task {
-  margin-top: 40px;
-  margin-bottom: 40px;
+    margin-top: 40px;
+    margin-bottom: 40px;
 }
-/* Separate unittest output slightly from styled test results */
+/* Add more separation between last test group and unittest terminal output */
 div.full-test-output {
-  margin-top: 35px;
+    margin-top: 35px;
 }
 /* Bootstrap h3 bottom margins are by default a bit too small */
 h3.testsuite-header {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
-/* Make code more clear */
-pre, code {
-  font-size: inherit;
-  font-family: monospace;
+/* Disable automatic horizontal scroll of preformatted text blocks */
+pre {
+    white-space: pre-wrap;
 }
-
-/* Wrap assertion message output */
-pre.feedback {
-  white-space: pre-wrap;
+div.warning-messages {
+    margin-top: 35px;
 }

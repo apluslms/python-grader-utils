@@ -11,5 +11,5 @@ cat results.json | python3 -m feedbackformat.html --full-document > results.html
 ```
 You can now view `results.html` in a browser.
 
-If you don't want to render the [base template](templates/base.html), you can omit `--full-document`.
-This renders only the feedback body using the default [feedback template](templates/feedback.html).
+If you don't want to render the [base template](../../feedbackformat/templates/base.html), you can omit `--full-document`.
+This renders only the feedback body using the default [feedback template](../../feedbackformat/templates/feedback.html).

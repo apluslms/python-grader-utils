@@ -121,16 +121,9 @@ validation:
 #
 # -1 is not a prime number, but your function says it is
 #
-traceback_to_hide:
-    # Specify names of exception classes that should have their traceback hidden
-    class_names:
-        - AssertionError
-        - mymodule.ClassifiedException
-    # (Optional) If given and of non-zero length, strip beginning of each exception line up until and including this string.
-    # See example above
-    remove_more_sentinel: "[remove-stop]"
-    # (Optional) If given and True, exception tracebacks in the full console output string will not be hidden, only in feedback for individual test cases
-    keep_tracebacks_in_full_output: True
-    # (Optional) If given and of non-zero length, hidden tracebacks will be replaced with this string.
-    # Does not insert a newline, append '\n' if e.g. AssertionError should be on its one line.
-    replacement_string: "## Traceback removed ##"
+format_tracebacks:
+    # Hide everything from this exception
+    - class_name: my_module.ClassifiedException
+      hide_tracebacks_replacement: "## Traceback removed ##"
+      hide_tracebacks: True
+      keep_tracebacks_in_full_output: False

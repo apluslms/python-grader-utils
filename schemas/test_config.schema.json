@@ -115,7 +115,7 @@
                         "type": "string"
                     },
                     "repeating_lines_threshold": {
-                        "description": "Minimum amount of consequtive, identical lines or line chunks to enable line collapsing for the repeating range. Enabled by default for RecursionError with value 20.",
+                        "description": "Minimum amount of consequtive, identical lines or line chunks to enable line collapsing for the repeating range.",
                         "type": "integer",
                         "minimum": 2
                     },

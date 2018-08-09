@@ -1,13 +1,12 @@
 Example of a graderutils exercise, where the problem is to implement a simple prime number checker `primes.is_prime`.
 An incorrect solution can be found in `primes.py`, which is compared against the reference solution `model.py`.
 
-Running:
+Run the tests to get test results in JSON (use develop mode to generate all errors and warnings):
 ```
-python3 -m graderutils.main test_config.yaml --develop-mode 2> results.html
+python3 -m graderutils.main test_config.yaml --develop-mode > results.json
 ```
-Which should produce into standard output:
+Convert the JSON results into HTML:
 ```
-TotalPoints: 5
-MaxPoints: 35
+cat results.json | python3 -m feedbackformat.html > results.html
 ```
-HTML results were written to standard error and directed to `results.html`.
+You can now view `results.html` in a browser.

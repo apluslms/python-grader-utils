@@ -55,6 +55,7 @@ def test_result_as_dict(test_case, output):
         "points": points,
         "maxPoints": max_points,
         "testOutput": output,
+        "fullTestOutput": output,
     }
     if hasattr(test_case, "graderutils_msg") and test_case.graderutils_msg:
         data["header"] = test_case.graderutils_msg

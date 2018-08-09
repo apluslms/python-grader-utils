@@ -37,9 +37,9 @@ def _iter_redacted_lines(lines, remove_lines, replacement_string):
         yield line
 
 
-def hide_exception_traceback(lines, exception_class_name, remove_more_sentinel=None, replacement_string=None):
+def hide_exception_traceback(output, exception_class_name, remove_more_sentinel=None, replacement_string=None):
     """
-    Find all tracebacks caused by exceptions specified by exception_class_name and return a string where all traceback occurrences in traceback_string have been replaced with replacement_string.
+    Find all tracebacks in output, caused by exceptions specified by exception_class_name and return a string where all traceback occurrences in traceback_string have been replaced with replacement_string.
     In other words, everything starting with 'Traceback (most recent call last)' up until the exception message is replaced.
 
     If remove_more_sentinel is given, then even more is removed.
@@ -47,12 +47,19 @@ def hide_exception_traceback(lines, exception_class_name, remove_more_sentinel=N
     "AssertionError : True is not False : [remove-stop]no it isn't"
     turns into:
     "no it isn't"
+
+    If exception_class_name is '*', all tracebacks are removed.
     """
     traceback_header = "Traceback (most recent call last)"
     begin_traceback = re.compile('^' + re.escape(traceback_header))
-    end_traceback = re.compile('^' + re.escape(exception_class_name))
+    if exception_class_name == '*':
+        end_traceback = re.compile(r'^\S+')
+    else:
+        end_traceback = re.compile('^' + re.escape(exception_class_name))
 
     # Find all lines that match the pattern range
+
+    lines = output.splitlines(keepends=True)
 
     is_matching = False
     # Pending match, pair of (start_index, line_count)
@@ -101,19 +108,29 @@ def clean_feedback(result_groups, config):
     Run traceback cleaning for finished grading feedback.
     """
     for group in result_groups:
+        # Clean tracebacks for each test suite
         for result in group["testResults"]:
-            # Run all cleaning tasks for traceback string lines
-            output_lines = result["testOutput"].splitlines(keepends=True)
+            # Run all cleaning tasks for traceback
             for task in config:
                 if task.get("hide_tracebacks", False):
                     # This task defines that exceptions from some class must be hidden
-                    if task.get("hide_tracebacks_short_only", False):
-                        # This task defines that full, unformatted output should be left untouched
-                        result["fullTestOutput"] = result["testOutput"]
-                    exception_class_name = task["class_name"]
+                    exception_class_name = task["class_name"].strip()
                     result["testOutput"] = hide_exception_traceback(
-                        output_lines,
+                        result["testOutput"],
                         exception_class_name,
                         remove_more_sentinel=task.get("remove_more_sentinel", ''),
                         replacement_string=task.get("hide_tracebacks_replacement", '')
                     )
+                    if not task.get("hide_tracebacks_short_only", False):
+                        # This task defines that full, unformatted output should also be formatted
+                        result["fullTestOutput"] = result["testOutput"]
+        # Now for the full output from running the test suite
+        for task in config:
+            if task.get("hide_tracebacks", False) and not task.get("hide_tracebacks_short_only", False):
+                exception_class_name = task["class_name"].strip()
+                group["fullOutput"] = hide_exception_traceback(
+                    group["fullOutput"],
+                    exception_class_name,
+                    remove_more_sentinel=task.get("remove_more_sentinel", ''),
+                    replacement_string=task.get("hide_tracebacks_replacement", '')
+                )

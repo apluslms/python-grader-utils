@@ -1,6 +1,8 @@
-# This is an example of a graderutils configuration file that you use to control test execution and result parsing
-# This file is very verbose on purpose, ../examples/simple/test_config.yaml contains a minimal example.
+# This is an example of a graderutils configuration file that you use to control test execution and result parsing.
+# Test configs are merged with baseconfig.yaml
+# This file is very verbose on purpose, ../examples/01_simple/test_config.yaml contains a minimal example.
 # The only required key in a test config yaml is the list of Python module names that should be executed as tests, everything else is optional
+
 
 # List of test groups, i.e. definitions of Python modules containing at least one unittest.TestCase.
 # At least one must be specified.
@@ -95,8 +97,8 @@ validation:
         Pow: Power
 
 # Optional traceback hiding
-# If an exception from the class_names list of exception classes is raised, its traceback is removed from the output and leave only the exception line.
-#
+# If an exception with a given class_name is raised, its traceback is removed from the output, leaving only the exception line.
+
 # e.g. with AssertionError:
 #
 # Traceback (most recent call last):
@@ -121,9 +123,23 @@ validation:
 #
 # -1 is not a prime number, but your function says it is
 #
+
 format_tracebacks:
-    # Hide everything from this exception
-    - class_name: my_module.ClassifiedException
-      hide_tracebacks_replacement: "## Traceback removed ##"
-      hide_tracebacks: True
-      keep_tracebacks_in_full_output: False
+    # Hide tracebacks raised from IndexError
+    # Hiding is done by regexp substitution from the traceback string, so this needs to be an exact character match
+    - class_name: IndexError
+      hide_tracebacks: true
+      # Replace hidden strings with this
+      hide_tracebacks_replacement: "## hidden IndexError ##"
+      # Hide tracebacks only from the main test result panel, i.e. let them be visible in the full traceback panels that can be opened with a button
+      hide_tracebacks_short_only: true
+    # Using a sentinel to remove the messages inserted by unittest.TestCase
+    - class_name: AssertionError
+      hide_tracebacks: true
+      hide_tracebacks_short_only: true
+      # Continue removing tracebacks until (including) this sentinel string
+      remove_more_sentinel: "[remove-stop]"
+    # Default configuration, hide all tracebacks
+    - class_name: '*'
+      hide_tracebacks: true
+      hide_tracebacks_short_only: true

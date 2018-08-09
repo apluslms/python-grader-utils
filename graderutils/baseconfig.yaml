@@ -1,6 +1,8 @@
 # Default configuration.
 # User configuration will be applied on top of this one, overwriting existing keys
+
+# Hide all tracebacks from the test result panel bodies, but keep the tracebacks available by pressing the 'Show traceback' button.
 format_tracebacks:
-    - class_name: AssertionError
+    - class_name: '*'
       hide_tracebacks: true
       hide_tracebacks_short_only: true

@@ -2,6 +2,6 @@ include LICENSE
 include README.md
 include schemas
 
-recursive-include static *
+recursive-include templates *
 recursive-include graderutils *
 recursive-exclude * *.pyc __pycache__

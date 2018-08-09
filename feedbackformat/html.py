@@ -21,7 +21,7 @@ def _load_template_file(name):
 
 
 def _load_package_template(name):
-    package_loader = jinja2.PackageLoader("graderutils", "static")
+    package_loader = jinja2.PackageLoader("feedbackformat", "templates")
     return _load_template(package_loader, name)
 
 

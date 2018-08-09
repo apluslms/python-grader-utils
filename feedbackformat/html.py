@@ -38,10 +38,6 @@ def grading_data_to_html(grading_data, custom_template_path):
     return feedback_template.render(**grading_data)
 
 
-def json_to_html(grading_json, custom_template_path=''):
-    return grading_data_to_html(json.loads(grading_json), custom_template_path)
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="JSON grading feedback to HTML converter")
     parser.add_argument("--verbose", '-v',
@@ -52,6 +48,10 @@ if __name__ == "__main__":
         type=str,
         default='',
         help="Path to a custom HTML template that extends or replaces the default template"
+    )
+    parser.add_argument("--grader-container",
+        action="store_true",
+        help="If given, print output to stderr and points to stdout"
     )
     args = parser.parse_args()
     grading_data = json.load(sys.stdin)
@@ -65,5 +65,10 @@ if __name__ == "__main__":
         else:
             print("Input does not conform to JSON schema 'Grading feedback'. Run with --verbose to show full validation error.")
             sys.exit(1)
-    # Valid input, render and print to stdout
-    print(grading_data_to_html(grading_data, args.custom_template))
+    # Input is valid, render to html
+    html_feedback = grading_data_to_html(grading_data, args.custom_template)
+    if args.grader_container:
+        print(html_feedback, file=sys.stderr)
+        print("TotalPoints: {}\nMaxPoints: {}".format(grading_data["points"], grading_data["maxPoints"]))
+    else:
+        print(html_feedback)

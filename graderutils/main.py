@@ -148,17 +148,6 @@ def run(config_path, novalidate=False, container=False, quiet=False, show_config
     grading_json = schemaobjects.full_serialize(schemas, grading_feedback)
     print(grading_json)
 
-    # feedback_out = sys.stdout if container else sys.stderr
-    # points_out = sys.stdout
-
-    # if json_results or os.environ.get("GRADERUTILS_JSON_RESULTS", '0').strip() in ('1', 'true', 'True'):
-    #     print(grading_json, file=points_out)
-    # else:
-    #     # Backward compatible, good ol' "HTML to stderr and points to stdout"
-    #     html_output = htmlformat.json_to_html(grading_json, config.get("feedback_template", ''))
-    #     print(html_output, file=feedback_out)
-    #     print("TotalPoints: {}\nMaxPoints: {}".format(grading_feedback["points"], grading_feedback["maxPoints"]), file=points_out)
-
 
 def make_argparser():
     parser = argparse.ArgumentParser(

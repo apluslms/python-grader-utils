@@ -37,3 +37,7 @@ E.g.
 ```
 cat results.json | python3 -m feedbackformat.html > results.html
 ```
+
+Outline of the grading feedback JSON contents:
+
+![Grading feedback JSON schema object diagram](schemas/grading_feedback.png "Grading feedback JSON")

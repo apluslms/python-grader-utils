@@ -1,8 +1,8 @@
 div.feedback-body {
     margin-top: 15px;
 }
-/* Align all badges in grader result panels to the right side */
-span.feedback-badge {
+/* Align all labels in grader result panels to the right side */
+span.feedback-label {
     float: right;
 }
 /* Add space between different test groups */
@@ -15,7 +15,7 @@ div.full-test-output {
     margin-top: 35px;
 }
 /* Bootstrap h3 bottom margins are by default a bit too small */
-h3.testsuite-header {
+h3.testgroup-header {
     margin-bottom: 20px;
 }
 /* Disable automatic horizontal scroll of preformatted text blocks */

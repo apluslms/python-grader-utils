@@ -25,16 +25,17 @@ def _load_package_template(name):
     return _load_template(package_loader, name)
 
 
-def grading_data_to_html(grading_data, custom_template_path, extends_base=False):
+def grading_data_to_html(grading_data, extends_base=False):
     """
     Format a "Grading feedback" JSON schema object as HTML.
     """
     # Get default feedback template
     feedback_template = _load_package_template("feedback.html")
-    if custom_template_path:
+    if "feedback_template" in grading_data:
         # Extend default template with given custom template
+        custom_template = grading_data["feedback_template"]
         grading_data["feedback_template"] = feedback_template
-        feedback_template = _load_template_file(custom_template_path)
+        feedback_template = _load_template_file(custom_template)
     return feedback_template.render(**grading_data, extends_base=extends_base)
 
 
@@ -43,11 +44,6 @@ if __name__ == "__main__":
     parser.add_argument("--verbose", '-v',
         action="store_true",
         help="Show validation errors"
-    )
-    parser.add_argument("--custom-template",
-        type=str,
-        default='',
-        help="Path to a custom HTML template that extends or replaces the default template"
     )
     parser.add_argument("--grader-container",
         action="store_true",
@@ -70,7 +66,7 @@ if __name__ == "__main__":
             print("Input does not conform to JSON schema 'Grading feedback'. Run with --verbose to show full validation error.")
             sys.exit(1)
     # Input is valid, render to html
-    html_feedback = grading_data_to_html(grading_data, args.custom_template, args.full_document)
+    html_feedback = grading_data_to_html(grading_data, args.full_document)
     if args.grader_container:
         print(html_feedback, file=sys.stderr)
         print("TotalPoints: {}\nMaxPoints: {}".format(grading_data["points"], grading_data["maxPoints"]))

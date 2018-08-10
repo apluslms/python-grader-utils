@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/schemas/test_config.schema.json",
+    "$id": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/graderutils/schemas/test_config.schema.json",
     "title": "Test config",
     "description": "Graderutils runtime configuration file",
     "type": "object",

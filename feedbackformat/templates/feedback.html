@@ -26,7 +26,7 @@
 {% set result_group_loop = loop %}
 
 <div class="grading-task">
-    {% if result_group.points and result_group.maxPoints %}
+    {% if result_group.maxPoints %}
     <h3 class="testgroup-header">{{ result_group.name }} points: {{ result_group.points }} of {{ result_group.maxPoints }}</h3>
     {% else %}
     <h3 class="testgroup-header">{{ result_group.name }}</h3>

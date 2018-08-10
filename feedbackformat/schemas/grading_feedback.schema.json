@@ -26,7 +26,7 @@
             "minItems": 1,
             "uniqueItems": true,
             "items": {
-                "$ref": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/schemas/test_result_group.schema.json"
+                "$ref": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/feedbackformat/schemas/test_result_group.schema.json"
             }
         },
         "resultId": {

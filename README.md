@@ -33,6 +33,8 @@ For exercises with random input data generation, see [this](examples/02_property
 
 If you want to extend or replace the current feedback template, see [this](examples/03_template_extension) example.
 
+For embedding JavaScript into the feedback template, see [this](examples/04_embedded_plot) example.
+
 ## Using `feedbackformat` without graderutils
 
 Any JSON strings that validate successfully against the ["Grading feedback"](feedbackformat/schemas/grading_feedback.schema.json) [JSON schema](http://json-schema.org/) can be converted to human readable form using `feedbackformat`.

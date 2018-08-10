@@ -41,6 +41,11 @@
                 "type": "string"
             }
         },
+        "feedback_template": {
+            "title": "Feedback template",
+            "description": "Custom Jinja2 template for extending or replacing the default feedback template",
+            "type": "string"
+        },
         "theme": {
             "description": "Test output theme",
             "enum": [

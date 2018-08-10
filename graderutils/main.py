@@ -151,6 +151,9 @@ def run(config_path, novalidate=False, container=False, show_config=False, devel
     if warning_messages:
         grading_feedback["warningMessages"] = warning_messages
 
+    if "feedback_template" in config:
+        grading_feedback["feedback_template"] = config["feedback_template"]
+
     # Serialize grading data into JSON, with validation against the "Grading feedback" schema
     return schemaobjects.full_serialize(schemas["grading_feedback"], grading_feedback)
 

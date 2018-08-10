@@ -27,13 +27,10 @@ pip install .
 
 ### Examples
 
-See [this](examples/01_simple) for a minimal graderutils exercise.
-
-For exercises with random input data generation, see [this](examples/02_property_based_testing) example.
-
-If you want to extend or replace the current feedback template, see [this](examples/03_template_extension) example.
-
-For embedding JavaScript into the feedback template, see [this](examples/04_embedded_plot) example.
+* [`01_simple`](examples/01_simple), minimal exercise
+* [`02_property_based_testing`](examples/02_property_based_testing), grader tests with random input data generation
+* [`03_template_extension`](examples/03_template_extension), if you want to extend or replace the current feedback template
+* [`04_embedded_plot`](examples/04_embedded_plot), embedding JavaScript into the feedback template
 
 ## Using `feedbackformat` without graderutils
 

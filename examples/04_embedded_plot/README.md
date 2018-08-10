@@ -1,5 +1,7 @@
 This example shows how to embed arbitrary JavaScript into the feedback template, and make data from grader tests available for the scripts.
 
+![Grading feedback with plot screenshot](screen.png "Grading feedback with plot")
+
 You need to first install the plotting library used by this example:
 ```
 pip install -r requirements.txt

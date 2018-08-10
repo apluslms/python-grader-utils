@@ -152,7 +152,7 @@ def run(config_path, novalidate=False, container=False, show_config=False, devel
         grading_feedback["warningMessages"] = warning_messages
 
     # Serialize grading data into JSON, with validation against the "Grading feedback" schema
-    return schemaobjects.full_serialize(schemas, grading_feedback)
+    return schemaobjects.full_serialize(schemas["grading_feedback"], grading_feedback)
 
 
 def make_argparser():

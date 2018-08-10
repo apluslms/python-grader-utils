@@ -1,7 +1,7 @@
 ## Test configuration
 
 The functionality of the test runner is customized by supplying a [yaml](http://yaml.org/) file containing the desired configuration.
-The file must conform to [this](../schemas/test_config.schema.json) JSON schema.
+The file must conform to [this](schemas/test_config.schema.json) JSON schema.
 Graderutils will output JSON schema validation errors if a given test configuration file is invalid.
 
 

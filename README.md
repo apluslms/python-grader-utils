@@ -35,7 +35,7 @@ If you want to extend or replace the current feedback template, see [this](examp
 
 ## Using `feedbackformat` without graderutils
 
-Any JSON strings that validate successfully against the ["Grading feedback"](schemas/grading_feedback.schema.json) [JSON schema](http://json-schema.org/) can be converted to human readable form using `feedbackformat`.
+Any JSON strings that validate successfully against the ["Grading feedback"](feedbackformat/schemas/grading_feedback.schema.json) [JSON schema](http://json-schema.org/) can be converted to human readable form using `feedbackformat`.
 
 E.g.
 ```
@@ -44,4 +44,4 @@ cat results.json | python3 -m feedbackformat.html > results.html
 
 Outline of the grading feedback JSON contents:
 
-![Grading feedback JSON schema object diagram](schemas/grading_feedback.png "Grading feedback JSON")
+![Grading feedback JSON schema object diagram](feedbackformat/schemas/grading_feedback.png "Grading feedback JSON")

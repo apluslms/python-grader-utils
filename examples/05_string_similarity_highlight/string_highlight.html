@@ -1,0 +1,22 @@
+{% extends feedback_template %}
+
+{% block feedback_start %}
+<style>
+span.marked-character {
+    background-color: yellow;
+}
+</style>
+{% endblock %}
+
+{% block result_panel_after_output %}
+{% if result.userData %}
+Expected:
+<pre>{{ result.userData.string_a }}</pre>
+Got:
+<pre>
+{% for c, match in result.userData.marked_b %}
+{% if not match %}<span class="marked-character">{{ c }}</span>{% else %}{{ c }}{% endif %}
+{% endfor %}
+</pre>
+{% endif %}
+{% endblock %}

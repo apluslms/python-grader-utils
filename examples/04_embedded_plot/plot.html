@@ -6,7 +6,7 @@
 <script src="https://cdn.pydata.org/bokeh/release/bokeh-0.13.0.min.js"></script>
 {% endblock feedback_start %}
 
-{# Inject the bokeh plot created by grader_tests into plotScript #}
+{# grader_tests creates a Bokeh plot embedded into a single script-element, available through result.userData.plotScript #}
 {% block result_panel_after_output %}
 {% if result.userData and result.userData.plotScript %}
 <div id="plot-placeholder"><pre>Drawing plot...</pre></div>

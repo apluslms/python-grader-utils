@@ -31,6 +31,7 @@ pip install .
 * [`02_property_based_testing`](examples/02_property_based_testing), grader tests with random input data generation
 * [`03_template_extension`](examples/03_template_extension), if you want to extend or replace the current feedback template
 * [`04_embedded_plot`](examples/04_embedded_plot), embedding JavaScript into the feedback template
+* [`05_string_similarity_highlight`](examples/05_string_similarity_highlight), extending the feedback template by adding character similarity highlighting when comparing two strings
 
 ## Using `feedbackformat` without graderutils
 

@@ -11,12 +11,12 @@ definitions:
     type: object
     description: Test result for a single test. Smallest unit of all result objects.
     required:
-      - name
-      - state
+      - title
+      - status
       - testOutput
     properties:
-      name:
-        description: Display name of the test. E.g. name of a test function/method/procedure/script.
+      title:
+        description: Display name of the result. E.g. name of a test function/method/procedure/script.
         type: string
       points:
         description: Amount of points awarded for this test.
@@ -26,11 +26,13 @@ definitions:
         description: Maximum amount of possible points from passing this test.
         minimum: 0
         type: integer
-      state:
+      status:
         description: The state this result terminated in.
         enum:
-          - success
-          - fail
+          - ignored
+          - skipped
+          - passed
+          - failed
           - error
       testOutput:
         description: Preformatted string that contains test output that should be shown as feedback. E.g. a single line from a full traceback string.
@@ -52,7 +54,7 @@ definitions:
     type: object
     description: Test results from a test group of arbitrary taxonomy.
     required:
-      - name
+      - title
       - testResults
     properties:
       fullOutput:
@@ -62,7 +64,7 @@ definitions:
         description: Maximum amount of possible points from passing all tests within this test group.
         minimum: 0
         type: integer
-      name:
+      title:
         description: Display name of the test group, e.g. 'Validation tests', 'Compilation tests', 'Grading tests' etc.
         type: string
       points:
@@ -114,7 +116,7 @@ properties:
   warningMessages:
     description: |
       Warning messages about improperly configured tests and/or fatal errors that prevented the tests from completing correctly.
-      These warnings should only be used if the testing pipeline itself throws unhandled exceptions, not when the modules being tested by the test pipeline throw errors.
+      These are meant to be visible only to the staff.
     type: array
     minItems: 1
     items:

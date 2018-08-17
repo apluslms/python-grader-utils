@@ -27,9 +27,9 @@
 
 <div class="grading-task">
     {% if result_group.maxPoints %}
-    <h3 class="testgroup-header">{{ result_group.name }} points: {{ result_group.points }} of {{ result_group.maxPoints }}</h3>
+    <h3 class="testgroup-header">{{ result_group.title }} points: {{ result_group.points }} of {{ result_group.maxPoints }}</h3>
     {% else %}
-    <h3 class="testgroup-header">{{ result_group.name }}</h3>
+    <h3 class="testgroup-header">{{ result_group.title }}</h3>
     {% endif %}
     {% if result_group.description %}
     <div>{{ result_group.description }}</div>
@@ -42,12 +42,12 @@
         <div class="panel-heading">
             <h5>
                 <a data-toggle="collapse"
-                   href="#result{{ result_group_loop.index }}-{{ test_result_loop.index }}">{{ result.name }}</a>
-                {% if result.state == "success" %}
+                   href="#result{{ result_group_loop.index }}-{{ test_result_loop.index }}">{{ result.title }}</a>
+                {% if result.status == "passed" %}
                 <span class="label feedback-label label-success">Success</span>
-                {% elif result.state == "fail" %}
+                {% elif result.status == "failed" %}
                 <span class="label feedback-label label-danger">Failed</span>
-                {% elif result.state == "error" %}
+                {% elif result.status == "error" %}
                 <span class="label feedback-label label-default">Error</span>
                 {% endif %}
             </h5>
@@ -68,7 +68,7 @@
                 {% block result_panel_after_output scoped %}
                 {% endblock %}
 
-                {% if result.state == "error" %}
+                {% if result.status == "error" %}
                 <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}">
                   Show traceback</button>
                 <div id="traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}" class="collapse">
@@ -93,7 +93,7 @@
     <div class="panel-heading">
         <h5>
             <a data-toggle="collapse" href="#full-test-output{{ result_group_loop.index }}">
-                Full terminal output for {{ result_group.name }}</a>
+                Full terminal output for {{ result_group.title }}</a>
             <span class="label feedback-label label-info">Info</span>
         </h5>
     </div>

@@ -45,7 +45,7 @@ def run_test_groups(test_groups):
         points_results = graderunittest.run_test_suite_in_named_module(test_group["module"])
         # Convert all test results in group results into JSON schema serializable dicts
         group_result = schemaobjects.test_group_result_as_dict(points_results)
-        group_result["name"] = test_group["display_name"]
+        group_result["title"] = test_group["display_name"]
         if "description" in test_group:
             group_result["description"] = test_group["description"]
         yield group_result
@@ -62,7 +62,7 @@ def do_validation_tasks(validation_config):
         # Pre-grading validation failed, convert validation errors into a test result group with no points
         validation_result["resultGroups"] = [
             {
-                "name": validation_config.get("display_name", "Input validation"),
+                "title": validation_config.get("display_name", "Input validation"),
                 "testResults": list(schemaobjects.validation_errors_as_test_results(errors))
             }
         ]

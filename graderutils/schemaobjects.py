@@ -29,8 +29,8 @@ def test_result_as_dict(test_case, output):
     # graderunittest.PointsTestRunner has handled all points
     points, max_points = graderunittest.get_points(test_case)
     data = {
-        "name": test_case.shortDescription() or str(test_case),
-        "state": None,
+        "title": test_case.shortDescription() or str(test_case),
+        "status": None,
         "points": points,
         "maxPoints": max_points,
         "testOutput": output,
@@ -48,16 +48,16 @@ def test_results_as_dicts(result_object):
     """
     Return an iterator over JSON serializable dicts of "Test result" JSON objects.
     """
-    # Convert test case results into dicts and add 'state' key depending on test outcome.
+    # Convert test case results into dicts and add 'status' key depending on test outcome.
     # Successful tests, no exceptions raised
     for test_case in result_object.successes:
-        yield dict(test_result_as_dict(test_case, ''), state="success")
+        yield dict(test_result_as_dict(test_case, ''), status="passed")
     # Failed tests, AssertionError raised
     for test_case, full_assert_msg in result_object.failures:
-        yield dict(test_result_as_dict(test_case, full_assert_msg), state="fail")
+        yield dict(test_result_as_dict(test_case, full_assert_msg), status="failed")
     # Tests that raised exceptions other than AssertionError
     for test_case, full_traceback in result_object.errors:
-        yield dict(test_result_as_dict(test_case, full_traceback), state="error")
+        yield dict(test_result_as_dict(test_case, full_traceback), status="error")
 
 
 def test_group_result_as_dict(test_group_result):
@@ -83,9 +83,9 @@ def validation_errors_as_test_results(errors):
     """
     for error in errors:
         result = {
-            "name": error.get("display_name", error["type"]),
+            "title": error.get("display_name", error["type"]),
             "testOutput": error["message"],
-            "state": "fail",
+            "status": "failed",
         }
         if "description" in error:
             # Additional, user-defined messages

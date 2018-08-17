@@ -15,24 +15,15 @@ definitions:
       - state
       - testOutput
     properties:
-      footer:
-        description: Optional message to display below testOutput
-        type: string
-      fullTestOutput:
-        description: Full output from a single test, useful e.g. if the test output printed by a test method is too verbose for testOutput.
-        type: string
-      header:
-        description: Optional message to display above testOutput
-        type: string
-      maxPoints:
-        description: Maximum amount of possible points from passing this test.
-        minimum: 0
-        type: integer
       name:
         description: Display name of the test. E.g. name of a test function/method/procedure/script.
         type: string
       points:
         description: Amount of points awarded for this test.
+        minimum: 0
+        type: integer
+      maxPoints:
+        description: Maximum amount of possible points from passing this test.
         minimum: 0
         type: integer
       state:
@@ -44,9 +35,18 @@ definitions:
       testOutput:
         description: Preformatted string that contains test output that should be shown as feedback. E.g. a single line from a full traceback string.
         type: string
+      fullTestOutput:
+        description: Full output from a single test, useful e.g. if the test output printed by a test method is too verbose for testOutput.
+        type: string
       userData:
         description: Arbitrary data
         type: object
+      header:
+        description: Optional message to display above testOutput
+        type: string
+      footer:
+        description: Optional message to display below testOutput
+        type: string
   testResultGroup:
     title: Test result group
     type: object

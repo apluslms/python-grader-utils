@@ -1,0 +1,116 @@
+$schema: http://json-schema.org/draft-07/schema
+title: Test config
+type: object
+description: Graderutils runtime configuration file
+required:
+  - test_groups
+properties:
+  feedback_template:
+    description: Custom Jinja2 template for rendering feedback
+    title: Feedback template
+    type: string
+  format_tracebacks:
+    description: Options for formatting traceback strings from specific exception classes
+    items:
+      description: Configuration for formatting all traceback strings from an exception
+      properties:
+        class_name:
+          description: Name of the exception class as it would be catched with the except keyword. E.g. AssertionError.
+          type: string
+        hide_tracebacks:
+          description: Remove all tracebacks
+          type: boolean
+        hide_tracebacks_replacement:
+          description: |
+            If hide_tracebacks is given and true, hidden tracebacks will be replaced with this string.
+            Else, ignore this string. Does not append a newline.
+          minLength: 1
+          type: string
+        hide_tracebacks_short_only:
+          description: |
+            If hide_tracebacks is given and true, prevent traceback hiding in fullTestOutput strings.
+            Else, this flag is ignored silently.
+          type: boolean
+        remove_more_sentinel:
+          description: |
+            If hide_tracebacks is given and true, continue removing traceback until this sentinel is found.
+            Removes also the sentinel.
+          minLength: 1
+          type: string
+        repeating_lines_threshold:
+          description: Minimum amount of consequtive, identical lines or line chunks to enable line collapsing for the repeating range.
+          minimum: 2
+          type: integer
+      required:
+        - class_name
+      title: Traceback config
+      type: object
+    minItems: 1
+    type: array
+    uniqueItems: true
+  test_groups:
+    description: Python test modules grouped by different testing charasteristics
+    items:
+      properties:
+        description:
+          description: Short description for the test group
+          type: string
+        display_name:
+          description: Display name for the test group
+          type: string
+        module:
+          description: Name of an importable Python module that contains at least one unittest.TestCase
+          minLength: 1
+          type: string
+      required:
+        - module
+      title: Test module
+      type: object
+    minItems: 1
+    type: array
+    uniqueItems: true
+  validation:
+    title: Pre-test validation
+    type: object
+    required:
+      - display_name
+      - tasks
+    properties:
+      display_name:
+        description: Name to use for the validation tests, if validation errors occur.
+        minLength: 1
+        type: string
+      tasks:
+        description: Validation tasks to run
+        items:
+          properties:
+            description:
+              description: |
+                Description of the validation task if it fails.
+                E.g. when using a syntax blacklist, an explanation why there are blacklisted syntax tokens.
+              type: string
+            display_name:
+              description: Name of the validation task, e.g. as a requirement: \"The file is a Python module that can be imported\"
+              type: string
+            file:
+              description: Filename of the file to be validated.
+              type: string
+            type:
+              description: Type of the task
+              enum:
+                - python_import
+                - python_syntax
+                - python_blacklist
+                - python_whitelist
+                - plain_text_blacklist
+                - plain_text_whitelist
+                - image_type
+                - labview
+                - xlsm
+                - html
+          required:
+            - type
+            - file
+          title: Validation task
+          type: object
+        type: array

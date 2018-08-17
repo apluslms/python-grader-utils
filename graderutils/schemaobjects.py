@@ -14,7 +14,7 @@ def build_schemas():
     Build all feedback schemas and the graderutils test_config schema.
     """
     # Build test config schema
-    schemas_data = {"test_config": os.path.join(SCHEMA_DIR, "test_config.schema.json")}
+    schemas_data = {"test_config": os.path.join(SCHEMA_DIR, "test_config.yaml")}
     test_config_schema = schemabuilder.build_schemas(schemas_data)
     # Build all feedback schemas
     feedback_schemas = schemabuilder.build_feedback_schemas()

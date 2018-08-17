@@ -1,10 +1,84 @@
-$id: https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/graderutils_format/schemas/grading_feedback.schema.json
-$schema: http://json-schema.org/draft-07/schema#
+$schema: http://json-schema.org/draft-07/schema
 title: Grading feedback
 type: object
 description: |
-    Grading feedback for a completed grader test for a single exercise.
-    Contains all information required to display grader test results.
+  Grading feedback for a completed grader test for a single exercise.
+  Contains all information required to display grader test results.
+definitions:
+  testResult:
+    title: Test result
+    type: object
+    description: Test result for a single test. Smallest unit of all result objects.
+    required:
+      - name
+      - state
+      - testOutput
+    properties:
+      footer:
+        description: Optional message to display below testOutput
+        type: string
+      fullTestOutput:
+        description: Full output from a single test, useful e.g. if the test output printed by a test method is too verbose for testOutput.
+        type: string
+      header:
+        description: Optional message to display above testOutput
+        type: string
+      maxPoints:
+        description: Maximum amount of possible points from passing this test.
+        minimum: 0
+        type: integer
+      name:
+        description: Display name of the test. E.g. name of a test function/method/procedure/script.
+        type: string
+      points:
+        description: Amount of points awarded for this test.
+        minimum: 0
+        type: integer
+      state:
+        description: The state this result terminated in.
+        enum:
+          - success
+          - fail
+          - error
+    testOutput:
+      description: Preformatted string that contains test output that should be shown as feedback. E.g. a single line from a full traceback string.
+      type: string
+    userData:
+      description: Arbitrary data
+      type: object
+  testResultGroup:
+    title: Test result group
+    type: object
+    description: Test results from a test group of arbitrary taxonomy.
+    required:
+      - name
+      - testResults
+    properties:
+      fullOutput:
+        description: Full, unmodified console output from running all tests in the group as a single test suite.
+        type: string
+        maxPoints:
+          description: Maximum amount of possible points from passing all tests within this test group.
+          minimum: 0
+          type: integer
+          name:
+            description: Display name of the test group, e.g. 'Validation tests', 'Compilation tests', 'Grading tests' etc.
+            type: string
+          points:
+            description: Amount of points awarded from all tests within this test group.
+            minimum: 0
+            type: integer
+          testResults:
+            description: Test results for all tests in a test group
+            items:
+              $ref: "#/definitions/testResult"
+            minItems: 1
+            type: array
+            uniqueItems: true
+          testsRun:
+            description: Amount of tests run from this group
+            minimum: 0
+            type: integer
 properties:
   feedback_template:
     description: Custom Jinja2 template for extending or replacing the default feedback template
@@ -21,7 +95,7 @@ properties:
   resultGroups:
     description: Test result groups
     items:
-      $ref: https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/graderutils_format/schemas/test_result_group.schema.json
+      $ref: "#/definitions/testResultGroup"
     minItems: 1
     type: array
     uniqueItems: true
@@ -35,11 +109,11 @@ properties:
   theme:
     description: Test output theme
     enum:
-    - default
+      - default
   warningMessages:
     description: |
-        Warning messages about improperly configured tests and/or fatal errors that prevented the tests from completing correctly.
-        These warnings should only be used if the testing pipeline itself throws unhandled exceptions, not when the modules being tested by the test pipeline throw errors.
+      Warning messages about improperly configured tests and/or fatal errors that prevented the tests from completing correctly.
+      These warnings should only be used if the testing pipeline itself throws unhandled exceptions, not when the modules being tested by the test pipeline throw errors.
     items:
       type: string
     minItems: 1

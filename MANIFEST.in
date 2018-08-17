@@ -2,7 +2,7 @@ include LICENSE
 include README.md
 
 recursive-include graderutils *
-recursive-include feedbackformat *
+recursive-include graderutils_format *
 
 recursive-include examples *
 recursive-exclude examples *.html *.json

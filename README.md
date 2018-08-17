@@ -33,15 +33,15 @@ pip install .
 * [`04_embedded_plot`](examples/04_embedded_plot), embedding JavaScript into the feedback template
 * [`05_string_similarity_highlight`](examples/05_string_similarity_highlight), extending the feedback template by adding character similarity highlighting when comparing two strings
 
-## Using `feedbackformat` without graderutils
+## Using `graderutils_format` without graderutils
 
-Any JSON strings that validate successfully against the ["Grading feedback"](feedbackformat/schemas/grading_feedback.schema.json) [JSON schema](http://json-schema.org/) can be converted to human readable form using `feedbackformat`.
+Any JSON strings that validate successfully against the ["Grading feedback"](graderutils_format/schemas/grading_feedback.schema.json) [JSON schema](http://json-schema.org/) can be converted to human readable form using `graderutils_format`.
 
 E.g.
 ```
-cat results.json | python3 -m feedbackformat.html > results.html
+cat results.json | python3 -m graderutils_format.html > results.html
 ```
 
 Outline of the grading feedback JSON contents:
 
-![Grading feedback JSON schema object diagram](feedbackformat/schemas/grading_feedback.png "Grading feedback JSON")
+![Grading feedback JSON schema object diagram](graderutils_format/schemas/grading_feedback.png "Grading feedback JSON")

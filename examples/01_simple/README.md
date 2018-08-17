@@ -7,9 +7,9 @@ python3 -m graderutils.main test_config.yaml --develop-mode > results.json
 ```
 Convert the JSON results into HTML:
 ```
-cat results.json | python3 -m feedbackformat.html --full-document > results.html
+cat results.json | python3 -m graderutils_format.html --full-document > results.html
 ```
 You can now view `results.html` in a browser.
 
-If you don't want to render the [base template](../../feedbackformat/templates/base.html), you can omit `--full-document`.
-This renders only the feedback body using the default [feedback template](../../feedbackformat/templates/feedback.html).
+If you don't want to render the [base template](../../graderutils_format/templates/base.html), you can omit `--full-document`.
+This renders only the feedback body using the default [feedback template](../../graderutils_format/templates/feedback.html).

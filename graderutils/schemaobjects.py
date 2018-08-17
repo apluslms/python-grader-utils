@@ -1,9 +1,9 @@
 """
-Convert test result objects into JSON serializable dicts conforming to the JSON schemas in the feedbackformat package.
+Convert test result objects into JSON serializable dicts conforming to the JSON schemas in the graderutils_format package.
 """
 import os.path
 
-from feedbackformat import schemabuilder
+from graderutils_format import schemabuilder
 from graderutils import graderunittest
 
 SCHEMA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "schemas"))

@@ -8,7 +8,7 @@ Graderutils will output JSON schema validation errors if a given test configurat
 ### Feedback template
 
 Path to a [Jinja2](http://jinja.pocoo.org/docs/2.10/api/) HTML template.
-For replacing or extending the [default](../feedbackformat/templates/feedback.html) feedback template.
+For replacing or extending the [default](../graderutils_format/templates/feedback.html) feedback template.
 See [this](../examples/03_template_extension) for an example.
 
 ### Validation tasks

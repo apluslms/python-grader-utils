@@ -9,6 +9,6 @@ pip install -r requirements.txt
 
 Then run the tests and render the results into HTML:
 ```
-python3 -m graderutils.main test_config.yaml --develop-mode | python3 -m feedbackformat.html --full-document > results.html
+python3 -m graderutils.main test_config.yaml --develop-mode | python3 -m graderutils_format.html --full-document > results.html
 ```
 You can now view `results.html` in a browser.

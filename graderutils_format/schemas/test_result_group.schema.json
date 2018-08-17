@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/feedbackformat/schemas/test_result_group.schema.json",
+    "$id": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/graderutils_format/schemas/test_result_group.schema.json",
     "title": "Test result group",
     "description": "Test results from a test group of arbitrary taxonomy.",
     "type": "object",
@@ -29,7 +29,7 @@
             "minItems": 1,
             "uniqueItems": true,
             "items": {
-                "$ref": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/feedbackformat/schemas/test_result.schema.json"
+                "$ref": "https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/graderutils_format/schemas/test_result.schema.json"
             }
         },
         "testsRun": {

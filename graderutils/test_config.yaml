@@ -21,7 +21,7 @@ test_groups:
       description: Tests for checking that the submitted source code compiles on multiple platforms
 
 # (Optional)
-# Paths to custom Jinja2 HTML templates that extend or replace the default template at feedbackformat/templates/feedback.html
+# Paths to custom Jinja2 HTML templates that extend or replace the default template at graderutils_format/templates/feedback.html
 feedback_template: my_feedback_template.html
 
 # Optional input validation before running test groups.

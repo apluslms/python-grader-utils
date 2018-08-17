@@ -90,7 +90,7 @@ properties:
                 E.g. when using a syntax blacklist, an explanation why there are blacklisted syntax tokens.
               type: string
             display_name:
-              description: Name of the validation task, e.g. as a requirement: \"The file is a Python module that can be imported\"
+              description: "Name of the validation task, e.g. as a requirement: The file is a Python module that can be imported"
               type: string
             file:
               description: Filename of the file to be validated.

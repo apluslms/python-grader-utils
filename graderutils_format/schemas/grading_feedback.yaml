@@ -40,12 +40,12 @@ definitions:
           - success
           - fail
           - error
-    testOutput:
-      description: Preformatted string that contains test output that should be shown as feedback. E.g. a single line from a full traceback string.
-      type: string
-    userData:
-      description: Arbitrary data
-      type: object
+      testOutput:
+        description: Preformatted string that contains test output that should be shown as feedback. E.g. a single line from a full traceback string.
+        type: string
+      userData:
+        description: Arbitrary data
+        type: object
   testResultGroup:
     title: Test result group
     type: object
@@ -57,28 +57,28 @@ definitions:
       fullOutput:
         description: Full, unmodified console output from running all tests in the group as a single test suite.
         type: string
-        maxPoints:
-          description: Maximum amount of possible points from passing all tests within this test group.
-          minimum: 0
-          type: integer
-          name:
-            description: Display name of the test group, e.g. 'Validation tests', 'Compilation tests', 'Grading tests' etc.
-            type: string
-          points:
-            description: Amount of points awarded from all tests within this test group.
-            minimum: 0
-            type: integer
-          testResults:
-            description: Test results for all tests in a test group
-            items:
-              $ref: "#/definitions/testResult"
-            minItems: 1
-            type: array
-            uniqueItems: true
-          testsRun:
-            description: Amount of tests run from this group
-            minimum: 0
-            type: integer
+      maxPoints:
+        description: Maximum amount of possible points from passing all tests within this test group.
+        minimum: 0
+        type: integer
+      name:
+        description: Display name of the test group, e.g. 'Validation tests', 'Compilation tests', 'Grading tests' etc.
+        type: string
+      points:
+        description: Amount of points awarded from all tests within this test group.
+        minimum: 0
+        type: integer
+      testResults:
+        description: Test results for all tests in a test group
+        items:
+          $ref: "#/definitions/testResult"
+        minItems: 1
+        type: array
+        uniqueItems: true
+      testsRun:
+        description: Amount of tests run from this group
+        minimum: 0
+        type: integer
 properties:
   feedback_template:
     description: Custom Jinja2 template for extending or replacing the default feedback template

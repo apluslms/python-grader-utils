@@ -1,13 +1,18 @@
 $id: https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/graderutils_format/schemas/test_result.schema.json
 $schema: http://json-schema.org/draft-07/schema#
+title: Test result
+type: object
 description: Test result for a single test. Smallest unit of all result objects.
+required:
+- name
+- state
+- testOutput
 properties:
   footer:
     description: Optional message to display below testOutput
     type: string
   fullTestOutput:
-    description: Full output from a single test, useful e.g. if the test output printed
-      by a test method is too verbose for testOutput.
+    description: Full output from a single test, useful e.g. if the test output printed by a test method is too verbose for testOutput.
     type: string
   header:
     description: Optional message to display above testOutput
@@ -30,15 +35,8 @@ properties:
     - fail
     - error
   testOutput:
-    description: Preformatted string that contains test output that should be shown
-      as feedback. E.g. a single line from a full traceback string.
+    description: Preformatted string that contains test output that should be shown as feedback. E.g. a single line from a full traceback string.
     type: string
   userData:
     description: Arbitrary data
     type: object
-required:
-- name
-- state
-- testOutput
-title: Test result
-type: object

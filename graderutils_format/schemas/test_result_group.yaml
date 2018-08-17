@@ -1,10 +1,14 @@
 $id: https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/graderutils_format/schemas/test_result_group.schema.json
 $schema: http://json-schema.org/draft-07/schema#
+title: Test result group
+type: object
 description: Test results from a test group of arbitrary taxonomy.
+required:
+- name
+- testResults
 properties:
   fullOutput:
-    description: Full, unmodified console output from running all tests in the group
-      as a single test suite.
+    description: Full, unmodified console output from running all tests in the group as a single test suite.
     type: string
   maxPoints:
     description: Maximum amount of possible points from passing all tests within this
@@ -12,8 +16,7 @@ properties:
     minimum: 0
     type: integer
   name:
-    description: Display name of the test group, e.g. 'Validation tests', 'Compilation
-      tests', 'Grading tests' etc.
+    description: Display name of the test group, e.g. 'Validation tests', 'Compilation tests', 'Grading tests' etc.
     type: string
   points:
     description: Amount of points awarded from all tests within this test group.
@@ -30,8 +33,3 @@ properties:
     description: Amount of tests run from this group
     minimum: 0
     type: integer
-required:
-- name
-- testResults
-title: Test result group
-type: object

@@ -9,12 +9,12 @@ from graderutils import graderunittest
 SCHEMA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "schemas"))
 
 
-def build_schemas():
+def build_schemas(version="v1_0"):
     """
     Build all feedback schemas and the graderutils test_config schema.
     """
     # Build test config schema
-    schemas_data = {"test_config": os.path.join(SCHEMA_DIR, "test_config.yaml")}
+    schemas_data = {"test_config": os.path.join(SCHEMA_DIR, "test_config_{}.yaml".format(version))}
     test_config_schema = schemabuilder.build_schemas(schemas_data)
     # Build all feedback schemas
     feedback_schemas = schemabuilder.build_feedback_schemas()

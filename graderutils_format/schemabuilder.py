@@ -32,12 +32,12 @@ def build_schemas(schemas_data):
     return {key: {"schema": schemas[key], "classes": classes[key]} for key in schemas}
 
 
-def build_feedback_schemas():
+def build_feedback_schemas(version="v1_0"):
     """
     Build all schemas.
     """
     schema_keys = (
         "grading_feedback",
     )
-    schemas_data = {key: os.path.join(SCHEMAS_DIR, key + ".yaml") for key in schema_keys}
+    schemas_data = {key: os.path.join(SCHEMAS_DIR, "{}_{}.yaml".format(key, version)) for key in schema_keys}
     return build_schemas(schemas_data)

@@ -1,0 +1,48 @@
+$id: https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/graderutils_format/schemas/grading_feedback.schema.json
+$schema: http://json-schema.org/draft-07/schema#
+description: Grading feedback for a completed grader test for a single exercise. Contains
+  all information required to display grader test results.
+properties:
+  feedback_template:
+    description: Custom Jinja2 template for extending or replacing the default feedback
+      template
+    title: Feedback template
+    type: string
+  maxPoints:
+    description: Maximum amount of possible points in total from all test groups
+    minimum: 0
+    type: integer
+  points:
+    description: Amount of points awarded in total from all test groups
+    minimum: 0
+    type: integer
+  resultGroups:
+    description: Test result groups
+    items:
+      $ref: https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/graderutils_format/schemas/test_result_group.schema.json
+    minItems: 1
+    type: array
+    uniqueItems: true
+  resultId:
+    description: Unique identifier of the result that should be embedded into the
+      output
+    type: string
+  testsRun:
+    description: Amount of tests run in total
+    minimum: 0
+    type: integer
+  theme:
+    description: Test output theme
+    enum:
+    - default
+  warningMessages:
+    description: Warning messages about improperly configured tests and/or fatal errors
+      that prevented the tests from completing correctly. These warnings should only
+      be used if the testing pipeline itself throws unhandled exceptions, not when
+      the modules being tested by the test pipeline throw errors.
+    items:
+      type: string
+    minItems: 1
+    type: array
+title: Grading feedback
+type: object

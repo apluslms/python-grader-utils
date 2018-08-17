@@ -1,0 +1,44 @@
+$id: https://raw.githubusercontent.com/Aalto-LeTech/python-grader-utils/master/graderutils_format/schemas/test_result.schema.json
+$schema: http://json-schema.org/draft-07/schema#
+description: Test result for a single test. Smallest unit of all result objects.
+properties:
+  footer:
+    description: Optional message to display below testOutput
+    type: string
+  fullTestOutput:
+    description: Full output from a single test, useful e.g. if the test output printed
+      by a test method is too verbose for testOutput.
+    type: string
+  header:
+    description: Optional message to display above testOutput
+    type: string
+  maxPoints:
+    description: Maximum amount of possible points from passing this test.
+    minimum: 0
+    type: integer
+  name:
+    description: Display name of the test. E.g. name of a test function/method/procedure/script.
+    type: string
+  points:
+    description: Amount of points awarded for this test.
+    minimum: 0
+    type: integer
+  state:
+    description: The state this result terminated in.
+    enum:
+    - success
+    - fail
+    - error
+  testOutput:
+    description: Preformatted string that contains test output that should be shown
+      as feedback. E.g. a single line from a full traceback string.
+    type: string
+  userData:
+    description: Arbitrary data
+    type: object
+required:
+- name
+- state
+- testOutput
+title: Test result
+type: object

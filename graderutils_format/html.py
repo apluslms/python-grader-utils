@@ -47,7 +47,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--grader-container",
         action="store_true",
-        help="Print generated output to stderr instead of stdout. Additionally, print points and max points to stdout."
+        help="Print points and max points to stdout after HTML output."
     )
     parser.add_argument("--full-document",
         action="store_true",
@@ -67,8 +67,6 @@ if __name__ == "__main__":
             sys.exit(1)
     # Input is valid, render to html
     html_feedback = grading_data_to_html(grading_data, args.full_document)
+    print(html_feedback)
     if args.grader_container:
-        print(html_feedback, file=sys.stderr)
         print("TotalPoints: {}\nMaxPoints: {}".format(grading_data["points"], grading_data["maxPoints"]))
-    else:
-        print(html_feedback)

@@ -53,7 +53,7 @@
             </h5>
         </div>
         <div id="result{{ result_group_loop.index }}-{{ test_result_loop.index }}"
-             class="collapse in">
+             class="collapse{% if result.status != "passed" %} in{% endif %}">
             {% block result_panel scoped %}
             <div class="panel-body">
 

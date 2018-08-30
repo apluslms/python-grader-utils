@@ -63,7 +63,7 @@ if __name__ == "__main__":
         if args.verbose:
             raise
         else:
-            print("Input does not conform to JSON schema 'Grading feedback'. Run with --verbose to show full validation error.")
+            print("Input does not conform to JSON schema 'Grading feedback'. Run graderutils_format.html with --verbose to show full validation error.")
             sys.exit(1)
     # Input is valid, render to html
     html_feedback = grading_data_to_html(grading_data, args.full_document)

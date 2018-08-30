@@ -91,22 +91,6 @@ def set_full_points(test_case):
     return max_points
 
 
-def check_deprecated_points_syntax(test_case):
-    points_pattern = PointsTestRunner.points_pattern
-    docstring = test_case.shortDescription()
-    if docstring:
-        docstring = docstring.strip()
-        match = points_pattern.search(docstring)
-        if match:
-            msg = (
-                "Found deprecated points syntax in test case {!r} in its docstring: {!r}. "
-                .format(test_case, match.group(0)) +
-                "Since version 3, points are no longer parsed from the docstrings. "
-                "Consider replacing the docstring points with a decorated test method: e.g. `from graderutils.graderunittest import points` and then decorate {!r} with `@points({})`"
-                .format(test_case, match.group(1)))
-            logger.warning(msg)
-
-
 class PointsTestRunner(unittest.TextTestRunner):
     """
     unittest.TextTestRunner that extract points from test methods.
@@ -129,14 +113,12 @@ class PointsTestRunner(unittest.TextTestRunner):
         # Award points, while computing total points for this test suite
         suite_points = suite_max_points = 0
         for success in result.successes:
-            check_deprecated_points_syntax(success)
             if not check_points(success):
                 continue
             points = set_full_points(success)
             suite_points += points
             suite_max_points += points
         for nosuccess, _ in itertools.chain(result.failures, result.errors):
-            check_deprecated_points_syntax(nosuccess)
             if not check_points(nosuccess):
                 continue
             _, max_points = get_points(nosuccess)

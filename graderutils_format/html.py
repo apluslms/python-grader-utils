@@ -3,6 +3,7 @@ Render "Grading feedback" JSON schema objects into HTML using Jinja2 templates.
 """
 import argparse
 import json
+import os
 import sys
 
 import jinja2
@@ -15,8 +16,8 @@ def _load_template(loader, name):
     return jinja2.Environment(loader=loader, trim_blocks=True, lstrip_blocks=True).get_template(name)
 
 
-def _load_template_file(name):
-    file_loader = jinja2.FileSystemLoader("./")
+def _load_template_file(template_paths, name):
+    file_loader = jinja2.FileSystemLoader(template_paths)
     return _load_template(file_loader, name)
 
 
@@ -25,7 +26,7 @@ def _load_package_template(name):
     return _load_template(package_loader, name)
 
 
-def grading_data_to_html(grading_data, extends_base=False):
+def grading_data_to_html(grading_data, extends_base=False, grader_container=False):
     """
     Format a "Grading feedback" JSON schema object as HTML.
     """
@@ -35,7 +36,11 @@ def grading_data_to_html(grading_data, extends_base=False):
         # Extend default template with given custom template
         custom_template = grading_data["feedback_template"]
         grading_data["feedback_template"] = feedback_template
-        feedback_template = _load_template_file(custom_template)
+        template_paths = ["./"]
+        if grader_container and "PYTHONPATH" in os.environ:
+            # If running in grade-python, custom templates are expected to be in the exercise dir specified by PYTHONPATH
+            template_paths.append(os.environ["PYTHONPATH"])
+        feedback_template = _load_template_file(template_paths, custom_template)
     return feedback_template.render(**grading_data, extends_base=extends_base)
 
 
@@ -66,7 +71,7 @@ if __name__ == "__main__":
             print("Input does not conform to JSON schema 'Grading feedback'. Run graderutils_format.html with --verbose to show full validation error.")
             sys.exit(1)
     # Input is valid, render to html
-    html_feedback = grading_data_to_html(grading_data, args.full_document)
+    html_feedback = grading_data_to_html(grading_data, args.full_document, args.grader_container)
     print(html_feedback)
     if args.grader_container:
         print("TotalPoints: {}\nMaxPoints: {}".format(grading_data["points"], grading_data["maxPoints"]))

@@ -19,7 +19,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='graderutils',
-    version='3.2.0',
+    version='3.2.1',
     description='Utilities for Python based grader test pipelines',
     long_description=readmefile_contents,
 
@@ -41,11 +41,11 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'PyYAML',       # Parse configuration files
-        'Jinja2',       # Render HTML feedback with templates
-        'html5lib',     # Parse HTML
-        'hypothesis',   # Generics for UnitTests
-        'jsonschema',   # Validators for JSON schemas
-        'python_jsonschema_objects',   # JSON schema to Python object mappings
+        'PyYAML ~= 3.13',       # Parse configuration files
+        'Jinja2 ~= 2.10',       # Render HTML feedback with templates
+        'html5lib ~= 1.0',      # Parse HTML
+        'hypothesis ~= 3.69',   # Generics for UnitTests
+        'jsonschema ~= 2.6',    # Validators for JSON schemas
+        'python_jsonschema_objects ~= 0.3.3', # JSON schema to Python object mappings
     ],
 )

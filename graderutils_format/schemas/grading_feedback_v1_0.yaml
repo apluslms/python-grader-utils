@@ -77,7 +77,6 @@ definitions:
           $ref: "#/definitions/testResult"
         minItems: 1
         type: array
-        uniqueItems: true
       testsRun:
         description: Amount of tests run from this group
         minimum: 0
@@ -101,7 +100,6 @@ properties:
       $ref: "#/definitions/testResultGroup"
     minItems: 1
     type: array
-    uniqueItems: true
   resultId:
     description: Unique identifier of the result that should be embedded into the output
     type: string

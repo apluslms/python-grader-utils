@@ -200,10 +200,12 @@ def make_argparser():
         parser.add_argument('--' + flag, action="store_true", help=help)
     return parser
 
-
-if __name__ == "__main__":
+def cli_main():
     cli_args = vars(make_argparser().parse_args())
     # Remove required command line argument, leaving only optional arguments
     config_path = cli_args.pop("config_path")
     grading_json = run(config_path, **cli_args)
     print(grading_json)
+
+if __name__ == "__main__":
+    cli_main()

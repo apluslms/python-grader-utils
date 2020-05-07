@@ -32,21 +32,21 @@ if pid == 0:  # Child process: rpyc server running student code
     status = 250
     try:
         become(student_user)
-        sys.path[0] += "/student"
         control[0].close()
         with control[1] as sock:
             status = 251
             from graderutils.remote import run_server
+            sys.path[0] = "/submission/user"  # Submitted files
             run_server()
         status = 0
     finally:
         os._exit(status)
 else:  # Grader process
     become(grader_user)
-    sys.path[0] += "/grader"
     control[1].close()
     with control[0] as sock:
         from graderutils.remote import manage_server
         from graderutils.main import cli_main
         with manage_server(pid) as conn:
+            sys.path[0] = "/exercise"  # Unittest
             cli_main()

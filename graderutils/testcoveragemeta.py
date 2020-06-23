@@ -34,6 +34,9 @@ import coverage
 import importlib
 from io import StringIO
 import imp
+import sys
+
+from graderutils import graderunittest
 
 class TestCoverageMeta(type):
     """
@@ -67,18 +70,23 @@ class TestCoverageMeta(type):
         stream = StringIO()
         cov = coverage.Coverage()
         cov.start()
-        #we need to import the files here and make sure that
-        #the users file is reloaded so that coverage shows right
-        #lines as covered. It would miss function definitions otherwise
+        # we need to import the files here and make sure that
+        # the users file is reloaded so that coverage shows right
+        # lines as covered. It would miss function definitions otherwise
         test = importlib.import_module(testmodule)
         mod = importlib.import_module(filename)
         importlib.reload(mod)
         suite = unittest.TestLoader().loadTestsFromModule(test)
         result = unittest.TextTestRunner(stream=stream, verbosity=0).run(suite)
         cov.stop()
-        covered = cov.report(include="{}.py".format(filename), show_missing=True)
+        covered = cov.report(include="{}.py".format(filename), show_missing=True, file=sys.stderr)
         missing = cov.analysis("{}.py".format(filename))[3]
 
+        msg_on_success = "The test was a success!"
+        msg_on_fail = "The test failed, reason:"
+        msg_on_error = "An error occurred:"
+
+        @graderunittest.points(0, msg_on_success=msg_on_success, msg_on_fail=msg_on_fail, msg_on_error=msg_on_error)
         def user_tests_pass(self):
             """Check if students tests pass"""
             if not result.wasSuccessful():
@@ -87,6 +95,7 @@ class TestCoverageMeta(type):
         setattr(newclass, 'test_code', user_tests_pass)
 
         def generate_test(percentage, test_num, points):
+            @graderunittest.points(points, msg_on_success=msg_on_success, msg_on_fail=msg_on_fail, msg_on_error=msg_on_error)
             def a_test(self):
                 if result.wasSuccessful():
                     self.assertGreaterEqual(covered, percentage,
@@ -94,7 +103,7 @@ class TestCoverageMeta(type):
                         .format(covered, missing))
                 else:
                     self.fail("Test wasn't run because your tests weren't successful")
-            a_test.__doc__ = 'Checks that test coverage is over {}% ({}p)'.format(percentage, points)
+            a_test.__doc__ = 'Checks that test coverage is over {}%'.format(percentage)
 
             setattr(newclass, 'test_coverage_{}'.format(test_num), a_test)
         iterations = len(points)
@@ -102,5 +111,6 @@ class TestCoverageMeta(type):
             generate_test((100-minimum)/iterations*num+minimum, num, point)
 
         return newclass
+
     def __init__(cls, clsname, bases, dct, testmodule, filename, points, minimum=0):
         super().__init__(cls, clsname, dct)

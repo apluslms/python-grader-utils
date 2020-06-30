@@ -42,12 +42,19 @@
         <div class="panel-heading">
             <h5>
                 <a data-toggle="collapse"
-                   href="#result{{ result_group_loop.index }}-{{ test_result_loop.index }}">{{ result.title }}</a>
+                    href="#result{{ result_group_loop.index }}-{{ test_result_loop.index }}">{{ result.title }}</a>
+                <span> </span>
                 {% if result.status == "passed" %}
+                <span class="badge badge-success">{{ result.points }} / {{ result.maxPoints }}</span>
+                <span class="label sr-only">points</span>
                 <span class="label feedback-label label-success">Success</span>
                 {% elif result.status == "failed" %}
+                <span class="badge badge-danger">{{ result.points }} / {{ result.maxPoints }}</span>
+                <span class="label sr-only">points</span>
                 <span class="label feedback-label label-danger">Failed</span>
                 {% elif result.status == "error" %}
+                <span class="badge">{{ result.points }} / {{ result.maxPoints }}</span>
+                <span class="label sr-only">points</span>
                 <span class="label feedback-label label-default">Error</span>
                 {% endif %}
             </h5>

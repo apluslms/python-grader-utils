@@ -111,9 +111,9 @@ validation:
 #
 # AssertionError: True is not false : -1 is not a prime number, but your function says it is
 #
-# If remove_more_sentinel is given, then everything starting from the exception line ending at the sentinel, will also be removed.
+# If remove_sentinel is given, then all traceback until (including) the sentinel string, will be removed.
 #
-# e.g. with AssertionError and remove_more_sentinel [remove-stop]:
+# e.g. with AssertionError and remove_sentinel [remove-stop]:
 #
 # Traceback (most recent call last):
 #   File "local_tests.py", line 33, in test_is_prime_with_no_primes
@@ -138,8 +138,8 @@ format_tracebacks:
     - class_name: AssertionError
       hide_tracebacks: true
       hide_tracebacks_short_only: true
-      # Continue removing tracebacks until (including) this sentinel string
-      remove_more_sentinel: "[remove-stop]"
+      # Remove tracebacks until (including) this sentinel string
+      remove_sentinel: "[remove-stop]"
     # Default configuration, hide all tracebacks
     - class_name: '*'
       hide_tracebacks: true

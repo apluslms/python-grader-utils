@@ -1,6 +1,7 @@
 """
 Extensions for unittest tests.
 """
+import contextlib
 import functools
 import importlib
 import io
@@ -173,11 +174,13 @@ def run_test_suite_in_named_module(module_name):
     Return a PointsTestResult containing the results.
     """
     loader = unittest.defaultTestLoader
-    test_module = importlib.import_module(module_name)
-    test_suite = loader.loadTestsFromModule(test_module)
-    # Redirect output to string stream and increase verbosity
-    runner = PointsTestRunner(stream=io.StringIO(), verbosity=2)
-    result = runner.run(test_suite)
+    # Module output must be suppressed during import and run, since grading json is printed to stdout as well
+    with contextlib.redirect_stdout(None):
+        test_module = importlib.import_module(module_name)
+        test_suite = loader.loadTestsFromModule(test_module)
+        # Redirect output to string stream and increase verbosity
+        runner = PointsTestRunner(stream=io.StringIO(), verbosity=2)
+        result = runner.run(test_suite)
     return result
 
 

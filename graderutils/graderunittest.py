@@ -1,6 +1,7 @@
 """
 Extensions for unittest tests.
 """
+import contextlib
 import functools
 import importlib
 import io
@@ -62,7 +63,12 @@ def points(points_on_success, msg_on_success='', msg_on_fail='', msg_on_error=''
         @functools.wraps(testmethod)
         def points_patching_testmethod(case, *args, **kwargs):
             case.graderutils_points = graderutils_points
-            return testmethod(case, *args, **kwargs)
+            try: # SystemExit and KeyboardInterrupt kill grader if not caught
+                testmethod(case, *args, **kwargs)
+            except SystemExit as e:
+                raise Exception("Grader does not support the usage of sys.exit(), exit() or quit().") from e
+            except KeyboardInterrupt as e:
+                raise Exception("Grader does not support raising KeyboardInterrupt.") from e
         return points_patching_testmethod
     return points_decorator
 
@@ -168,11 +174,13 @@ def run_test_suite_in_named_module(module_name):
     Return a PointsTestResult containing the results.
     """
     loader = unittest.defaultTestLoader
-    test_module = importlib.import_module(module_name)
-    test_suite = loader.loadTestsFromModule(test_module)
-    # Redirect output to string stream and increase verbosity
-    runner = PointsTestRunner(stream=io.StringIO(), verbosity=2)
-    result = runner.run(test_suite)
+    # Module output must be suppressed during import and run, since grading json is printed to stdout as well
+    with contextlib.redirect_stdout(None):
+        test_module = importlib.import_module(module_name)
+        test_suite = loader.loadTestsFromModule(test_module)
+        # Redirect output to string stream and increase verbosity
+        runner = PointsTestRunner(stream=io.StringIO(), verbosity=2)
+        result = runner.run(test_suite)
     return result
 
 

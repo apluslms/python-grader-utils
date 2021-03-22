@@ -14,6 +14,7 @@ import unittest
 
 
 logger = logging.getLogger("warnings")
+testmethod_timeout = 60
 
 
 class PointsTestResult(unittest.TextTestResult):
@@ -64,7 +65,11 @@ def points(points_on_success, msg_on_success='', msg_on_fail='', msg_on_error=''
         def points_patching_testmethod(case, *args, **kwargs):
             case.graderutils_points = graderutils_points
             try: # SystemExit and KeyboardInterrupt kill grader if not caught
-                return testmethod(case, *args, **kwargs)
+                running_time, result = result_or_timeout(testmethod, (case, *args), kwargs, timeout=testmethod_timeout)
+                if running_time == testmethod_timeout and result is None:
+                    raise TimeoutError("Test timed out after {} seconds. Your code may be "
+                                       "stuck in an infinite loop or it runs very slowly.".format(testmethod_timeout))
+                return result
             except SystemExit as e:
                 raise Exception("Grader does not support the usage of sys.exit(), exit() or quit().") from e
             except KeyboardInterrupt as e:
@@ -138,6 +143,11 @@ class PointsTestRunner(unittest.TextTestRunner):
         return result
 
 
+# TimeoutExit will not be suppressed by libraries that do `except Exception: pass` because it inherits from BaseException
+class TimeoutExit(BaseException):
+    pass
+
+
 def result_or_timeout(timed_function, args=(), kwargs=None, timeout=1, timer=time.perf_counter):
     """
     Call timed_function with args and kwargs and benchmark the execution time with timer.
@@ -149,7 +159,7 @@ def result_or_timeout(timed_function, args=(), kwargs=None, timeout=1, timer=tim
         kwargs = dict()
 
     def handler(*h_args, **h_kwargs):
-        raise TimeoutError()
+        raise TimeoutExit()
 
     signal.signal(signal.SIGALRM, handler)
     signal.alarm(timeout)
@@ -158,7 +168,7 @@ def result_or_timeout(timed_function, args=(), kwargs=None, timeout=1, timer=tim
         start_time = timer()
         result = timed_function(*args, **kwargs)
         running_time = timer() - start_time
-    except TimeoutError:
+    except TimeoutExit:
         running_time = timeout
         result = None
     finally:

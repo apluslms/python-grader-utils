@@ -76,6 +76,8 @@ def do_tests(config):
     """
     result_groups = []
     points_total = max_points_total = tests_run = 0
+    if "testmethod_timeout" in config:
+        graderunittest.testmethod_timeout = config["testmethod_timeout"]
     for group_result in run_test_groups(config["test_groups"]):
         result_groups.append(group_result)
         points_total += group_result["points"]

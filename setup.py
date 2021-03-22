@@ -19,11 +19,11 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='graderutils',
-    version='3.3.0',
+    version='3.3.1',
     description='Utilities for Python based grader test pipelines',
     long_description=readmefile_contents,
 
-    url='https://github.com/Aalto-LeTech/python-grader-utils',
+    url='https://github.com/apluslms/python-grader-utils',
     author='Matias Lindgren',
     author_email='matias.lindgren@gmail.com',
     license='MIT',

@@ -1,7 +1,7 @@
 # Graderutils
 
 Python library that handles grader test suite management, file validation and test feedback formatting.
-Originally developed to enable HTML feedback for programming exercise grading output for courses served on the [A+](https://github.com/Aalto-LeTech/a-plus) platform.
+Originally developed to enable HTML feedback for programming exercise grading output for courses served on the [A+](https://github.com/apluslms/a-plus) platform.
 The A+ platform is not required to run graderutils.
 
 ## Features
@@ -20,7 +20,7 @@ Results from `examples/01_simple` rendered with the default theme:
 ### Install
 
 ```
-git clone --depth 1 https://github.com/Aalto-LeTech/python-grader-utils.git
+git clone --depth 1 https://github.com/apluslms/python-grader-utils.git
 cd python-grader-utils
 pip install .
 ```

@@ -177,6 +177,11 @@ def result_or_timeout(timed_function, args=(), kwargs=None, timeout=1, timer=tim
     return running_time, result
 
 
+class ModuleLevelError(Exception):
+    def __init__(self, other):
+        self.cause = other
+
+
 def run_test_suite_in_named_module(module_name):
     """
     Load all test cases as a test suite from a test module with the given name.
@@ -186,7 +191,10 @@ def run_test_suite_in_named_module(module_name):
     loader = unittest.defaultTestLoader
     # Module output must be suppressed during import and run, since grading json is printed to stdout as well
     with contextlib.redirect_stdout(None):
-        test_module = importlib.import_module(module_name)
+        try: # Catch module-level errors
+            test_module = importlib.import_module(module_name)
+        except BaseException as e:
+            raise ModuleLevelError(e)
         test_suite = loader.loadTestsFromModule(test_module)
         # Redirect output to string stream and increase verbosity
         runner = PointsTestRunner(stream=io.StringIO(), verbosity=2)

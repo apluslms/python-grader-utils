@@ -19,6 +19,7 @@ import yaml
 import jsonschema
 
 from graderutils import graderunittest, schemaobjects, validation, tracebackformat
+from graderutils.graderunittest import ModuleLevelError
 
 BASECONFIG = os.path.join(os.path.dirname(__file__), "baseconfig.yaml")
 
@@ -131,7 +132,16 @@ def run(config_path, novalidate=False, container=False, show_config=False, devel
             grading_feedback = do_validation_tasks(config["validation"])
         # Run tests, unless input validation produced errors
         if not grading_feedback:
-            grading_feedback = do_tests(config)
+            try:
+                grading_feedback = do_tests(config)
+            except ModuleLevelError as e:
+                if type(e.cause) is ImportError:
+                    tb_str = "".join(traceback.format_exception_only(type(e.cause), e.cause))
+                else:
+                    tb_str = "".join(traceback.format_exception(type(e.cause), e.cause, e.cause.__traceback__))
+                # Wrap multiline traceback string with repr and add prefix flag
+                error_msg = multiline_repr_prefix + repr(tb_str)
+                logger.warning(error_msg)
     except Exception as e:
         if container:
             raise

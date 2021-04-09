@@ -9,12 +9,18 @@ import itertools
 import logging
 import re
 import signal
+import sys
 import time
 import unittest
 
 
 logger = logging.getLogger("warnings")
+
 testmethod_timeout = 60
+
+'''Maximum string length of the stderr stream for one test module.
+If the output is longer, the rest is not included in the grading payload.'''
+TEST_MODULE_STDERR_MAX_SIZE = 50000
 
 
 class PointsTestResult(unittest.TextTestResult):
@@ -189,16 +195,22 @@ def run_test_suite_in_named_module(module_name):
     Return a PointsTestResult containing the results.
     """
     loader = unittest.defaultTestLoader
-    # Module output must be suppressed during import and run, since grading json is printed to stdout as well
-    with contextlib.redirect_stdout(None):
-        try: # Catch module-level errors
-            test_module = importlib.import_module(module_name)
-        except BaseException as e:
-            raise ModuleLevelError(e)
-        test_suite = loader.loadTestsFromModule(test_module)
-        # Redirect output to string stream and increase verbosity
-        runner = PointsTestRunner(stream=io.StringIO(), verbosity=2)
-        result = runner.run(test_suite)
+    err = io.StringIO()
+    try:
+        with contextlib.redirect_stderr(err):
+            # Module output must be suppressed during import and run, since grading json is printed to stdout as well
+            with contextlib.redirect_stdout(None):
+                try: # Catch module-level errors
+                    test_module = importlib.import_module(module_name)
+                except BaseException as e:
+                    raise ModuleLevelError(e)
+                test_suite = loader.loadTestsFromModule(test_module)
+                # Redirect output to string stream and increase verbosity
+                runner = PointsTestRunner(stream=io.StringIO(), verbosity=2)
+                result = runner.run(test_suite)
+    finally:
+        # Limit maximum size of the stderr output of this test group to 50kB
+        sys.stderr.write(err.getvalue()[:TEST_MODULE_STDERR_MAX_SIZE])
     return result
 
 

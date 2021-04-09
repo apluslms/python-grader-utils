@@ -15,7 +15,12 @@ import unittest
 
 
 logger = logging.getLogger("warnings")
+
 testmethod_timeout = 60
+
+'''Maximum string length of the stderr stream for one test module.
+If the output is longer, the rest is not included in the grading payload.'''
+TEST_MODULE_STDERR_MAX_SIZE = 50000
 
 
 class PointsTestResult(unittest.TextTestResult):
@@ -203,11 +208,9 @@ def run_test_suite_in_named_module(module_name):
                 # Redirect output to string stream and increase verbosity
                 runner = PointsTestRunner(stream=io.StringIO(), verbosity=2)
                 result = runner.run(test_suite)
-    except BaseException:
-        raise
     finally:
         # Limit maximum size of the stderr output of this test group to 50kB
-        sys.stderr.write(err.getvalue()[:50000])
+        sys.stderr.write(err.getvalue()[:TEST_MODULE_STDERR_MAX_SIZE])
     return result
 
 

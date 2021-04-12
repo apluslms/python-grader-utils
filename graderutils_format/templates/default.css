@@ -25,8 +25,21 @@ pre {
 div.warning-messages {
     margin-top: 35px;
 }
-/* Override stylesheet default badge color inside panel-heading */
+
+/* Override stylesheet badge colors inside panel-heading since otherwise they are black */
+
+/* Error */
 div.grading-task .panel-default > .panel-heading .badge {
     color: #fff;
     background-color: #777;
+}
+/* Success */
+div.grading-task .panel-default > .panel-heading .badge.badge-success {
+    color: #fff;
+    background-color: #00803c;
+}
+/* Fail */
+div.grading-task .panel-default > .panel-heading .badge.badge-danger {
+    color: #fff;
+    background-color: #a50000;
 }

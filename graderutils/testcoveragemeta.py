@@ -29,14 +29,15 @@ def load_tests(*args, **kwargs):
 ```
 in ``coverage_tests.py``
 """
-import unittest
-import coverage
 import importlib
-from io import StringIO
-import imp
 import sys
+import unittest
+from io import StringIO
+
+import coverage
 
 from graderutils import graderunittest
+
 
 class TestCoverageMeta(type):
     """
@@ -82,20 +83,17 @@ class TestCoverageMeta(type):
         covered = cov.report(include="{}.py".format(filename), show_missing=True, file=sys.stderr)
         missing = cov.analysis("{}.py".format(filename))[3]
 
-        msg_on_success = "The test was a success!"
-        msg_on_fail = "The test failed, reason:"
-        msg_on_error = "An error occurred:"
-
-        @graderunittest.points(0, msg_on_success=msg_on_success, msg_on_fail=msg_on_fail, msg_on_error=msg_on_error)
+        @graderunittest.points(0)
         def user_tests_pass(self):
             """Check if students tests pass"""
             if not result.wasSuccessful():
                 self.fail("Your tests didn't pass. Coverage tests won't be run.\n\n{}".format(stream.getvalue()))
             self.preformatted_feedback = "Run results: \n{}".format(stream.getvalue())
+
         setattr(newclass, 'test_code', user_tests_pass)
 
         def generate_test(percentage, test_num, points):
-            @graderunittest.points(points, msg_on_success=msg_on_success, msg_on_fail=msg_on_fail, msg_on_error=msg_on_error)
+            @graderunittest.points(points)
             def a_test(self):
                 if result.wasSuccessful():
                     self.assertGreaterEqual(covered, percentage,
@@ -103,14 +101,16 @@ class TestCoverageMeta(type):
                         .format(covered, missing))
                 else:
                     self.fail("Test wasn't run because your tests weren't successful")
-            a_test.__doc__ = 'Checks that test coverage is over {}%'.format(percentage)
 
-            setattr(newclass, 'test_coverage_{}'.format(test_num), a_test)
+            a_test.__doc__ = 'Checks that test coverage is over {}%'.format(percentage)
+            setattr(newclass, 'test_coverage_{:02d}'.format(test_num), a_test)
+
         iterations = len(points)
         for num, point in enumerate(points, start=1):
             generate_test((100-minimum)/iterations*num+minimum, num, point)
 
         return newclass
+
 
     def __init__(cls, clsname, bases, dct, testmodule, filename, points, minimum=0):
         super().__init__(cls, clsname, dct)

@@ -84,7 +84,7 @@ def validation_errors_as_test_results(errors):
     for error in errors:
         result = {
             "title": error.get("display_name", error["type"]),
-            "testOutput": error["message"],
+            "testOutput": error.get("message", "The submitted file did not pass this validation task."),
             "status": "failed",
         }
         if "description" in error:

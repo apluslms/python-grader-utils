@@ -232,7 +232,7 @@ def get_python_syntax_errors(filename):
         ast.parse(source)
     except SyntaxError as syntax_error:
         errors["message"] = "Syntax error in {!r} at line {}:\n{}".format(
-            syntax_error.filename,
+            filename,
             syntax_error.lineno,
             syntax_error.text
         )
@@ -247,6 +247,7 @@ def get_labview_errors(filename):
             errors["message"] = "The file wasn't a proper labVIEW-file"
     return errors
 
+
 def get_xlsm_errors(filename):
     errors = {}
     with open(filename, "rb") as f:
@@ -254,6 +255,7 @@ def get_xlsm_errors(filename):
         if header != b'PK\x03\x04\x14\x00\x06\x00\x08\x00\x00\x00!\x00':
             errors["message"] = "The file wasn't a proper Excel-file with macros!"
     return errors
+
 
 def get_html_errors(filename):
     errors = {}

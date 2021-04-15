@@ -58,10 +58,10 @@
                 <span class="label feedback-label label-danger">Failed</span>
                 {% elif result.status == "error" %}
                 {% if maxPoints %}
-                <span class="badge">{{ result.points }} / {{ result.maxPoints }}</span>
+                <span class="badge badge-danger">{{ result.points }} / {{ result.maxPoints }}</span>
                 <span class="sr-only">points</span>
                 {% endif %}
-                <span class="label feedback-label label-default">Error</span>
+                <span class="label feedback-label label-danger">Error</span>
                 {% endif %}
             </h5>
         </div>

@@ -45,16 +45,22 @@
                     href="#result{{ result_group_loop.index }}-{{ test_result_loop.index }}">{{ result.title }}</a>
                 <span> </span>
                 {% if result.status == "passed" %}
+                {% if maxPoints %}
                 <span class="badge badge-success">{{ result.points }} / {{ result.maxPoints }}</span>
                 <span class="label sr-only">points</span>
+                {% endif %}
                 <span class="label feedback-label label-success">Success</span>
                 {% elif result.status == "failed" %}
+                {% if maxPoints %}
                 <span class="badge badge-danger">{{ result.points }} / {{ result.maxPoints }}</span>
                 <span class="label sr-only">points</span>
+                {% endif %}
                 <span class="label feedback-label label-danger">Failed</span>
                 {% elif result.status == "error" %}
+                {% if maxPoints %}
                 <span class="badge">{{ result.points }} / {{ result.maxPoints }}</span>
                 <span class="label sr-only">points</span>
+                {% endif %}
                 <span class="label feedback-label label-default">Error</span>
                 {% endif %}
             </h5>

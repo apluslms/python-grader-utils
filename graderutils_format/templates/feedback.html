@@ -18,7 +18,7 @@
     <h1>Total points: {{ points }} of {{ maxPoints }}</h1>
     {% endif %}
     {% if testsRun %}
-    <h1><small>Total tests run: {{ testsRun }}</small></h1>
+    <h2><small>Total tests run: {{ testsRun }}</small></h2>
     {% endif %}
 </div>
 
@@ -40,30 +40,31 @@
 
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h5>
+            <h4 class="pull-left">
                 <a data-toggle="collapse"
                     href="#result{{ result_group_loop.index }}-{{ test_result_loop.index }}">{{ result.title }}</a>
-                <span> </span>
+            </h4>
+            <div class="vertical-center">
                 {% if result.status == "passed" %}
-                {% if maxPoints %}
-                <span class="badge badge-success">{{ result.points }} / {{ result.maxPoints }}</span>
+                {% if result.maxPoints %}
+                <span class="badge green">{{ result.points }} / {{ result.maxPoints }}</span>
                 <span class="sr-only">points</span>
                 {% endif %}
-                <span class="label feedback-label label-success">Success</span>
+                <span class="label feedback-label green pull-right">Success</span>
                 {% elif result.status == "failed" %}
-                {% if maxPoints %}
-                <span class="badge badge-danger">{{ result.points }} / {{ result.maxPoints }}</span>
+                {% if result.maxPoints %}
+                <span class="badge red">{{ result.points }} / {{ result.maxPoints }}</span>
                 <span class="sr-only">points</span>
                 {% endif %}
-                <span class="label feedback-label label-danger">Failed</span>
+                <span class="label feedback-label red pull-right">Failed</span>
                 {% elif result.status == "error" %}
-                {% if maxPoints %}
-                <span class="badge badge-danger">{{ result.points }} / {{ result.maxPoints }}</span>
+                {% if result.maxPoints %}
+                <span class="badge orange">{{ result.points }} / {{ result.maxPoints }}</span>
                 <span class="sr-only">points</span>
+                <span class="label feedback-label orange pull-right">Error</span>
                 {% endif %}
-                <span class="label feedback-label label-danger">Error</span>
                 {% endif %}
-            </h5>
+            </div>
         </div>
         <div id="result{{ result_group_loop.index }}-{{ test_result_loop.index }}"
              class="collapse{% if result.status != "passed" %} in{% endif %}">
@@ -85,7 +86,7 @@
                 <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}">
                   Show traceback</button>
                 <div id="traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}" class="collapse">
-                  <p><pre>{{ result.fullTestOutput|e }}</pre></p>
+                    <p><pre>{{ result.fullTestOutput|e }}</pre></p>
                 </div>
                 {% endif %}
 
@@ -104,11 +105,11 @@
 {% if result_group.fullOutput %}
 <div class="panel panel-default full-test-output">
     <div class="panel-heading">
-        <h5>
+        <h4 class="pull-left">
             <a data-toggle="collapse" href="#full-test-output{{ result_group_loop.index }}">
                 Full terminal output for {{ result_group.title }}</a>
-            <span class="label feedback-label label-info">Info</span>
-        </h5>
+        </h4>
+        <span class="label feedback-label label-info vertical-center pull-right">Info</span>
     </div>
     <div id="full-test-output{{ result_group_loop.index }}" class="panel-body collapse">
         <p><pre class="feedback">{{ result_group.fullOutput|e }}</pre></p>
@@ -124,11 +125,11 @@
     {% set warnings_loop = loop %}
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h5>
+            <h4>
                 <a data-toggle="collapse"
                    href="#warning-message{{ warnings_loop.index }}"
                    class="label label-info">Graderutils message</a>
-            </h5>
+            </h4>
         </div>
         <div id="warning-message{{ warnings_loop.index }}" class="panel-body collapse in">
             <pre>{{ warning|e }}</pre>

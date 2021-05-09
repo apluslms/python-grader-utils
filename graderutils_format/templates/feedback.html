@@ -86,7 +86,7 @@
                 <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}">
                   Show traceback</button>
                 <div id="traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}" class="collapse">
-                    <p><pre>{{ result.fullTestOutput|e }}</pre></p>
+                    <pre>{{ result.fullTestOutput|e }}</pre>
                 </div>
                 {% endif %}
 
@@ -112,7 +112,7 @@
         <span class="label feedback-label label-info vertical-center pull-right">Info</span>
     </div>
     <div id="full-test-output{{ result_group_loop.index }}" class="panel-body collapse">
-        <p><pre class="feedback">{{ result_group.fullOutput|e }}</pre></p>
+        <pre class="feedback">{{ result_group.fullOutput|e }}</pre>
     </div>
 </div>
 {% endif %}

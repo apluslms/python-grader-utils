@@ -8,13 +8,17 @@ Detailed examples available in the readme.
 """
 import ast
 import collections
+import contextlib
 import html5lib
 import imghdr
 import importlib
+import io
 import re
+import sys
 import traceback
 
 from graderutils import GraderUtilsError
+from graderutils.graderunittest import TEST_MODULE_STDERR_MAX_SIZE, testmethod_timeout, result_or_timeout
 
 
 class ValidationError(GraderUtilsError): pass
@@ -182,7 +186,25 @@ def get_image_type_errors(image, expected_type):
 
 
 def _import_module_from_python_file(filename):
-    return importlib.import_module(filename.split(".py")[0])
+    err = io.StringIO()
+    try:
+        with contextlib.redirect_stderr(err):
+            # Module output must be suppressed during import, since grading json is printed to stdout as well
+            with contextlib.redirect_stdout(None):
+                try: # SystemExit and KeyboardInterrupt kill grader if not caught
+                    args = [filename.split(".py")[0]]
+                    running_time, module = result_or_timeout(importlib.import_module, args, timeout=testmethod_timeout)
+                    if running_time == testmethod_timeout and module is None:
+                        raise TimeoutError("Validation task timed out after {} seconds. Your code may be "
+                                           "stuck in an infinite loop or it runs very slowly.".format(testmethod_timeout))
+                    return module
+                except SystemExit as e:
+                    raise GraderUtilsError("Grader does not support the usage of sys.exit(), exit() or quit().") from e
+                except KeyboardInterrupt as e:
+                    raise GraderUtilsError("Grader does not support raising KeyboardInterrupt.") from e
+    finally:
+        # Limit maximum size of the stderr output
+        sys.stderr.write(err.getvalue()[:TEST_MODULE_STDERR_MAX_SIZE])
 
 
 def get_python_import_errors(filename):

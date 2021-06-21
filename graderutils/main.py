@@ -43,10 +43,11 @@ def run_test_groups(test_groups):
     """
     for test_group in test_groups:
         # Run all test cases in module, producing a result with points
-        points_results = graderunittest.run_test_suite_in_named_module(test_group["module"])
+        points_results, running_time = graderunittest.run_test_suite_in_named_module(test_group["module"])
         # Convert all test results in group results into JSON schema serializable dicts
         group_result = schemaobjects.test_group_result_as_dict(points_results)
         group_result["title"] = test_group.get("display_name", test_group["module"])
+        group_result["runningTime"] = running_time
         if "description" in test_group:
             group_result["description"] = test_group["description"]
         yield group_result
@@ -76,7 +77,7 @@ def do_tests(config):
     Returns a JSON serializable dict of a "Grading feedback" JSON object.
     """
     result_groups = []
-    points_total = max_points_total = tests_run = 0
+    points_total = max_points_total = tests_run = running_time_total = 0
     if "testmethod_timeout" in config:
         graderunittest.testmethod_timeout = config["testmethod_timeout"]
     for group_result in run_test_groups(config["test_groups"]):
@@ -84,6 +85,7 @@ def do_tests(config):
         points_total += group_result["points"]
         max_points_total += group_result["maxPoints"]
         tests_run += group_result["testsRun"]
+        running_time_total += group_result["runningTime"]
     if "format_tracebacks" in config:
         # Traceback formatting specified, run all formatting on all results
         # Unmodified traceback strings are backed up into key fullTestOutput for each test result,
@@ -94,6 +96,7 @@ def do_tests(config):
         "points": points_total,
         "maxPoints": max_points_total,
         "testsRun": tests_run,
+        "runningTime": running_time_total,
     }
 
 

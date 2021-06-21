@@ -35,6 +35,7 @@ def test_result_as_dict(test_case, output):
         "maxPoints": max_points,
         "testOutput": output,
         "fullTestOutput": output,
+        "runningTime": test_case.graderutils_running_time,
     }
     # Optional data
     if hasattr(test_case, "graderutils_msg") and test_case.graderutils_msg:

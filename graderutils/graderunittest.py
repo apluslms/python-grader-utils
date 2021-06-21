@@ -73,8 +73,13 @@ def points(points_on_success, msg_on_success="The test was a success!", msg_on_f
         @functools.wraps(testmethod)
         def points_patching_testmethod(case, *args, **kwargs):
             case.graderutils_points = graderutils_points
+            case.graderutils_running_time = 0.0
             try: # SystemExit and KeyboardInterrupt kill grader if not caught
-                running_time, result = result_or_timeout(testmethod, (case, *args), kwargs, timeout=testmethod_timeout)
+                try:
+                    start_time = time.perf_counter() # For timing test method even when exceptions are raised
+                    running_time, result = result_or_timeout(testmethod, (case, *args), kwargs, timeout=testmethod_timeout)
+                finally:
+                    case.graderutils_running_time = time.perf_counter() - start_time
                 if running_time == testmethod_timeout and result is None:
                     raise TimeoutError("Test timed out after {} seconds. Your code may be "
                                        "stuck in an infinite loop or it runs very slowly.".format(testmethod_timeout))
@@ -186,7 +191,7 @@ def result_or_timeout(timed_function, args=(), kwargs=None, timeout=1, timer=tim
     return running_time, result
 
 
-class ModuleLevelError(Exception):
+class ModuleLevelError(GraderUtilsError):
     def __init__(self, other):
         self.cause = other
 
@@ -210,11 +215,15 @@ def run_test_suite_in_named_module(module_name):
                 test_suite = loader.loadTestsFromModule(test_module)
                 # Redirect output to string stream and increase verbosity
                 runner = PointsTestRunner(stream=io.StringIO(), verbosity=2)
+                # Test suite running time is recorded
+                start_time = time.perf_counter()
                 result = runner.run(test_suite)
+                running_time = time.perf_counter() - start_time
     finally:
         # Limit maximum size of the stderr output of this test group
         sys.stderr.write(err.getvalue()[:TEST_MODULE_STDERR_MAX_SIZE])
-    return result
+
+    return result, running_time
 
 
 # disgusting monkey patch hacks

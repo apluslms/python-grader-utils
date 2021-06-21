@@ -20,6 +20,9 @@
     {% if testsRun %}
     <h2><small>Total tests run: {{ testsRun }}</small></h2>
     {% endif %}
+    {% if runningTime %}
+    <h3><small>Total running time of tests: {{ "%.3f"|format(runningTime) }} s.</small></h3>
+    {% endif %}
 </div>
 
 {% for result_group in resultGroups %}
@@ -27,9 +30,9 @@
 
 <div class="grading-task">
     {% if result_group.maxPoints %}
-    <h3 class="testgroup-header">{{ result_group.title }} points: {{ result_group.points }} of {{ result_group.maxPoints }}</h3>
+    <h4 class="testgroup-header">{{ result_group.title }} points: {{ result_group.points }} of {{ result_group.maxPoints }}</h4>
     {% else %}
-    <h3 class="testgroup-header">{{ result_group.title }}</h3>
+    <h4 class="testgroup-header">{{ result_group.title }}</h4>
     {% endif %}
     {% if result_group.description %}
     <div>{{ result_group.description }}</div>
@@ -40,29 +43,29 @@
 
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h4 class="pull-left">
+            <h5 class="panel-text pull-left">
                 <a data-toggle="collapse"
                     href="#result{{ result_group_loop.index }}-{{ test_result_loop.index }}">{{ result.title }}</a>
-            </h4>
-            <div class="vertical-center">
+            </h5>
+            <div class="panel-annotation">
                 {% if result.status == "passed" %}
+                <span class="label feedback-label color-passed pull-right">Success</span>
                 {% if result.maxPoints %}
-                <span class="badge green">{{ result.points }} / {{ result.maxPoints }}</span>
+                <span class="badge color-passed pull-right">{{ result.points }} / {{ result.maxPoints }}</span>
                 <span class="sr-only">points</span>
                 {% endif %}
-                <span class="label feedback-label green pull-right">Success</span>
                 {% elif result.status == "failed" %}
+                <span class="label feedback-label color-failed pull-right">Failed</span>
                 {% if result.maxPoints %}
-                <span class="badge red">{{ result.points }} / {{ result.maxPoints }}</span>
+                <span class="badge color-failed pull-right">{{ result.points }} / {{ result.maxPoints }}</span>
                 <span class="sr-only">points</span>
                 {% endif %}
-                <span class="label feedback-label red pull-right">Failed</span>
                 {% elif result.status == "error" %}
+                <span class="label feedback-label color-error pull-right">Error</span>
                 {% if result.maxPoints %}
-                <span class="badge orange">{{ result.points }} / {{ result.maxPoints }}</span>
+                <span class="badge color-error pull-right">{{ result.points }} / {{ result.maxPoints }}</span>
                 <span class="sr-only">points</span>
                 {% endif %}
-                <span class="label feedback-label orange pull-right">Error</span>
                 {% endif %}
             </div>
         </div>
@@ -82,8 +85,12 @@
                 {% block result_panel_after_output scoped %}
                 {% endblock %}
 
+                {% if result.runningTime %}
+                <div class="running-time">Test running time: {{ "%.3f"|format(result.runningTime) }} s.</div>
+                {% endif %}
+
                 {% if result.status == "error" %}
-                <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}">
+                <button type="button" class="btn btn-info btn-traceback" data-toggle="collapse" data-target="#traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}">
                   Show traceback</button>
                 <div id="traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}" class="collapse">
                     <pre>{{ result.fullTestOutput|e }}</pre>
@@ -105,11 +112,13 @@
 {% if result_group.fullOutput %}
 <div class="panel panel-default full-test-output">
     <div class="panel-heading">
-        <h4 class="pull-left">
+        <h5 class="panel-text pull-left">
             <a data-toggle="collapse" href="#full-test-output{{ result_group_loop.index }}">
                 Full terminal output for {{ result_group.title }}</a>
-        </h4>
-        <span class="label feedback-label label-info vertical-center pull-right">Info</span>
+        </h5>
+        <div class="panel-annotation">
+            <span class="label feedback-label label-info pull-right">Info</span>
+        </div>
     </div>
     <div id="full-test-output{{ result_group_loop.index }}" class="panel-body collapse">
         <pre class="feedback">{{ result_group.fullOutput|e }}</pre>
@@ -125,11 +134,11 @@
     {% set warnings_loop = loop %}
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h4>
+            <h5>
                 <a data-toggle="collapse"
                    href="#warning-message{{ warnings_loop.index }}"
                    class="label label-info">Graderutils message</a>
-            </h4>
+            </h5>
         </div>
         <div id="warning-message{{ warnings_loop.index }}" class="panel-body collapse in">
             <pre>{{ warning|e }}</pre>

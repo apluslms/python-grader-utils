@@ -1,5 +1,5 @@
 $schema: http://json-schema.org/draft-07/schema
-version: "1.0"
+version: "1.1"
 title: Grading feedback
 type: object
 description: |
@@ -26,6 +26,10 @@ definitions:
         description: Maximum amount of possible points from passing this test.
         minimum: 0
         type: integer
+      runningTime:
+        description: Running time of this test in seconds.
+        minimum: 0
+        type: number
       status:
         description: The state this result terminated in.
         enum:
@@ -71,6 +75,10 @@ definitions:
         description: Amount of points awarded from all tests within this test group.
         minimum: 0
         type: integer
+      runningTime:
+        description: Running time of this test group in seconds.
+        minimum: 0
+        type: number
       testResults:
         description: Test results for all tests in a test group
         items:
@@ -94,6 +102,10 @@ properties:
     description: Maximum amount of possible points in total from all test groups
     minimum: 0
     type: integer
+  runningTime:
+    description: Total running time of all test groups in seconds
+    minimum: 0
+    type: number
   resultGroups:
     description: Test result groups
     items:

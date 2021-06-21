@@ -1,3 +1,4 @@
+import importlib
 import os
 import sys
 from contextlib import contextmanager
@@ -57,6 +58,9 @@ class RPCImport:
     def find_module(self, fullname, path, target=None):
         self.module = getattr(self.conn.modules, fullname)
         return self
+
+    def find_spec(self, name, path, target=None):
+        return importlib._bootstrap._find_spec_legacy(self, name, path)
 
     def create_module(self, spec):
         return self.module

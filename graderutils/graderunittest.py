@@ -21,7 +21,8 @@ logger = logging.getLogger("warnings")
 testmethod_timeout = 60
 
 '''Maximum string length of the stderr stream for one test module.
-If the output is longer, the rest is not included in the grading payload.'''
+If the output is longer, the rest is not included in the grading payload.
+The python_import validation task also uses this maximum limit.'''
 TEST_MODULE_STDERR_MAX_SIZE = 50000
 
 
@@ -211,7 +212,7 @@ def run_test_suite_in_named_module(module_name):
                 runner = PointsTestRunner(stream=io.StringIO(), verbosity=2)
                 result = runner.run(test_suite)
     finally:
-        # Limit maximum size of the stderr output of this test group to 50kB
+        # Limit maximum size of the stderr output of this test group
         sys.stderr.write(err.getvalue()[:TEST_MODULE_STDERR_MAX_SIZE])
     return result
 

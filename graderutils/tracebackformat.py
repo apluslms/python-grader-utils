@@ -1,6 +1,7 @@
 """
 Functions for parsing and cleaning output strings from unittest test case result objects.
 """
+import os
 import re
 
 # TODO save traceback objects during tests and use the std lib traceback module
@@ -52,7 +53,7 @@ def hide_exception_traceback(output, exception_class_name, hide_tracebacks, remo
     """
     cleaned_traceback_string = output
 
-    traceback_header = "Traceback (most recent call last)"
+    traceback_header = "Traceback (most recent call last):"
     begin_traceback = re.compile('^' + re.escape(traceback_header))
     if exception_class_name == '*':
         end_traceback = re.compile(r'^\S+')
@@ -106,6 +107,62 @@ def hide_exception_traceback(output, exception_class_name, hide_tracebacks, remo
     return cleaned_traceback_string
 
 
+def strip_irrelevant_traceback_lines(output):
+    """
+    Strip traceback lines that are irrelevant to the student e.g. graderutils and rpyc related lines.
+    """
+    # Traceback lines, which contain the following strings are considered relevant.
+    # All traceback lines above the relevant lines are stripped beginning from the first irrelevant line.
+    relevant_tb_strings = [
+        "File \"" + os.getenv("PWD", "/submission/user") + "/",
+        "File \"" + os.getenv("PYTHONPATH", "/exercise") + "/",
+    ]
+
+    # Traceback lines, which contain the following strings are considered irrelevant.
+    # All lines below them are stripped until relevant lines are encountered.
+    # Lines are not stripped if zero relevant lines are found below them (e.g. the traceback ends with an error from graderutils)
+    irrelevant_tb_strings = [
+        "/dist-packages/graderutils/",
+        "/dist-packages/rpyc/",
+    ]
+
+    cleaned_traceback_string = output
+
+    # Strip traceback lines related to graderutils and rpyc only if there exists traceback lines about submission or exercise
+    if any([s in output for s in relevant_tb_strings]):
+        lines = output.splitlines(keepends=True)
+        is_matching = False
+        match = []
+        matches = []
+
+        for lineno, line in enumerate(lines):
+            if is_matching:
+                if not any([s in line for s in relevant_tb_strings]):
+                    # Accumulate match with one line if nothing relevant is found
+                    match[1] += 1
+                else:
+                    # Found beginning of the relevant traceback
+                    matches.append(tuple(match))
+                    match = []
+                    is_matching = False
+            else:
+                found_irrelevant_tb_string_above_relevant = (
+                    any([s in line for s in irrelevant_tb_strings]) and
+                    any([s in ''.join(lines[lineno:]) for s in relevant_tb_strings])
+                )
+                if found_irrelevant_tb_string_above_relevant:
+                    # Found a irrelevant traceback line above relevant lines, start accumulating lines to be stripped
+                    is_matching = True
+                    match = [lineno, 1]
+
+        cleaned_traceback_string = ''.join(_iter_redacted_lines(lines, iter(matches), ''))
+        # Rpyc appends an extra newline at the very end of the traceback, so we remove it
+        if cleaned_traceback_string.endswith('\n'):
+            cleaned_traceback_string = cleaned_traceback_string[:-1]
+
+    return cleaned_traceback_string
+
+
 def clean_feedback(result_groups, config):
     """
     Run traceback cleaning for finished grading feedback.
@@ -113,6 +170,12 @@ def clean_feedback(result_groups, config):
     for group in result_groups:
         # Clean tracebacks for each test suite
         for result in group["testResults"]:
+
+            if result["status"] == "error":
+                result["testOutput"] = strip_irrelevant_traceback_lines(result["testOutput"])
+                # Lines related to graderutils and rpyc are stripped from fullTestOutput too
+                result["fullTestOutput"] = result["testOutput"]
+
             # Run all cleaning tasks for traceback
             for task in config:
                 hide_tracebacks = task.get('hide_tracebacks', False)
@@ -139,11 +202,13 @@ def clean_feedback(result_groups, config):
                     if not task.get("hide_tracebacks_short_only", False):
                         # This task defines that full, unformatted output should also be formatted
                         result["fullTestOutput"] = result["testOutput"]
+
         # Now for the full output from running the test suite
         for task in config:
             hide_tracebacks = task.get("hide_tracebacks", False)
             hide_tracebacks_short_only = task.get("hide_tracebacks_short_only", False)
             if hide_tracebacks and not hide_tracebacks_short_only:
+                group["fullOutput"] = strip_irrelevant_traceback_lines(group["fullOutput"])
                 remove_sentinel = task.get("remove_sentinel", '')
 
                 # DEPRECATED:

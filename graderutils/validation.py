@@ -15,6 +15,7 @@ import re
 import traceback
 
 from graderutils import GraderUtilsError
+from graderutils.tracebackformat import strip_irrelevant_traceback_lines
 
 
 class ValidationError(GraderUtilsError): pass
@@ -190,7 +191,7 @@ def get_python_import_errors(filename):
     try:
         _import_module_from_python_file(filename)
     except Exception:
-        errors["message"] = traceback.format_exc()
+        errors["message"] = strip_irrelevant_traceback_lines(traceback.format_exc())
     return errors
 
 
@@ -329,7 +330,7 @@ def run_validation_tasks(tasks):
         try:
             error = _get_validation_error(validation_type, filename, task)
         except Exception as e:
-            error = {"message": traceback.format_exc()}
+            error = {"message": strip_irrelevant_traceback_lines(traceback.format_exc())}
         if error:
             error["type"] = validation_type
             error["file"] = filename

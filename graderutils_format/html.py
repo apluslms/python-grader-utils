@@ -74,4 +74,5 @@ if __name__ == "__main__":
     html_feedback = grading_data_to_html(grading_data, args.full_document, args.grader_container)
     print(html_feedback)
     if args.grader_container:
-        print("TotalPoints: {}\nMaxPoints: {}".format(grading_data.get("points", 0), grading_data.get("maxPoints", 0)))
+        with open("/feedback/points", "w") as f:
+            f.write("{}/{}".format(grading_data.get("points", 0), grading_data.get("maxPoints", 0)))

@@ -39,9 +39,6 @@ if pid == 0:  # Child process: rpyc server running student code
         os.close(stdin[1])
         os.close(stdout[0])
         os.close(stderr[0])
-        os.dup2(stdin[0], 0)
-        os.dup2(stdout[1], 1)
-        os.dup2(stderr[1], 2)
         control[0].close()
         with control[1] as sock:
             status = 251

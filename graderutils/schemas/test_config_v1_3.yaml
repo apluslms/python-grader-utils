@@ -40,12 +40,6 @@ properties:
             If hide_tracebacks is given and true, prevent traceback hiding in fullTestOutput strings.
             Else, this flag is ignored silently.
           type: boolean
-        remove_more_sentinel:
-          description: |
-            [Deprecated, use remove_sentinel instead] If hide_tracebacks is given and true, continue removing traceback until this sentinel is found.
-            Removes also the sentinel.
-          minLength: 1
-          type: string
         remove_sentinel:
           description: |
             Removes traceback until this sentinel is found.

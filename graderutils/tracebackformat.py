@@ -192,15 +192,6 @@ def clean_feedback(result_groups, config):
                     remove_sentinel = task.get('remove_sentinel', '')
                     if hide_tracebacks or remove_sentinel:
                         # This task defines that exceptions from some class must be hidden
-
-                        # DEPRECATED:
-                        # remove_more_sentinel allowed for traceback removal only when hide_tracebacks was set to true.
-                        # remove_sentinel replaces the old remove_more_sentinel and it does not have the described limitation.
-                        # The new remove_sentinel does not change old behaviour of remove_more_sentinel.
-                        # Once next major version is released, delete the following two lines.
-                        if task.get("remove_more_sentinel", ''):
-                            remove_sentinel = task.get("remove_more_sentinel", '')
-
                         exception_class_name = task["class_name"].strip()
                         result["testOutput"] = hide_exception_traceback(
                             result["testOutput"],
@@ -220,15 +211,6 @@ def clean_feedback(result_groups, config):
             if hide_tracebacks and not hide_tracebacks_short_only:
                 group["fullOutput"] = strip_irrelevant_traceback_lines(group["fullOutput"], strip_exercise_tb=False)
                 remove_sentinel = task.get("remove_sentinel", '')
-
-                # DEPRECATED:
-                # remove_more_sentinel allowed for traceback removal only when hide_tracebacks was set to true.
-                # remove_sentinel replaces the old remove_more_sentinel and it does not have the described limitation.
-                # The new remove_sentinel does not change old behaviour of remove_more_sentinel.
-                # Once next major version is released, delete the following two lines.
-                if task.get("remove_more_sentinel", ''):
-                    remove_sentinel = task.get("remove_more_sentinel", '')
-
                 exception_class_name = task["class_name"].strip()
                 group["fullOutput"] = hide_exception_traceback(
                     group["fullOutput"],

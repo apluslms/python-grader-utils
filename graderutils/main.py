@@ -9,6 +9,7 @@ import os
 import pprint
 import traceback
 
+
 # Log all library errors into a single, global stream
 logger = logging.getLogger("warnings")
 logger.addHandler(logging.StreamHandler(stream=io.StringIO()))
@@ -129,7 +130,9 @@ def run(config_path, novalidate=False, container=False, show_config=False, devel
                 raise
         # Config file is valid, merge with baseconfig
         with open(BASECONFIG, encoding="utf-8") as f:
-            config = dict(yaml.safe_load(f), **config)
+            baseconfig = yaml.safe_load(f)
+            if baseconfig:
+                config = dict(baseconfig, **config)
         # Run input validation
         if "validation" in config:
             grading_feedback = do_validation_tasks(config["validation"])
@@ -200,12 +203,14 @@ def make_argparser():
         parser.add_argument('--' + flag, action="store_true", help=help)
     return parser
 
+
 def cli_main():
     cli_args = vars(make_argparser().parse_args())
     # Remove required command line argument, leaving only optional arguments
     config_path = cli_args.pop("config_path")
     grading_json = run(config_path, **cli_args)
     print(grading_json)
+
 
 if __name__ == "__main__":
     cli_main()

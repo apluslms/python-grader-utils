@@ -107,16 +107,17 @@ def hide_exception_traceback(output, exception_class_name, hide_tracebacks, remo
     return cleaned_traceback_string
 
 
-def strip_irrelevant_traceback_lines(output):
+def strip_irrelevant_traceback_lines(output, strip_exercise_tb):
     """
     Strip traceback lines that are irrelevant to the student e.g. graderutils and rpyc related lines.
     """
     # Traceback lines, which contain the following strings are considered relevant.
     # All traceback lines above the relevant lines are stripped beginning from the first irrelevant line.
     relevant_tb_strings = [
-        "File \"" + os.getenv("PWD", "/submission/user") + "/",
-        "File \"" + os.getenv("PYTHONPATH", "/exercise") + "/",
+        'File "' + os.getenv("PWD", "/submission/user") + '/',
     ]
+    if not strip_exercise_tb:
+        relevant_tb_strings.append('File "' + os.getenv("PYTHONPATH", "/exercise") + '/')
 
     # Traceback lines, which contain the following strings are considered irrelevant.
     # All lines below them are stripped until relevant lines are encountered.
@@ -156,9 +157,8 @@ def strip_irrelevant_traceback_lines(output):
                     match = [lineno, 1]
 
         cleaned_traceback_string = ''.join(_iter_redacted_lines(lines, iter(matches), ''))
-        # Rpyc appends an extra newline at the very end of the traceback, so we remove it
-        if cleaned_traceback_string.endswith('\n'):
-            cleaned_traceback_string = cleaned_traceback_string[:-1]
+        # Rpyc sometimes appends extra newlines at the very end of the traceback, so we remove them
+        cleaned_traceback_string = cleaned_traceback_string.rstrip()
 
     return cleaned_traceback_string
 
@@ -172,43 +172,53 @@ def clean_feedback(result_groups, config):
         for result in group["testResults"]:
 
             if result["status"] == "error":
-                result["testOutput"] = strip_irrelevant_traceback_lines(result["testOutput"])
-                # Lines related to graderutils and rpyc are stripped from fullTestOutput too
+                # Shorten long RecursionError traceback in testOutput but leave it in fullTestOutput
+                recursion_error_message = "RecursionError: maximum recursion depth exceeded"
+                search_pattern = re.compile('^' + re.escape(recursion_error_message) + '.*$', re.MULTILINE)
+                match = re.search(search_pattern, result["testOutput"])
+                if match:
+                    result["testOutput"] = match.group(0)
+                # Strip traceback lines that are irrelevant to the student
+                result["testOutput"] = strip_irrelevant_traceback_lines(result["testOutput"], strip_exercise_tb=True)
+                result["fullTestOutput"] = strip_irrelevant_traceback_lines(result["fullTestOutput"], strip_exercise_tb=False)
+            elif result["status"] == "failed":
+                result["testOutput"] = strip_irrelevant_traceback_lines(result["testOutput"], strip_exercise_tb=False)
                 result["fullTestOutput"] = result["testOutput"]
 
-            # Run all cleaning tasks for traceback
-            for task in config:
-                hide_tracebacks = task.get('hide_tracebacks', False)
-                remove_sentinel = task.get('remove_sentinel', '')
-                if hide_tracebacks or remove_sentinel:
-                    # This task defines that exceptions from some class must be hidden
+            # Run all cleaning tasks for traceback if this test did not use iotester
+            if not result["iotesterData"]:
+                for task in config:
+                    hide_tracebacks = task.get('hide_tracebacks', False)
+                    remove_sentinel = task.get('remove_sentinel', '')
+                    if hide_tracebacks or remove_sentinel:
+                        # This task defines that exceptions from some class must be hidden
 
-                    # DEPRECATED:
-                    # remove_more_sentinel allowed for traceback removal only when hide_tracebacks was set to true.
-                    # remove_sentinel replaces the old remove_more_sentinel and it does not have the described limitation.
-                    # The new remove_sentinel does not change old behaviour of remove_more_sentinel.
-                    # Once next major version is released, delete the following two lines.
-                    if task.get("remove_more_sentinel", ''):
-                        remove_sentinel = task.get("remove_more_sentinel", '')
+                        # DEPRECATED:
+                        # remove_more_sentinel allowed for traceback removal only when hide_tracebacks was set to true.
+                        # remove_sentinel replaces the old remove_more_sentinel and it does not have the described limitation.
+                        # The new remove_sentinel does not change old behaviour of remove_more_sentinel.
+                        # Once next major version is released, delete the following two lines.
+                        if task.get("remove_more_sentinel", ''):
+                            remove_sentinel = task.get("remove_more_sentinel", '')
 
-                    exception_class_name = task["class_name"].strip()
-                    result["testOutput"] = hide_exception_traceback(
-                        result["testOutput"],
-                        exception_class_name,
-                        hide_tracebacks=hide_tracebacks,
-                        remove_sentinel=remove_sentinel,
-                        replacement_string=task.get("hide_tracebacks_replacement", '')
-                    )
-                    if not task.get("hide_tracebacks_short_only", False):
-                        # This task defines that full, unformatted output should also be formatted
-                        result["fullTestOutput"] = result["testOutput"]
+                        exception_class_name = task["class_name"].strip()
+                        result["testOutput"] = hide_exception_traceback(
+                            result["testOutput"],
+                            exception_class_name,
+                            hide_tracebacks=hide_tracebacks,
+                            remove_sentinel=remove_sentinel,
+                            replacement_string=task.get("hide_tracebacks_replacement", '')
+                        )
+                        if not task.get("hide_tracebacks_short_only", False):
+                            # This task defines that full, unformatted output should also be formatted
+                            result["fullTestOutput"] = result["testOutput"]
 
         # Now for the full output from running the test suite
         for task in config:
             hide_tracebacks = task.get("hide_tracebacks", False)
             hide_tracebacks_short_only = task.get("hide_tracebacks_short_only", False)
             if hide_tracebacks and not hide_tracebacks_short_only:
-                group["fullOutput"] = strip_irrelevant_traceback_lines(group["fullOutput"])
+                group["fullOutput"] = strip_irrelevant_traceback_lines(group["fullOutput"], strip_exercise_tb=False)
                 remove_sentinel = task.get("remove_sentinel", '')
 
                 # DEPRECATED:

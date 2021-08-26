@@ -12,6 +12,9 @@ import jsonschema
 from graderutils import schemaobjects
 
 
+points_file = "/feedback/points"
+
+
 def _load_template(loader, name):
     return jinja2.Environment(loader=loader, trim_blocks=True, lstrip_blocks=True).get_template(name)
 
@@ -74,5 +77,9 @@ if __name__ == "__main__":
     html_feedback = grading_data_to_html(grading_data, args.full_document, args.grader_container)
     print(html_feedback)
     if args.grader_container:
-        with open("/feedback/points", "w") as f:
-            f.write("{}/{}".format(grading_data.get("points", 0), grading_data.get("maxPoints", 0)))
+        try:
+            with open(points_file, "w") as f:
+                f.write("{}/{}".format(grading_data.get("points", 0), grading_data.get("maxPoints", 0)))
+        except PermissionError:
+            # Points are printed to stdout when not using rpyc
+            print("TotalPoints: {}\nMaxPoints: {}".format(grading_data.get("points", 0), grading_data.get("maxPoints", 0)))

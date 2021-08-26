@@ -4,10 +4,10 @@ import pwd
 import sys
 from socket import socketpair
 
-student_user = os.getenv("STUDENT_USER", "student")  # UNIX user to run user code as
-grader_user = os.getenv("GRADER_USER", "grader")  # UNIX user to run grader as
-student_path = os.getenv("STUDENT_PATH", "/submission/user")  # Submitted files
-grader_path = os.getenv("GRADER_PATH", "/exercise")  # Unittest
+student_user = os.getenv("STUDENT_USER", "tester")  # UNIX user to run user code as
+grader_user = os.getenv("GRADER_USER", "root")  # UNIX user to run grader as
+student_path = os.getenv("PWD", "/submission/user")  # Submitted files
+grader_path = os.getenv("EXERCISE_PATH", "/exercise")  # Unittest
 
 def become(user):
     """Switch to another user (need to be root first)."""
@@ -39,6 +39,9 @@ if pid == 0:  # Child process: rpyc server running student code
         os.close(stdin[1])
         os.close(stdout[0])
         os.close(stderr[0])
+        os.dup2(stdin[0], 0)
+        os.dup2(stdout[1], 1)
+        os.dup2(stderr[1], 2)
         control[0].close()
         with control[1] as sock:
             status = 251

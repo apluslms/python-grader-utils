@@ -32,7 +32,7 @@ def build_schemas(schemas_data):
     return {key: {"schema": schemas[key], "classes": classes[key]} for key in schemas}
 
 
-def build_feedback_schemas(version="v1_1"):
+def build_feedback_schemas(version="v1_2"):
     """
     Build all schemas.
     """

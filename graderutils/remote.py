@@ -11,7 +11,11 @@ import rpyc
 from rpyc.core import SlaveService
 from rpyc.utils.server import OneShotServer
 
+from graderutils import GraderUtilsError
+
+
 sock_path = "/tmp/rpyc.sock"
+conn = None # Give other modules (e.g., iotester) access to conn by defining it as global variable
 
 
 def run_server():
@@ -20,6 +24,7 @@ def run_server():
 
 @contextmanager
 def manage_server(pid):
+    global conn
     status = 0
     try:
         while not os.path.exists(sock_path):
@@ -51,15 +56,41 @@ def tmpdir():
             os.chdir(origcwd)
 
 
+# GraderImportError and GraderOpenError are defined here so that the remote server finds them
+# and doesn't fall back to rpyc.core.vinegar serializer for exceptions during iotester tests
+class GraderImportError(GraderUtilsError):
+    pass
+
+
+class GraderOpenError(GraderUtilsError):
+    pass
+
+
+class GraderConnClosedError(GraderUtilsError):
+    pass
+
+
 class RPCImport:
     def __init__(self, conn):
         self.conn = conn
 
+    def redirect_stdio(self):
+        self.conn.modules.sys.stdin = sys.stdin
+        self.conn.modules.sys.stdout = sys.stdout
+        self.conn.modules.sys.stderr = sys.stderr
+
     def find_module(self, fullname, path, target=None):
+        # This method is run right before a module is imported and executed.
+        # I/O is redirected here because IOTester replaces sys.stdin and
+        # sys.stdout before running student code.
+        self.redirect_stdio()
         self.module = getattr(self.conn.modules, fullname)
         return self
 
     def find_spec(self, name, path, target=None):
+        # With rpyc _bootstrap._find_spec raises error and
+        # falls back to _find_spec_legacy, so we just call it directly.
+        # importlib.util.find_spec is not used because it tries to deduce path by itself.
         return importlib._bootstrap._find_spec_legacy(self, name, path)
 
     def create_module(self, spec):

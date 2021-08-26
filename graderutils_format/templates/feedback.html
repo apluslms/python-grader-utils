@@ -79,14 +79,31 @@
                 {% endif %}
 
                 {% if result.testOutput %}
+                {% if not result.iotesterData %}
                 <pre class="feedback">{{ result.testOutput|e }}</pre>
+                {% elif result.status == "error" %}
+                <pre class="feedback">{{ result.testOutput|e }}</pre>
+                <p>Feedback:</p>
+                {% endif %}
+                {% endif %}
+
+                {% if result.iotesterData %}
+                {% if result.iotesterData.warning %}
+                <pre>{{ result.iotesterData.warning }}</pre>
+                {% endif %}
+                {% if result.iotesterData.feedback %}
+                <pre>{{ result.iotesterData.feedback }}</pre>
+                {% endif %}
+                {% if result.iotesterData.customFeedback %}
+                <pre>{{ result.iotesterData.customFeedback }}</pre>
+                {% endif %}
                 {% endif %}
 
                 {% block result_panel_after_output scoped %}
                 {% endblock %}
 
                 {% if result.runningTime %}
-                <div class="running-time">Test running time: {{ "%.3f"|format(result.runningTime) }} s.</div>
+                <div class="grader-info">Running time: {{ "%.3f"|format(result.runningTime) }} s.</div>
                 {% endif %}
 
                 {% if result.status == "error" %}

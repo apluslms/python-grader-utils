@@ -1,5 +1,5 @@
 $schema: http://json-schema.org/draft-07/schema
-version: "1.1"
+version: "1.2"
 title: Grading feedback
 type: object
 description: |
@@ -44,6 +44,9 @@ definitions:
       fullTestOutput:
         description: Full output from a single test, useful e.g. if the test output printed by a test method is too verbose for testOutput.
         type: string
+      iotesterData:
+        description: Data provided by the IOTester from running a single test e.g. generated feedback and warnings.
+        type: object
       userData:
         description: Arbitrary data
         type: object

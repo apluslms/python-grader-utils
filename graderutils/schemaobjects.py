@@ -2,14 +2,19 @@
 Convert test result objects into JSON serializable dicts conforming to the JSON schemas in the graderutils_format package.
 """
 import os.path
+import warnings
 
 from graderutils_format import schemabuilder
 from graderutils import graderunittest
 
+
+# Ignore UserWarning (JSON schema warnings)
+warnings.filterwarnings("ignore", category=UserWarning)
+
 SCHEMA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "schemas"))
 
 
-def build_schemas(version="v1_2"):
+def build_schemas(version="v1_3"):
     """
     Build all feedback schemas and the graderutils test_config schema.
     """
@@ -22,7 +27,7 @@ def build_schemas(version="v1_2"):
     return dict(feedback_schemas, **test_config_schema)
 
 
-def test_result_as_dict(test_case, output):
+def test_result_as_dict(test_case, output, status):
     """
     Return a JSON serializable dict of a "Test result" JSON object.
     """
@@ -30,11 +35,12 @@ def test_result_as_dict(test_case, output):
     points, max_points = graderunittest.get_points(test_case)
     data = {
         "title": test_case.shortDescription() or str(test_case),
-        "status": None,
+        "status": status,
         "points": points,
         "maxPoints": max_points,
         "testOutput": output,
         "fullTestOutput": output,
+        "iotesterData": None,
         "runningTime": test_case.graderutils_running_time,
     }
     # Optional data
@@ -42,6 +48,10 @@ def test_result_as_dict(test_case, output):
         data["header"] = test_case.graderutils_msg
     if hasattr(test_case, "user_data") and test_case.user_data:
         data["userData"] = test_case.user_data
+    if hasattr(test_case, "iotester_data") and test_case.iotester_data:
+        data["iotesterData"] = test_case.iotester_data
+        if status == "error" and test_case.iotester_data.get("hideTraceback", False):
+            data["testOutput"] = ""
     return data
 
 
@@ -52,13 +62,13 @@ def test_results_as_dicts(result_object):
     # Convert test case results into dicts and add 'status' key depending on test outcome.
     # Successful tests, no exceptions raised
     for test_case in result_object.successes:
-        yield dict(test_result_as_dict(test_case, ''), status="passed")
+        yield test_result_as_dict(test_case, output='', status="passed")
     # Failed tests, AssertionError raised
     for test_case, full_assert_msg in result_object.failures:
-        yield dict(test_result_as_dict(test_case, full_assert_msg), status="failed")
+        yield test_result_as_dict(test_case, output=full_assert_msg, status="failed")
     # Tests that raised exceptions other than AssertionError
     for test_case, full_traceback in result_object.errors:
-        yield dict(test_result_as_dict(test_case, full_traceback), status="error")
+        yield test_result_as_dict(test_case, output=full_traceback, status="error")
 
 
 def test_group_result_as_dict(test_group_result):

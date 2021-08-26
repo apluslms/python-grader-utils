@@ -22,9 +22,23 @@ div.panel-body pre {
 div.warning-messages {
     margin-top: 35px;
 }
-/* Change color of running time text */
-div.running-time {
+.grader-info {
     color: gray;
+}
+span.iotester-warning {
+    color: red;
+}
+span.iotester-basic {
+    color: #a5409e;
+}
+span.iotester-incorrect {
+    background-color: #f9a7a7;
+}
+span.iotester-correct {
+    background-color: #8cde8c;
+}
+span.iotester-input {
+    background-color: #49d8ff;
 }
 /* Traceback button top margin is by default a bit too small */
 button.btn-traceback {

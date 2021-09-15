@@ -18,7 +18,11 @@ import sys
 import traceback
 
 from graderutils import GraderUtilsError
-from graderutils.graderunittest import TEST_MODULE_STDERR_MAX_SIZE, testmethod_timeout, result_or_timeout
+from graderutils import remote
+from graderutils.graderunittest import result_or_timeout
+from graderutils.graderunittest import TEST_MODULE_STDERR_MAX_SIZE
+from graderutils.graderunittest import testmethod_timeout
+from graderutils.remote import GraderConnClosedError
 from graderutils.tracebackformat import strip_irrelevant_traceback_lines
 
 
@@ -188,24 +192,55 @@ def get_image_type_errors(image, expected_type):
 
 def _import_module_from_python_file(filename):
     err = io.StringIO()
+    module = None
     try:
         with contextlib.redirect_stderr(err):
             # Module output must be suppressed during import, since grading json is printed to stdout as well
             with contextlib.redirect_stdout(None):
-                try: # SystemExit and KeyboardInterrupt kill grader if not caught
-                    args = [filename.split(".py")[0]]
+                if remote.conn:
+                    # Update rpyc timeout so that it doesn't timeout before result_or_timeout
+                    remote.conn._config.update({"sync_request_timeout": testmethod_timeout})
+                    # Check if remote connection was closed earlier
+                    conn_closed_earlier = remote.conn.closed
+                args = [filename.split(".py")[0]]
+                # SystemExit and KeyboardInterrupt kill grader if not caught
+                try:
                     running_time, module = result_or_timeout(importlib.import_module, args, timeout=testmethod_timeout)
                     if running_time == testmethod_timeout and module is None:
-                        raise TimeoutError("Validation task timed out after {} seconds. Your code may be "
-                                           "stuck in an infinite loop or it runs very slowly.".format(testmethod_timeout))
-                    return module
+                        if remote.conn and not remote.conn.closed:
+                            # Close remote connection, student process is stuck in an infinite loop or it runs too slowly.
+                            # Rest of the python_import validation tasks run after this will fail with GraderConnClosedError.
+                            remote.conn.close()
+                        raise TimeoutError(
+                            "Validation task timed out after {} seconds. Your code may be "
+                            "stuck in an infinite loop or it runs very slowly.".format(testmethod_timeout)
+                        )
+                except EOFError as e: # Rpyc raises an EOFError when connection to the remote server does not work
+                    if remote.conn and conn_closed_earlier:
+                        raise GraderConnClosedError(
+                            "Grader cannot complete this validation task because connection to the child process was "
+                            "closed earlier. Your code may have got stuck in an infinite loop, it runs very slowly "
+                            "or KeyboardInterrupt was raised."
+                        ) from None
+                    elif remote.conn and str(e) in ["[Errno 32] Broken pipe", "stream has been closed"]:
+                        # Student code most likely raised KeyboardInterrupt.
+                        # str(e) is "[Errno 32] Broken pipe" if it was raised inside a function.
+                        # str(e) is "stream has been closed" if it was raised on module level.
+                        # Close remote connection if it is still open (in case of broken pipe).
+                        # Rest of the tests run after this will fail with GraderConnClosedError.
+                        remote.conn.close()
+                        raise GraderUtilsError("Grader does not support raising KeyboardInterrupt.") from None
+                    # Raise the EOFError if it was not caused by remote connection being closed
+                    raise
                 except SystemExit as e:
                     raise GraderUtilsError("Grader does not support the usage of sys.exit(), exit() or quit().") from e
-                except KeyboardInterrupt as e:
+                except KeyboardInterrupt as e: # Non-rpyc KeyboardInterrupt
                     raise GraderUtilsError("Grader does not support raising KeyboardInterrupt.") from e
     finally:
         # Limit maximum size of the stderr output
         sys.stderr.write(err.getvalue()[:TEST_MODULE_STDERR_MAX_SIZE])
+
+    return module
 
 
 def get_python_import_errors(filename):
@@ -213,7 +248,7 @@ def get_python_import_errors(filename):
     try:
         _import_module_from_python_file(filename)
     except Exception:
-        errors["message"] = strip_irrelevant_traceback_lines(traceback.format_exc())
+        errors["message"] = strip_irrelevant_traceback_lines(traceback.format_exc(), strip_exercise_tb=True)
     return errors
 
 
@@ -352,7 +387,7 @@ def run_validation_tasks(tasks):
         try:
             error = _get_validation_error(validation_type, filename, task)
         except Exception as e:
-            error = {"message": strip_irrelevant_traceback_lines(traceback.format_exc())}
+            error = {"message": strip_irrelevant_traceback_lines(traceback.format_exc(), strip_exercise_tb=True)}
         if error:
             error["type"] = validation_type
             error["file"] = filename

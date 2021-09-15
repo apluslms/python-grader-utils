@@ -9,7 +9,8 @@ The A+ platform is not required to run graderutils.
 * Running `unittest.TestCase` tests and producing generic JSON results that may be converted into HTML.
 * [Validation tasks](graderutils#validation-tasks) before running tests.
 * Restricting allowed Python syntax using black- and whitelists of [AST](https://docs.python.org/3/library/ast.html) node names.
-* Formatting tracebacks and exception messages to include only essential information (by default the full, unformatted traceback is also available).
+* Formatting tracebacks and exception messages to include only essential information (the full, unformatted traceback is also available).
+* Testing input and output of a program against a model program's input and output using `IOTester`.
 
 Results from `examples/01_simple` rendered with the default theme:
 
@@ -32,6 +33,7 @@ pip install .
 * [`03_template_extension`](examples/03_template_extension), if you want to extend or replace the current feedback template
 * [`04_embedded_plot`](examples/04_embedded_plot), embedding JavaScript into the feedback template
 * [`05_string_similarity_highlight`](examples/05_string_similarity_highlight), extending the feedback template by adding character similarity highlighting when comparing two strings
+* Check out the aplus-manual [git repository](https://github.com/apluslms/aplus-manual) and the corresponding [A+ site](https://plus.cs.aalto.fi/aplus-manual/master/) for more examples and explanations of unit tests (including `IOTester` examples).
 
 ## Using `graderutils_format` without graderutils
 

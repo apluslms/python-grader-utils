@@ -215,10 +215,20 @@ MSG_SYSTEMEXIT = (
 
 MSG_KEYBOARDINTERRUPT = "Grader does not support raising KeyboardInterrupt."
 
-MSG_MAIN_CALL = (
+MSG_MAIN_CALL_NOT_FOUND = (
     "Function main() was found but it was not called.\n"
     "Make sure that you remember to call the main() function\n"
     "and that the call is correctly indented."
+)
+
+MSG_FUNCTION_NOT_FOUND = (
+    "Function {!r} was not found. Make sure that you\n"
+    "have defined the function with the correct name."
+)
+
+MSG_CLASS_NOT_FOUND = (
+    "Class {!r} was not found. Make sure that you\n"
+    "have defined the class with the correct name."
 )
 
 MSG_ATTRIBUTEERROR = (
@@ -651,6 +661,14 @@ class MainCallNotFoundError(GraderUtilsError):
     pass
 
 
+class FunctionNotFoundError(GraderUtilsError):
+    pass
+
+
+class ClassNotFoundError(GraderUtilsError):
+    pass
+
+
 class GraderTimeoutError(GraderUtilsError):
     pass
 
@@ -912,10 +930,13 @@ class IOTester:
             # to use rpyc.core.vinegar serializer for exceptions.
             allowed_to_import = False
         else:
-            allowed_to_import = _verify_permissions(
-                module_name,
-                self.settings["import_whitelist"],
-                self.settings["import_blacklist"]
+            allowed_to_import = (
+                module_name == "_io" # Python3.8 >= imports _io along with the module that was imported
+                or _verify_permissions(
+                    module_name,
+                    self.settings["import_whitelist"],
+                    self.settings["import_blacklist"]
+                )
             )
         if allowed_to_import and not os.path.exists(module_path):
             # Import module immediately if allowed (performing os.listdir for no reason is slow).
@@ -1198,13 +1219,16 @@ class IOTester:
                             remote.conn.close()
                         raise GraderTimeoutError(MSG_GRADER_TIMEOUT.format(timeout))
                     data["module"] = module
-                    if func_name == "main" and not self.main_call_found and not model:
-                        raise MainCallNotFoundError(MSG_MAIN_CALL)
+                    if func_name == "main" and self.main_func_found and not self.main_call_found and not model:
+                        raise MainCallNotFoundError(MSG_MAIN_CALL_NOT_FOUND)
                     if func_name.endswith(".__init__"):
                         # Run a class's __init__ method.
                         # NOTE: Breaks with rpyc.
                         class_name = func_name.split('.', 1)[0]
-                        C = getattr(module, class_name)
+                        try:
+                            C = getattr(module, class_name)
+                        except AttributeError as e:
+                            raise ClassNotFoundError(MSG_CLASS_NOT_FOUND.format(class_name)) from e
                         data["class"] = C
                         running_time, obj = result_or_timeout(C, data["used_args"], data["used_kwargs"], timeout=timeout)
                         if running_time == timeout and obj is None:
@@ -1212,7 +1236,10 @@ class IOTester:
                         data["return_value"] = obj
                     elif func_name:
                         # Run a module's function named func_name
-                        func = getattr(module, func_name)
+                        try:
+                            func = getattr(module, func_name)
+                        except AttributeError as e:
+                            raise FunctionNotFoundError(MSG_FUNCTION_NOT_FOUND.format(func_name)) from e
                         running_time, return_value = result_or_timeout(func, data["used_args"], data["used_kwargs"], timeout=timeout)
                         if running_time == timeout and return_value is None:
                             if remote.conn and not remote.conn.closed and not model:
@@ -1312,6 +1339,20 @@ class IOTester:
                 self.used_inputs_and_params,
             ])
             self.test_case.iotester_data["hideTraceback"] = True
+        elif exception_name == "FunctionNotFoundError":
+            self.test_case.iotester_data["feedback"] = _combine_feedback([
+                MSG_PYTHON_VERSION,
+                str(exception),
+                self.name_tested,
+            ])
+            self.test_case.iotester_data["hideTraceback"] = True
+        elif exception_name == "ClassNotFoundError":
+            self.test_case.iotester_data["feedback"] = _combine_feedback([
+                MSG_PYTHON_VERSION,
+                str(exception),
+                self.name_tested,
+            ])
+            self.test_case.iotester_data["hideTraceback"] = True
         elif exception_name == "ModuleNotFoundError":
             exception_str = str(exception).rstrip()
             if remote.conn and not model:
@@ -1369,7 +1410,7 @@ class IOTester:
         elif exception_name == "MainCallNotFoundError":
             self.test_case.iotester_data["feedback"] = _combine_feedback([
                 MSG_PYTHON_VERSION,
-                MSG_MAIN_CALL,
+                MSG_MAIN_CALL_NOT_FOUND,
                 self.name_tested,
             ])
             self.test_case.iotester_data["hideTraceback"] = True
@@ -1761,7 +1802,7 @@ class IOTester:
             show_output=False,
             ):
         """
-        Run the model program and the student program and compare the return values.
+        Run the model program and the student program and compare the return values of the two functions.
         """
         self._setup()
         used_args = prog_args if prog else args
@@ -2515,7 +2556,7 @@ class IOTester:
         """
         Return a decorator for displaying better feedback than just the AssertionError message or traceback.
         Do not call other IOTester tests inside a method that has been decorated with this.
-        Can be used on any normal test methods.
+        Can be used to improve the feedback of a normal test method that does basic assertion tests.
         """
         def decorator(testmethod):
             @functools.wraps(testmethod)

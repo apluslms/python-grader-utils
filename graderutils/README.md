@@ -121,5 +121,42 @@ TODO
 
 TODO
 
+### IOTester
+
+Input and output of a program can be compared against the input and output of a model program by using the test methods provided by `IOTester`.
+
+`IOTester` can be used to feed inputs and/or parameters to a program/function. The output of the student program and model program are captured and compared in different ways depending on the used tests (`text_test`, `numbers_test`, etc.) and colored feedback showing the differences is given. Google's `diff_match_patch` is used for the detection and coloring of the differences. Tools for testing things like return values and classes/objects are also available, among other things.
+
+The full list of useful tests/tools is as follows:
+
+* `text_test`
+  * Compare the text in the two outputs
+* `numbers_test`
+  * Compare the numbers in the two outputs
+* `return_value_test`
+  * Compare some function's return value in the two programs
+* `complete_output_test`
+  * Compare the text, numbers and whitespace in the two outputs
+* `no_output_test`
+  * Test that a program/function prints nothing
+* `created_file_test`
+  * Compare the data in the files that the two programs create
+* `random_state_test`
+  * Compare Python's pseudo-random number generator states in the two programs
+* `amount_of_functions_test`
+  * Test that the student program contains the required amount of functions
+* `class_structure_test`
+  * Create an instance of the model class and the student class and compare the structure of the classes and objects based on the desired restrictions
+* `class_init_test`
+  * Create an instance of the model class and the student class by running their `__init__()` function and compare the values assigned to the objects' attributes
+* `class_str_call_test`
+  * Test that an object's `__str__()` method is not called directly
+* `feedback`
+  * A decorator for displaying better feedback than just the AssertionError message or traceback. Can be used to improve the feedback of a normal test method that does basic assertion tests.
+* `model_directory`
+  * Context manager for moving to the model directory so that model modules can be imported in test methods that use the feedback decorator
+
+Examples and explanations of unit tests using the IOTester can be found in the aplus-manual [git repository](https://github.com/apluslms/aplus-manual) and the corresponding [A+ site](https://plus.cs.aalto.fi/aplus-manual/master/).
+
 
 ### Traceback formatting

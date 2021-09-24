@@ -359,6 +359,11 @@ MSG_MODULENOTFOUNDERROR = (
     "{:s}"
 )
 
+MSG_FILENOTFOUNDERROR = (
+    "An error occured while attempting to open a file:\n"
+    "{:s}"
+)
+
 MSG_STR_CALL_TEST = (
     "You have called the __str__ method in your code directly!\n"
     "The __str__ method is not meant to be used this way.\n\n"
@@ -565,7 +570,6 @@ def _strip_string(
         for char in chars_to_skip:
             if char in substring:
                 substring = substring.replace(char, '')
-        substring = substring.lower()
         stripped_string += substring
         if not strip_numbers:
             if i in minus_check_indexes:
@@ -578,7 +582,6 @@ def _strip_string(
         for char in chars_to_skip:
             if char in substring:
                 substring = substring.replace(char, '')
-        substring = substring.lower()
         stripped_string += substring
     return stripped_string
 
@@ -1064,18 +1067,22 @@ class IOTester:
                                 break
                 except OSError:
                     raise GraderUtilsError("Failed os.listdir in _iotester_open.")
-                if found_file.startswith(generated_path):
+                if not found_file:
+                    # File was not found
+                    raise
+                elif found_file.startswith(generated_path):
                     # Generated data files are always allowed to be opened
                     return _builtin_open(found_file, mode, buffering, encoding, errors, newline, closefd, opener)
                 elif opener_name in restricted_modules:
-                    if found_file and _verify_permissions(name, self.settings["open_whitelist"], self.settings["open_blacklist"]):
+                    if _verify_permissions(name, self.settings["open_whitelist"], self.settings["open_blacklist"]):
                         # Open the file that was found (read)
                         return _builtin_open(found_file, mode, buffering, encoding, errors, newline, closefd, opener)
+                    # No permission to read the found file
                     raise GraderOpenError(msg_grader_open_read) from None
-                elif found_file:
+                else:
                     # Open the file that was found (read or write)
                     return _builtin_open(found_file, mode, buffering, encoding, errors, newline, closefd, opener)
-                raise
+
         elif dir == opener_dir and not os.path.exists(path) and mode in write_modes:
             # Allow creation of a new file in opener_dir
             stream = _builtin_open(file, mode, buffering, encoding, errors, newline, closefd, opener)
@@ -1374,6 +1381,27 @@ class IOTester:
                 self.used_inputs_and_params,
             ])
             self.test_case.iotester_data["hideTraceback"] = True
+        elif exception_name == "FileNotFoundError":
+            exception_str = str(exception).rstrip()
+            if remote.conn and not model:
+                # Clean the exception string of possible irrelevant rpyc traceback
+                message_line_found = False
+                for line in exception_str.splitlines(keepends=True):
+                    if line.startswith("FileNotFoundError:"):
+                        exception_str = line.split(": ", 1)[1]
+                        message_line_found = True
+                    elif message_line_found:
+                        exception_str += line
+            self.test_case.iotester_data["feedback"] = _combine_feedback([
+                MSG_PYTHON_VERSION,
+                msg_colors,
+                MSG_FILENOTFOUNDERROR.format(exception_str),
+                self.name_tested,
+                self.desc,
+                self.diff,
+                self.used_inputs_and_params,
+            ])
+            self.test_case.iotester_data["hideTraceback"] = True
         elif exception_name == "TimeoutError":
             self.test_case.iotester_data["feedback"] = _combine_feedback([
                 MSG_PYTHON_VERSION,
@@ -1632,6 +1660,7 @@ class IOTester:
             prog_kwargs={},
             prog_inputs=[],
             desc="",
+            compare_capitalization=False,
             ):
         """
         Run the model program and the student program and compare the text outputs.
@@ -1687,8 +1716,11 @@ class IOTester:
         )
         # Example:
         # data["output"] = "Numbers   are 3.68 and 82.\nThat's it."
-        # stripped_output = "numbersareandthatsit"
-        self.test_case.assertEqual(stripped_output, expected_stripped_output)
+        # stripped_output = "NumbersareandThatsit"
+        if compare_capitalization:
+            self.test_case.assertEqual(stripped_output, expected_stripped_output)
+        else:
+            self.test_case.assertEqual(stripped_output.lower(), expected_stripped_output.lower())
         self.test_case.iotester_data["feedback"] = _combine_feedback([
             MSG_PYTHON_VERSION,
             MSG_COLORS,
@@ -1914,13 +1946,14 @@ class IOTester:
             prog_kwargs={},
             prog_inputs=[],
             desc="",
+            compare_capitalization=False,
             ):
         """
         Run the model program and the student program and compare the text, numbers and whitespace.
         Ignore capitalization and self.settings["ignored_characters"].
         """
         # Text and numbers in output are tested first
-        self.text_test(func_name, args, kwargs, inputs, prog, prog_args, prog_kwargs, prog_inputs, desc)
+        self.text_test(func_name, args, kwargs, inputs, prog, prog_args, prog_kwargs, prog_inputs, desc, compare_capitalization)
         self.numbers_test(func_name, args, kwargs, inputs, prog, prog_args, prog_kwargs, prog_inputs, desc, compare_formatting=True)
         # Begin testing of whitespace
         self._setup()
@@ -1980,10 +2013,13 @@ class IOTester:
         )
         # Example:
         # data["expected_output"] = "Numbers   are  0.00 and 82.\nThat's it."
-        # data["output"]          = "Numbers   are -0.00 and 82.\nThat's it."
-        # expected_stripped_output = "numbers   are  [iotester-minus-check] and [iotester-number]\nthats it"
+        # data["output"]          = "numbers   are -0.00 and 82.\nthat's it."
+        # expected_stripped_output = "Numbers   are  [iotester-minus-check] and [iotester-number]\nThats it"
         # stripped_output          = "numbers   are [iotester-minus-check] and [iotester-number]\nthats it"
-        output, expected_output = _whitespace_minus_check_patch(stripped_output, expected_stripped_output)
+        output, expected_output = _whitespace_minus_check_patch(
+            stripped_output.lower(),
+            expected_stripped_output.lower(),
+        )
         # expected_output = "numbers   are  [iotester-minus-check] and [iotester-number]\nthats it"
         # output          = "numbers   are  [iotester-minus-check] and [iotester-number]\nthats it"
         self.test_case.assertEqual(output, expected_output)
@@ -2413,6 +2449,7 @@ class IOTester:
             run_numbers_test=False,
             run_complete_output_test=False,
             run_no_output_test=False,
+            compare_capitalization=False,
             compare_formatting=False,
             desc=""
             ):
@@ -2486,10 +2523,10 @@ class IOTester:
             self.no_output_test(func_name, args, kwargs, desc=desc)
         elif run_complete_output_test:
             # Runs text_test and numbers_test
-            self.complete_output_test(func_name, args, kwargs, desc=desc)
+            self.complete_output_test(func_name, args, kwargs, desc=desc, compare_capitalization=compare_capitalization)
         else:
             if run_text_test:
-                self.text_test(func_name, args, kwargs, desc=desc)
+                self.text_test(func_name, args, kwargs, desc=desc, compare_capitalization=compare_capitalization)
             if run_numbers_test:
                 self.numbers_test(func_name, args, kwargs, desc=desc, compare_formatting=compare_formatting)
 

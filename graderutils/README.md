@@ -1,8 +1,9 @@
 ## Test configuration
 
 The functionality of the test runner is customized by supplying a [yaml](http://yaml.org/) file containing the desired configuration.
-The file must conform to [this](schemas/test_config.schema.json) JSON schema.
+The file must conform to [this](schemas/test_config_v1_3.yaml) JSON schema.
 Graderutils will output JSON schema validation errors if a given test configuration file is invalid.
+Examples of possible test configurations are found below and in [this](test_config.yaml) example file.
 
 
 ### Feedback template
@@ -18,6 +19,7 @@ Testing will run only if all validation tasks pass.
 Common keys for all task types:
 
 * `type`: Validation type
+* `display_name`: Name of the validation task, e.g. as a requirement: The file is a Python module that can be imported
 * `file`: File which should be validated with the given validation type.
 * `break_on_fail`: (Optional) Defaults to `True`. If given and `False`, and if the validation task fails, the feedback is not shown directly, but aggregated with the next failed validation task feedback.
 
@@ -27,20 +29,24 @@ Attempt to import `file` as a Python module and catch all exceptions during impo
 Do nothing if import succeeds.
 
 ```
-  type: python_import
-  file: my_solution.py
+validation:
+    tasks:
+        - type: python_import
+          display_name: "The file is a Python module that can be imported"
+          file: my_solution.py
 ```
 
 If the import succeeds, it is possible to check that the module contains some required attributes.
 This is specified as a dictionary of attribute names with messages that are shown if the name is not found.
 For example, if you want to assert that a submitted module `my_solution` contains the attributes `GLOBAL_VAR`, `MyClass.value` and `calculate`, they can be specified like this:
 ```
-  type: python_import
-  file: my_solution.py
-  attrs:
-    GLOBAL_VAR: global variable
-    MyClass.value: class variable
-    calculate: function
+        - type: python_import
+          display_name: "The file contains the required attributes"
+          file: my_solution.py
+          attrs:
+              GLOBAL_VAR: global variable
+              MyClass.value: class variable
+              calculate: function
 ```
 Does nothing if the module contains all names listed in `attrs`.
 
@@ -51,8 +57,9 @@ Read the contents of `file`, attempt to parse the contents using `ast.parse` and
 Do nothing if there are no exceptions during parsing.
 
 ```
-  type: python_syntax
-  file: my_solution.py
+        - type: python_syntax
+          display_name: "The file has correct Python syntax"
+          file: my_solution.py
 ```
 
 #### Python blacklist
@@ -68,18 +75,19 @@ For each found match, the filename, line number, line content and the short mess
 Do nothing if there are no matches.
 
 ```
-  type: python_blacklist
-  file: my_solution.py
-  message: "You are not allowed to use looping constructs or the list builtin."
-  node_names:
-    For: For loops
-    While: While loops
-    ListComp: List comprehensions
-    # etc.
-  node_dumps:
-    "Name(id='list', ctx=Load())": Loading the list builtin
-  node_dump_regexp:
-    "^Name\\(id\\=\\'list\\'": Loading the list builtin
+        - type: python_blacklist
+          display_name: "Module does not contain restricted syntax"
+          description: "You are not allowed to use looping constructs or the list builtin."
+          file: my_solution.py
+          node_names:
+              For: For loops
+              While: While loops
+              ListComp: List comprehensions
+              # etc.
+          node_dumps:
+              "Name(id='list', ctx=Load())": Loading the list builtin
+          node_dump_regexp:
+              "^Name\\(id\\=\\'list\\'": Loading the list builtin
 ```
 
 #### Python whitelist
@@ -89,16 +97,17 @@ The short descriptions of `node_names`, `node_dumps` and `node_dump_regexp` are 
 In the below example, finding for example an `ast.Call` node would be a match with the short description `"Call"`.
 
 ```
-  type: python_whitelist
-  file: my_solution.py
-  message: "In this exercise, you are only allowed to use numbers and binary operators for addition and subtraction."
-  node_names:
-    Module: Module
-    Expr: Expression
-    BinOp: Binary operator
-    Num: Number
-    Sub: Subtraction
-    Add: Addition
+        - type: python_whitelist
+          display_name: "Module does not contain restricted syntax"
+          description: "In this exercise, you are only allowed to use numbers and binary operators for addition and subtraction."
+          file: my_solution.py
+          node_names:
+              Module: Module
+              Expr: Expression
+              BinOp: Binary operator
+              Num: Number
+              Sub: Subtraction
+              Add: Addition
 ```
 
 #### Plain text blacklist

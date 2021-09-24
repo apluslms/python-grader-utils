@@ -59,12 +59,12 @@ validation:
               For: For loops
               # Optionally, define exact strings returned by ast.dump, which are not allowed.
               # The graderutils.validation module contains a simple ast_dump function for dumping all ast nodes of a given source string.
-              node_dumps:
-                  "Name(id='list', ctx=Load())": Loading the list builtin
-              # If a full ast.dump string match is too specific, it can be 'softened' using regexp.
-              # You have to do escaping by yourself, though.
-              node_dump_regexp:
-                  "^Attribute.*attr\\=\\'sort\\'\\,\\ ctx\\=Load\\(\\)": Loading the sort method
+          node_dumps:
+              "Name(id='list', ctx=Load())": Loading the list builtin
+          # If a full ast.dump string match is too specific, it can be 'softened' using regexp.
+          # You have to do escaping by yourself, though.
+          node_dump_regexp:
+              "^Attribute.*attr\\=\\'sort\\'\\,\\ ctx\\=Load\\(\\)": Loading the sort method
         # Simple regexp-based substring blacklisting.
         - type: plain_text_blacklist
           display_name: "Module does not contain restricted syntax"
@@ -83,8 +83,8 @@ validation:
         # The messages in node_names and node_dumps are ignored, but you can provide a message in 'message'.
         - type: python_whitelist
           display_name: "Module does not contain restricted syntax"
-          file: my_solution.py
           description: "You should only submit closed form equations, other kind of syntax is not allowed in this exercise."
+          file: my_solution.py
           node_names:
               # Node messages are ignored for whitelists and the name of the missed node will be used instead.
               Module: Module

@@ -120,8 +120,13 @@ def run(config_path, novalidate=False, container=False, show_config=False, devel
     # Run tests and hide infrastructure exceptions (not validation exceptions) if develop_mode is given and True.
     try:
         # Load and validate the configuration yaml
-        with open(config_path, encoding="utf-8") as f:
-            config = yaml.safe_load(f)
+        try:
+            with open(config_path, encoding="utf-8") as f:
+                config = yaml.safe_load(f)
+        except yaml.parser.ParserError as e:
+            error_msg = "Graderutils failed to parse an invalid configuration file {}, the yaml parser error was: {}".format(config_path, str(e))
+            logger.warning(multiline_repr_prefix + repr(error_msg))
+            raise
         if not novalidate:
             try:
                 jsonschema.validate(config, schemas["test_config"]["schema"])
@@ -169,7 +174,7 @@ def run(config_path, novalidate=False, container=False, show_config=False, devel
     if warning_messages:
         grading_feedback["warningMessages"] = warning_messages
 
-    if "feedback_template" in config:
+    if config is not None and "feedback_template" in config:
         grading_feedback["feedback_template"] = config["feedback_template"]
 
     # Serialize grading data into JSON, with validation against the "Grading feedback" schema
@@ -184,19 +189,19 @@ def make_argparser():
     parser.add_argument(
             "config_path",
             type=str,
-            help="Path to a YAML-file containing runtime settings for grader tests. An example file is provided at graderutils/test_config.yaml and examples/simple/test_config.yaml",
+            help="Path to a YAML-file containing runtime settings for grader tests. An example file is provided at graderutils/test_config.yaml",
     )
     flags = (
         ("novalidate",
-            "Skip validation of config_path"),
+            "Skip validation of test config."),
         ("container",
-            "This flag should be used when running graderutils inside docker container based on apluslms/grading-base"),
+            "This flag can be used when running graderutils inside docker container based on apluslms/grading-base to raise and print exceptions that occur in graderutils itself to stderr (normally not used)."),
         ("show-config",
             "Print test configuration into warnings."),
         ("develop-mode",
             "Display all unhandled exceptions unformatted."
             " Also implies --show-config."
-            " By default, exceptions related to improperly configured tests are catched and hidden behind a generic error message."
+            " By default, exceptions related to improperly configured tests are caught and hidden behind a generic error message."
             " This is to prevent unwanted leaking of grader test details, which might reveal e.g. parts of the model solution, if one is used."),
     )
     for flag, help in flags:

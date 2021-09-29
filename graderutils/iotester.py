@@ -30,6 +30,9 @@ DEFAULT_SETTINGS = {
     # Maximum amount that floating-point numbers are allowed to differ (+-)
     # in submission output/return value and model output/return value
     "max_float_delta": 0.02,
+    # Maximum amount that integer numbers are allowed to differ (+-)
+    # in submission output/return value and model output/return value
+    "max_int_delta": 0,
     # Maximum student/model program execution time in seconds (integer)
     "max_exec_time": 30,
     # Characters that should not trigger an AssertionError when comparing outputs
@@ -708,6 +711,9 @@ class IOTester:
     def _verify_settings(self):
         assert isinstance(self.settings["max_float_delta"], float), (
             "Setting 'max_float_delta' should be a float"
+        )
+        assert isinstance(self.settings["max_int_delta"], int), (
+            "Setting 'max_int_delta' should be an integer"
         )
         assert isinstance(self.settings["max_exec_time"], int), (
             "Setting 'max_exec_time' should be an integer"
@@ -1794,7 +1800,7 @@ class IOTester:
                     self.test_case.assertEqual(number.lower(), expected_number.lower())
                 elif '.' not in expected_number:
                     # Expected number is an integer
-                    self.test_case.assertEqual(int(number), int(expected_number))
+                    self.test_case.assertAlmostEqual(int(number), int(expected_number), delta=self.settings["max_int_delta"])
                     if compare_formatting:
                         # Compare formatting of integers
                         self.test_case.assertEqual(len(number), len(expected_number))
@@ -1890,30 +1896,32 @@ class IOTester:
             # Check that return values are of the same type.
             # The __class__ attribute is used because type() returns rpyc.core.netref.type when using rpyc.
             # Calling repr() below allows elements to be from different modules.
-            self.test_case.assertEqual(repr(elem2.__class__), repr(elem1.__class__))
-            if isinstance(elem2, int) or isinstance(elem2, bool) or isinstance(elem2, str):
-                self.test_case.assertEqual(elem2, elem1)
+            self.test_case.assertEqual(repr(elem1.__class__), repr(elem2.__class__))
+            if isinstance(elem2, bool) or isinstance(elem2, str):
+                self.test_case.assertEqual(elem1, elem2)
+            elif isinstance(elem2, int):
+                self.test_case.assertAlmostEqual(elem1, elem2, delta=self.settings["max_int_delta"])
             elif isinstance(elem2, float):
-                self.test_case.assertAlmostEqual(elem2, elem1, delta=self.settings["max_float_delta"])
+                self.test_case.assertAlmostEqual(elem1, elem2, delta=self.settings["max_float_delta"])
             elif isinstance(elem2, list) or isinstance(elem2, tuple):
-                self.test_case.assertEqual(len(elem2), len(elem1))
+                self.test_case.assertEqual(len(elem1), len(elem2))
                 for i in range(len(elem2)):
                     compare_elems(elem1[i], elem2[i])
             elif isinstance(elem2, set):
-                self.test_case.assertEqual(len(elem2), len(elem1))
+                self.test_case.assertEqual(len(elem1), len(elem2))
                 diff1 = elem2.difference(elem1)
                 self.test_case.assertEqual(len(diff1), 0)
                 diff2 = elem1.difference(elem2)
                 self.test_case.assertEqual(len(diff2), 0)
             elif isinstance(elem2, dict):
-                self.test_case.assertEqual(len(elem2), len(elem1))
+                self.test_case.assertEqual(len(elem1), len(elem2))
                 for key in elem2:
                     if key not in elem1:
                         self.test_case.fail(MSG_RETURN_VALUE)
                     else:
                         compare_elems(elem1[key], elem2[key])
             elif inspect.isclass(elem2):
-                self.test_case.assertEqual(repr(elem2), repr(elem1))
+                self.test_case.assertEqual(repr(elem1), repr(elem2))
             else:
                 # Compare other objects
                 pass

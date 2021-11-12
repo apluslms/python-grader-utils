@@ -56,8 +56,8 @@ def tmpdir():
             os.chdir(origcwd)
 
 
-# GraderImportError and GraderOpenError are defined here so that the remote server finds them
-# and doesn't fall back to rpyc.core.vinegar serializer for exceptions during iotester tests
+# These custom exception classes are defined here so that the remote server finds them
+# and doesn't fall back to rpyc.core.vinegar serializer for exceptions during iotester tests.
 class GraderImportError(GraderUtilsError):
     pass
 
@@ -67,6 +67,10 @@ class GraderOpenError(GraderUtilsError):
 
 
 class GraderConnClosedError(GraderUtilsError):
+    pass
+
+
+class GraderIOError(GraderUtilsError):
     pass
 
 

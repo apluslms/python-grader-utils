@@ -18,6 +18,7 @@ from graderutils.diff_match_patch import diff_match_patch
 from graderutils.graderunittest import result_or_timeout
 from graderutils.remote import GraderConnClosedError
 from graderutils.remote import GraderImportError
+from graderutils.remote import GraderIOError
 from graderutils.remote import GraderOpenError
 
 
@@ -68,6 +69,12 @@ SEPARATOR_STRING = '=' * 55
 # Feedback fields separator string with html class for coloring
 SEPARATOR = '<span class="iotester-basic">{:s}</span>'.format(SEPARATOR_STRING)
 
+# Maximum number of output characters shown (timeout or not)
+MAX_OUTPUT_LENGTH = 100000
+
+# Maximum number of output lines shown when program execution is not timed out
+MAX_OUTPUT_LINES = 1000
+
 # Maximum number of output lines shown when program execution is timed out
 MAX_OUTPUT_LINES_ON_TIMEOUT = 50
 
@@ -86,17 +93,17 @@ IOTESTER_NUMBER = "[iotester-number]"
 # Used for replacing numbers in complete_output_test where a minus check has to be performed
 IOTESTER_MINUS_CHECK = "[iotester-minus-check]"
 
-# This string is shown in feedback when enter was pressed without providing any text input
+# This constant can be used when passing inputs to a test.
+# It represents inputting nothing (pressing the Enter key).
+ENTER = "[iotester-enter]"
+
+# This string is shown in feedback in places where the ENTER constant was used as input
 ENTER_STRING = (
     '{0}kbd{1}Enter{0}/kbd{1}'.format(
         IOTESTER_NO_ESCAPE_LT,
         IOTESTER_NO_ESCAPE_GT,
     )
 )
-
-# This alias can be used when passing inputs to a test.
-# It represents inputting nothing (pressing the enter key).
-ENTER = '\n'
 
 # Feedback colors info
 MSG_COLOR_INCORRECT = "Incorrect"
@@ -221,7 +228,7 @@ MSG_KEYBOARDINTERRUPT = "Grader does not support raising KeyboardInterrupt."
 MSG_MAIN_CALL_NOT_FOUND = (
     "Function main() was found but it was not called.\n"
     "Make sure that you remember to call the main() function\n"
-    "and that the call is correctly indented."
+    "and that the function call is correctly indented."
 )
 
 MSG_FUNCTION_NOT_FOUND = (
@@ -262,13 +269,19 @@ MSG_VALUEERROR_2 = "Your code contains null characters, which you have to remove
 MSG_VALUEERROR_3 = (
     "You probably made a mistake in the conversion\n"
     "to a numerical value or in the formatting of the output.\n"
-    "Check that the variable(s) you are trying to convert\n"
-    "or format are of the correct type."
+    "Check that the variables you are trying to\n"
+    "convert/format are of the correct type."
 )
 
 MSG_GRADER_TIMEOUT = (
     "The execution of your program timed out after {:d} seconds.\n"
     "Your code may be stuck in an infinite loop or it runs very slowly."
+)
+
+MSG_GRADER_BUFFER = (
+    "Allocated buffer space for output exceeded.\n"
+    "The output of your program is too long.\n"
+    "Your code may be stuck in an infinite loop."
 )
 
 MSG_GRADER_CONN_CLOSED = (
@@ -623,7 +636,7 @@ def _params_to_str(args=(), kwargs={}):
     for arg in args:
         params.append(repr(arg))
     for key, value in kwargs.items():
-        params.append(repr(key) + '=' + repr(value))
+        params.append(str(key) + '=' + repr(value))
     params_str = ", ".join(params)
     params_str = _escape_html_chars(params_str)
     return params_str
@@ -679,6 +692,19 @@ class GraderTimeoutError(GraderUtilsError):
     pass
 
 
+class LimitedBuffer(StringIO):
+
+    def __init__(self, buffer=None, max_size=100000):
+        super().__init__(buffer)
+        self.max_size = max_size
+
+
+    def write(self, string):
+        if self.tell() + len(string) > self.max_size:
+            raise GraderIOError(MSG_GRADER_BUFFER)
+        return StringIO.write(self, string)
+
+
 class IOTester:
 
     def __init__(self, settings={}):
@@ -688,7 +714,7 @@ class IOTester:
         # Maximum program execution time in seconds (stops test in case of an infinite while-loop)
         self._used_model_modules = []
         self._created_files = set()
-        self._out = StringIO()
+        self._out = LimitedBuffer(max_size=MAX_OUTPUT_LENGTH)
         self._save()
 
 
@@ -1116,7 +1142,8 @@ class IOTester:
 
     def _iotester_input(self, prompt=""):
         result = line = _builtin_input(prompt)
-        if line == "":
+        if line == ENTER:
+            result = ""
             line = (
                 "{2}{0}br{1}".format(
                     IOTESTER_NO_ESCAPE_LT,
@@ -1284,11 +1311,15 @@ class IOTester:
             except BaseException as e:
                 data["exception"] = e
             finally:
-                data["output"] = out.getvalue().replace('\xa0', ' ').replace('\x00', r"\x00")
                 if data["exception"] and type(data["exception"]) is GraderTimeoutError:
-                    # Make sure the output shown in feedback is not too long
-                    lines = data["output"].splitlines(keepends=True)
-                    data["output"] = ''.join(lines[:min(MAX_OUTPUT_LINES_ON_TIMEOUT, len(lines))])
+                    # Maximum number of lines shown when program execution was timed out
+                    max_num_lines = MAX_OUTPUT_LINES_ON_TIMEOUT
+                else:
+                    # Maximum number of lines shown when program execution was not timed out
+                    max_num_lines = MAX_OUTPUT_LINES
+                lines = out.getvalue().splitlines(keepends=True)
+                data["output"] = ''.join(lines[:min(max_num_lines, len(lines))])
+                data["output"] = data["output"].replace('\xa0', ' ').replace('\x00', r"\x00")
 
         self.restore(clean_up_files=False) # Files created by the module are deleted later
 
@@ -1346,6 +1377,17 @@ class IOTester:
                 MSG_PYTHON_VERSION,
                 msg_colors,
                 MSG_GRADER_TIMEOUT.format(self.settings["max_exec_time"]),
+                self.name_tested,
+                self.desc,
+                self.diff,
+                self.used_inputs_and_params,
+            ])
+            self.test_case.iotester_data["hideTraceback"] = True
+        elif exception_name == "GraderIOError":
+            self.test_case.iotester_data["feedback"] = _combine_feedback([
+                MSG_PYTHON_VERSION,
+                msg_colors,
+                MSG_GRADER_BUFFER,
                 self.name_tested,
                 self.desc,
                 self.diff,
@@ -1670,7 +1712,7 @@ class IOTester:
             ):
         """
         Run the model program and the student program and compare the text outputs.
-        Ignore capitalization, numbers, whitespace and self.settings["ignored_characters"].
+        Ignore numbers, whitespace and characters specified in self.settings["ignored_characters"].
         """
         self._setup()
         used_args = prog_args if prog else args
@@ -1840,7 +1882,8 @@ class IOTester:
             show_output=False,
             ):
         """
-        Run the model program and the student program and compare the return values of the two functions.
+        Run a function from the model program and the student program and compare the return values
+        of the two functions.
         """
         self._setup()
         used_args = prog_args if prog else args
@@ -1958,7 +2001,7 @@ class IOTester:
             ):
         """
         Run the model program and the student program and compare the text, numbers and whitespace.
-        Ignore capitalization and self.settings["ignored_characters"].
+        Ignore characters specified in self.settings["ignored_characters"].
         """
         # Text and numbers in output are tested first
         self.text_test(func_name, args, kwargs, inputs, prog, prog_args, prog_kwargs, prog_inputs, desc, compare_capitalization)
@@ -2112,7 +2155,7 @@ class IOTester:
             ):
         """
         Run the model program and the student program and compare the data in the file they create.
-        The data in the files has to be identical.
+        The data in the two files has to be identical.
         """
         self._setup()
         used_args = prog_args if prog else args
@@ -2207,8 +2250,9 @@ class IOTester:
             desc="",
             ):
         """
-        Run the model program and the student program and compare Python's pseudo-random number generator states.
-        Used to test a function that sets random seed etc.
+        Run the model program and the student program and compare Python's pseudo-random number
+        generator states. Used to test a function that sets random seed and to check that a program
+        generates pseudo-random numbers the correct amount of times.
         """
         self._setup()
         used_args = prog_args if prog else args
@@ -2253,7 +2297,7 @@ class IOTester:
         """
         Test that the student program contains the required amount of functions.
         Parameter op should be one of the following strings: '>', '<', '>=', '<=', '=='
-        NOTE: Breaks if using rpyc while the module contains custom classes.
+        NOTE: Breaks if using rpyc and the student's Python module contains custom classes.
         """
         self._setup()
         self._set_description(desc)
@@ -2606,6 +2650,10 @@ class IOTester:
         def decorator(testmethod):
             @functools.wraps(testmethod)
             def wrapper(*testmethod_args, **testmethod_kwargs):
+                if hasattr(testmethod, "__self__"):
+                    self.test_case = testmethod.__self__
+                else:
+                    self.test_case = testmethod_args[0]
                 self._setup()
                 self._set_description(desc)
                 if func_name:

@@ -842,8 +842,6 @@ class IOTester:
                         modules_to_unload.append(m)
                 for m in modules_to_unload:
                     remote.conn.modules.sys.modules.pop(m, None)
-                    # Remove imported modules from rpyc cache if found
-                    remote.conn.modules._ModuleNamespace__cache.pop(m, None)
             except TimeoutError:
                 # Should never go here because the remote connection
                 # is closed in _run_program when the executed module times out.

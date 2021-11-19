@@ -19,7 +19,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='graderutils',
-    version='4.2',
+    version='4.3',
     description='Utilities for Python based grader test pipelines',
     long_description=readmefile_contents,
 

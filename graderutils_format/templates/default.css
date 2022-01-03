@@ -16,13 +16,13 @@ h4.testgroup-header {
     margin-bottom: 20px;
 }
 /* Disable automatic horizontal scroll of preformatted text blocks */
-div.panel-body pre {
+div.pre-wrap pre {
     white-space: pre-wrap;
 }
 div.warning-messages {
     margin-top: 35px;
 }
-.grader-info {
+div.grader-info {
     color: gray;
 }
 span.iotester-warning {

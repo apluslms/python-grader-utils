@@ -72,7 +72,7 @@
         <div id="result{{ result_group_loop.index }}-{{ test_result_loop.index }}"
              class="collapse{% if result.status != "passed" %} in{% endif %}">
             {% block result_panel scoped %}
-            <div class="panel-body">
+            <div class="panel-body pre-wrap">
 
                 {% if result.header %}
                 <p>{{ result.header }}</p>
@@ -80,9 +80,9 @@
 
                 {% if result.testOutput %}
                 {% if not result.iotesterData %}
-                <pre class="feedback">{{ result.testOutput|e }}</pre>
+                <pre>{{ result.testOutput|e }}</pre>
                 {% elif result.status == "error" %}
-                <pre class="feedback">{{ result.testOutput|e }}</pre>
+                <pre>{{ result.testOutput|e }}</pre>
                 <p>Feedback:</p>
                 {% endif %}
                 {% endif %}
@@ -137,8 +137,8 @@
             <span class="label feedback-label label-info pull-right">Info</span>
         </div>
     </div>
-    <div id="full-test-output{{ result_group_loop.index }}" class="panel-body collapse">
-        <pre class="feedback">{{ result_group.fullOutput|e }}</pre>
+    <div id="full-test-output{{ result_group_loop.index }}" class="panel-body pre-wrap collapse">
+        <pre>{{ result_group.fullOutput|e }}</pre>
     </div>
 </div>
 {% endif %}
@@ -157,7 +157,7 @@
                    class="label label-info">Graderutils message</a>
             </h5>
         </div>
-        <div id="warning-message{{ warnings_loop.index }}" class="panel-body collapse in">
+        <div id="warning-message{{ warnings_loop.index }}" class="panel-body pre-wrap collapse in">
             <pre>{{ warning|e }}</pre>
         </div>
     </div>

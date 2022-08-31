@@ -782,9 +782,8 @@ class IOTester:
 
     def _save(self):
         """
-        Save random number generator state, sys.path, sys.modules,
-        student process sys.path, student process sys.modules and
-        student process built-in input() since they will be restored
+        Save random number generator state, sys.path, sys.modules in grader and student
+        process, and student process built-in input() since they will be restored
         before and after importing and executing student/model code.
 
         TestCase's tearDown should call restore() to make sure that these variables
@@ -794,6 +793,7 @@ class IOTester:
             "random_state": random.getstate(),
             "sys_path": sys.path.copy(),
             "sys_modules": sys.modules.copy(),
+            "remote_random_state": remote.conn.modules.sys.modules["random"].getstate() if remote.conn else None,
             "remote_sys_path": remote.conn.modules.sys.path.copy() if remote.conn else [],
             "remote_sys_modules": remote.conn.modules.sys.modules.copy() if remote.conn else {},
             "remote_builtin_input": remote.conn.builtins.input if remote.conn else None,
@@ -823,7 +823,7 @@ class IOTester:
             if m not in self.previous["sys_modules"]:
                 modules_to_unload.append(m)
         for m in modules_to_unload:
-            sys.modules.pop(m, None)
+            del sys.modules[m]
 
         if remote.conn and not remote.conn.closed:
             try:
@@ -831,6 +831,8 @@ class IOTester:
                 remote.conn.builtins.__import__ = remote.conn._builtin_import
                 # Restore built-in input() in student process
                 remote.conn.builtins.input = self.previous["remote_builtin_input"]
+                # Restore previous random state in student process
+                remote.conn.modules.sys.modules["random"].setstate(self.previous["remote_random_state"])
                 # Restore previous sys.path in student process
                 remote.conn.modules.sys.path = self.previous["remote_sys_path"].copy()
                 # Remove imported modules from sys.modules in student process.
@@ -841,7 +843,9 @@ class IOTester:
                     if m not in self.previous["remote_sys_modules"]:
                         modules_to_unload.append(m)
                 for m in modules_to_unload:
-                    remote.conn.modules.sys.modules.pop(m, None)
+                    del remote.conn.modules.sys.modules[m]
+                    # Remove imported modules from rpyc cache if found
+                    remote.conn.modules._ModuleNamespace__cache.pop(m, None)
             except TimeoutError:
                 # Should never go here because the remote connection
                 # is closed in _run_program when the executed module times out.
@@ -1226,7 +1230,10 @@ class IOTester:
             "used_kwargs": copy.deepcopy(kwargs),
         }
 
-        random.seed(random.randrange(sys.maxsize))
+        seed = random.randrange(sys.maxsize)
+        random.seed(seed)
+        if remote.conn:
+            remote.conn.modules.sys.modules["random"].seed(seed)
         os.chdir(model_path) if model else os.chdir(student_path)
 
         with self._captured_output(inputs) as out:

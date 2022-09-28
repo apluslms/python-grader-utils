@@ -78,6 +78,12 @@ MAX_OUTPUT_LINES = 1000
 # Maximum number of output lines shown when program execution is timed out
 MAX_OUTPUT_LINES_ON_TIMEOUT = 50
 
+# Marker used for finding where user input begins in a given output
+IOTESTER_INPUT_BEGIN = "[iotester-input-begin]"
+
+# Marker used for finding where user input ends in a given output
+IOTESTER_INPUT_END = "[iotester-input-end]"
+
 # Placeholder replaced with < in output html
 IOTESTER_NO_ESCAPE_LT = "[iotester-no-escape-lt]"
 
@@ -537,10 +543,6 @@ def _diff_prettyHtml(dmp, diffs, type, hide_newlines):
         elif op == dmp.DIFF_EQUAL:
             diff_html.append('<span>%s</span>' % data)
     diff_html = ''.join(diff_html)
-    # Remove last <br>
-    if len(diff_html) >= 11 and diff_html[-11:-7] == "<br>":
-        diff_html = diff_html[:-11] + diff_html[-7:]
-
     return diff_html
 
 
@@ -549,9 +551,45 @@ def _get_diff_html(output, expected_output, type, hide_newlines):
     dmp.Match_Threshold = 0.0
     dmp.Match_Distance = 0
     dmp.Patch_DeleteThreshold = 0.0
-    diffs = dmp.diff_main(output, expected_output)
-    dmp.diff_cleanupSemantic(diffs)
-    diff_html = _diff_prettyHtml(dmp, diffs, type, hide_newlines)
+    diff_html = ""
+    output_split = output.split(IOTESTER_INPUT_END)
+    expected_output_split = expected_output.split(IOTESTER_INPUT_END)
+    for i in range(len(output_split)):
+        part = output_split[i]
+        part_split = part.split(IOTESTER_INPUT_BEGIN)
+        try:
+            expected_part = expected_output_split[i]
+            expected_part_split = expected_part.split(IOTESTER_INPUT_BEGIN)
+        except IndexError:
+            expected_part = ""
+            expected_part_split = [""]
+        if len(part_split) == 2:
+            output_before = part_split[0]
+            expected_output_before = expected_part_split[0]
+            diffs = dmp.diff_main(output_before, expected_output_before)
+            dmp.diff_cleanupSemantic(diffs)
+            diff_html += _diff_prettyHtml(dmp, diffs, type, hide_newlines)
+            if type == "delete":
+                inputs = part_split[1]
+                inputs = _escape_html_chars(inputs)
+                diff_html += inputs
+            elif type == "insert" and len(expected_part_split) == 2:
+                expected_inputs = expected_part_split[1]
+                expected_inputs = _escape_html_chars(expected_inputs)
+                diff_html += expected_inputs
+        else:
+            output_after = part_split[0]
+            expected_output_after = ''.join(expected_part_split)
+            diffs = dmp.diff_main(output_after, expected_output_after)
+            dmp.diff_cleanupSemantic(diffs)
+            diff_html += _diff_prettyHtml(dmp, diffs, type, hide_newlines)
+
+    # Remove last <br>
+    if diff_html.endswith("<br>"):
+        diff_html = diff_html[:-4]
+    if len(diff_html) >= 11 and diff_html[-11:-7] == "<br>":
+        diff_html = diff_html[:-11] + diff_html[-7:]
+
     return diff_html
 
 
@@ -1147,7 +1185,9 @@ class IOTester:
         if line == ENTER:
             result = ""
             line = (
-                "{2}{0}br{1}".format(
+                "{0}{4}{2}br{3}{1}".format(
+                    IOTESTER_INPUT_BEGIN,
+                    IOTESTER_INPUT_END,
                     IOTESTER_NO_ESCAPE_LT,
                     IOTESTER_NO_ESCAPE_GT,
                     ENTER_STRING,
@@ -1155,7 +1195,9 @@ class IOTester:
             )
         else:
             line = (
-                '{0}span{2}class="iotester-input"{1}{3}{0}/span{1}{0}br{1}'.format(
+                '{0}{2}span{4}class="iotester-input"{3}{5}{2}/span{3}{2}br{3}{1}'.format(
+                    IOTESTER_INPUT_BEGIN,
+                    IOTESTER_INPUT_END,
                     IOTESTER_NO_ESCAPE_LT,
                     IOTESTER_NO_ESCAPE_GT,
                     IOTESTER_NO_ESCAPE_NBSP,

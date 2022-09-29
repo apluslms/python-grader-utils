@@ -579,7 +579,11 @@ def _get_diff_html(output, expected_output, type, hide_newlines):
                 diff_html += expected_inputs
         else:
             output_after = part_split[0]
-            expected_output_after = ''.join(expected_part_split)
+            expected_output_after = (
+                ''.join(expected_output_split[i:])
+                    .replace(IOTESTER_INPUT_BEGIN, '')
+                    .replace(IOTESTER_INPUT_END, '')
+            )
             diffs = dmp.diff_main(output_after, expected_output_after)
             dmp.diff_cleanupSemantic(diffs)
             diff_html += _diff_prettyHtml(dmp, diffs, type, hide_newlines)

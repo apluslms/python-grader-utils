@@ -503,6 +503,11 @@ _builtin_import = __builtins__["__import__"]
 _builtin_open = __builtins__["open"]
 _builtin_input = __builtins__["input"]
 
+_always_allowed_to_import = [
+    "unicodedata",  # This is imported when variable names contain characters ä, ö, å, etc. and rpyc is used
+    "_io",          # Python3.8 >= imports this along with the module that was imported
+]
+
 
 def _combine_feedback(strings=[]):
     feedback = ""
@@ -1010,7 +1015,7 @@ class IOTester:
             allowed_to_import = False
         else:
             allowed_to_import = (
-                module_name == "_io" # Python3.8 >= imports _io along with the module that was imported
+                module_name in _always_allowed_to_import
                 or _verify_permissions(
                     module_name,
                     self.settings["import_whitelist"],
@@ -1607,15 +1612,27 @@ class IOTester:
                 self.used_inputs_and_params,
             ])
         elif exception_name == "UnboundLocalError":
+            exception_str = "UnboundLocalError: " + str(exception).rstrip()
+            if remote.conn and not model:
+                # Clean the exception string of possible irrelevant rpyc traceback
+                message_line_found = False
+                for line in exception_str.splitlines(keepends=True):
+                    if line.startswith("UnboundLocalError:"):
+                        exception_str = line
+                        message_line_found = True
+                    elif message_line_found:
+                        exception_str += line
             self.test_case.iotester_data["feedback"] = _combine_feedback([
                 MSG_PYTHON_VERSION,
                 msg_colors,
+                exception_str,
                 MSG_UNBOUNDLOCALERROR,
                 self.name_tested,
                 self.desc,
                 self.diff,
                 self.used_inputs_and_params,
             ])
+            self.test_case.iotester_data["hideTraceback"] = True
         elif exception_name == "NameError":
             self.test_case.iotester_data["feedback"] = _combine_feedback([
                 MSG_PYTHON_VERSION,

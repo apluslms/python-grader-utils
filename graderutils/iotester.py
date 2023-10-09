@@ -1176,8 +1176,11 @@ class IOTester:
             # Deny overwriting of submission/model files
             raise GraderOpenError(msg_grader_open_write)
         elif mode in write_modes:
-            # Deny writing of files outside of opener_dir
-            raise GraderOpenError(msg_grader_open_write)
+            if file:
+                # Deny writing of files outside of opener_dir
+                raise GraderOpenError(msg_grader_open_write)
+            # Allow attempting to write with an empty filename (raises OSError)
+            return _builtin_open(file, mode, buffering, encoding, errors, newline, closefd, opener)
         elif dir == generated_path or _verify_permissions(name, self.settings["open_whitelist"], self.settings["open_blacklist"]):
             # Deny reading of files outside of opener_dir unless the file is whitelisted or in generated_path
             return _builtin_open(file, mode, buffering, encoding, errors, newline, closefd, opener)

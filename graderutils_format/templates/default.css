@@ -45,9 +45,7 @@ button.btn-traceback {
     margin-top: 10px;
 }
 /* A table is used for wrapping long panel text to multiple lines and to prevent it from pushing badges and labels down */
-/* Overflow prevents panel text, badges and labels from rendering outside grader result panels */
 div.panel-default > .panel-heading {
-    overflow: hidden;
     display: table;
     width: 100%;
 }

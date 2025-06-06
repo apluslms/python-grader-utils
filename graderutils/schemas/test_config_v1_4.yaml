@@ -112,7 +112,6 @@ properties:
                 - python_whitelist
                 - plain_text_blacklist
                 - plain_text_whitelist
-                - image_type
                 - labview
                 - xlsm
                 - html

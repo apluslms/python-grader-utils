@@ -41,11 +41,11 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'PyYAML ~= 6.0',       # Parse configuration files
-        'Jinja2 ~= 3.1.1',       # Render HTML feedback with templates
-        'html5lib ~= 1.1',      # Parse HTML
-        'hypothesis ~= 6.43.1',   # Generics for UnitTests
-        'jsonschema ~= 4.4.0',    # Validators for JSON schemas
-        'python_jsonschema_objects ~= 0.4.1', # JSON schema to Python object mappings
+        'PyYAML ~= 6.0',                       # Parse configuration files
+        'Jinja2 ~= 3.1.1',                     # Render HTML feedback with templates
+        'html5lib ~= 1.1',                     # Parse HTML
+        'hypothesis ~= 6.43.1',                # Generics for UnitTests
+        'jsonschema ~= 4.4.0',                 # Validators for JSON schemas
+        'python_jsonschema_objects ~= 0.4.1',  # JSON schema to Python object mappings
     ],
 )

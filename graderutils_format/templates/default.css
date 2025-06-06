@@ -1,32 +1,21 @@
 /* Increase size of labels in grader result panels */
+div.grading-feedback h4 {
+    margin-top: 0;
+}
 span.feedback-label {
     font-size: 14px;
-}
-/* Add space between different test groups */
-div.grading-task {
-    margin-top: 40px;
-    margin-bottom: 40px;
-}
-/* Add more separation between last test group and unittest terminal output */
-div.full-test-output {
-    margin-top: 35px;
-}
-/* Bootstrap h4 bottom margins are by default a bit too small */
-h4.testgroup-header {
-    margin-bottom: 20px;
 }
 /* Disable automatic horizontal scroll of preformatted text blocks */
 div.pre-wrap pre {
     white-space: pre-wrap;
+    border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color);
+    background-color: var(--bs-tertiary-bg);
 }
-div.warning-messages {
-    margin-top: 35px;
-}
-div.grader-info {
-    color: gray;
+div.pre-wrap pre:last-of-type {
+    margin-block: 0px 0px;
 }
 span.iotester-warning {
-    color: red;
+    color: var(--bs-danger);
 }
 span.iotester-basic {
     color: #a5409e;
@@ -38,44 +27,39 @@ span.iotester-correct {
     background-color: #8cde8c;
 }
 span.iotester-input {
-    background-color: #49d8ff;
+    background-color: #7ed9f5;
 }
-/* Traceback button top margin is by default a bit too small */
-button.btn-traceback {
-    margin-top: 10px;
+[data-bs-theme="dark"] span.iotester-basic {
+    color: #d0a7ff;
 }
-/* A table is used for wrapping long panel text to multiple lines and to prevent it from pushing badges and labels down */
-div.panel-default > .panel-heading {
-    display: table;
-    width: 100%;
+[data-bs-theme="dark"] span.iotester-incorrect {
+    background-color: #8b2e2e;
 }
-/* Table cell for the text part of panel titles */
-div.panel-text {
-    display: table-cell;
+[data-bs-theme="dark"] span.iotester-correct {
+    background-color: #1e6e1e;
 }
-/* Vertically center and reserve space for the badges and labels of panel titles */
-div.panel-annotation {
-    display: table-cell;
-    vertical-align: middle;
-    min-width: 200px;
+[data-bs-theme="dark"] span.iotester-input {
+    background-color: #0e5a8a;
 }
-/* Add space between panel titles and points badges, and increase badge size */
-div.grading-task .panel-default > .panel-heading .badge {
+div.grading-feedback .accordion-header .badge {
     font-size: 14px;
-    margin-right: 10px;
 }
-/* Green color for badges and labels when tests pass */
-div.grading-task .panel-default > .panel-heading .color-passed {
-    color: #fff;
-    background-color: #00803c;
+span.panel-title {
+    color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1));
+    font-weight: 700;
 }
-/* Red color for badges and labels when tests fail */
-div.grading-task .panel-default > .panel-heading .color-failed {
-    color: #fff;
-    background-color: #a50000;
+/* Fix borders with vertically spaced accordion */
+div.spaced-accordion > .accordion-item {
+    border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color);
+    border-radius: var(--bs-accordion-border-radius);
+    margin-top: 1rem;
 }
-/* Orange color for badges and labels when errors occur */
-div.grading-task .panel-default > .panel-heading .color-error {
-    color: #fff;
-    background-color: #a6670e;
+div.spaced-accordion > .accordion-item  > .accordion-header > .accordion-button:not(.collapsed) {
+    border-top-left-radius: var(--bs-accordion-inner-border-radius);
+    border-top-right-radius: var(--bs-accordion-inner-border-radius);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+div.spaced-accordion > .accordion-item  > .accordion-header > .accordion-button.collapsed {
+    border-radius: var(--bs-accordion-inner-border-radius);
 }

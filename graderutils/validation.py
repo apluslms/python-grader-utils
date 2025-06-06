@@ -10,7 +10,6 @@ import ast
 import collections
 import contextlib
 import html5lib
-import imghdr
 import importlib
 import io
 import re
@@ -180,14 +179,6 @@ def ast_dump(source):
     Or install more sophisticated utilities from https://greentreesnakes.readthedocs.io/en/latest/.
     """
     return '\n'.join(map(ast.dump, ast.walk(ast.parse(source))))
-
-
-def get_image_type_errors(image, expected_type):
-    errors = {}
-    actual_type = imghdr.what(image)
-    if actual_type != expected_type:
-        errors["message"] = "Expected type '{}' but got '{}'.".format(expected_type, actual_type)
-    return errors
 
 
 def _import_module_from_python_file(filename):
@@ -361,9 +352,6 @@ def _get_validation_error(validation, filename, config):
     elif validation == "plain_text_whitelist":
         get_matches = _get_plain_text_whitelist_misses
         error = get_restricted_syntax_matches(config, get_matches)
-
-    elif validation == "image_validation_type":
-        error = get_image_type_errors(filename)
 
     elif validation == "labview":
         error = get_labview_errors(filename)

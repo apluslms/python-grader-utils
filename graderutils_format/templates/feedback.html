@@ -18,152 +18,161 @@
     <h1>Total points: {{ points }} of {{ maxPoints }}</h1>
     {% endif %}
     {% if testsRun %}
-    <h2><small>Total tests run: {{ testsRun }}</small></h2>
+    <h2 class="text-muted">Total tests run: {{ testsRun }}</h2>
     {% endif %}
     {% if runningTime %}
-    <h3><small>Total running time of tests: {{ "%.3f"|format(runningTime) }} s.</small></h3>
+    <h3 class="fw-light text-muted">Total running time of tests: {{ "%.3f"|format(runningTime) }} s.</h3>
     {% endif %}
 </div>
 
-{% for result_group in resultGroups %}
-{% set result_group_loop = loop %}
+<div class="grading-feedback">
+    {% for result_group in resultGroups %}
+    {% set result_group_loop = loop %}
+    <div class="mt-5">
+        {% if result_group.maxPoints %}
+        <h4>{{ result_group.title }} points: {{ result_group.points }} of {{ result_group.maxPoints }}</h4>
+        {% else %}
+        <h4>{{ result_group.title }}</h4>
+        {% endif %}
+        {% if result_group.description %}
+        <div>{{ result_group.description }}</div>
+        {% endif %}
 
-<div class="grading-task">
-    {% if result_group.maxPoints %}
-    <h4 class="testgroup-header">{{ result_group.title }} points: {{ result_group.points }} of {{ result_group.maxPoints }}</h4>
-    {% else %}
-    <h4 class="testgroup-header">{{ result_group.title }}</h4>
-    {% endif %}
-    {% if result_group.description %}
-    <div>{{ result_group.description }}</div>
-    {% endif %}
+        <div class="accordion spaced-accordion">
+            {% for result in result_group.testResults %}
+            {% set test_result_loop = loop %}
+            <div class="accordion-item">
+                <h5 class="accordion-header">
+                    <button class="accordion-button overflow-visible bg-body-tertiary{% if result.status == "passed" %} collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#result{{ result_group_loop.index }}-{{ test_result_loop.index }}" aria-expanded="true" aria-controls="result{{ result_group_loop.index }}-{{ test_result_loop.index }}">
+                        <div class="w-100 d-flex justify-content-between align-items-center">
+                            <span class="panel-title">{{ result.title }}</span>
+                            <div class="d-flex flex-nowrap gap-2 mx-3">
+                                {% if result.status == "passed" %}
+                                <span class="badge feedback-label text-bg-success">Success</span>
+                                {% if result.maxPoints %}
+                                <span class="badge rounded-pill text-bg-success">{{ result.points }} / {{ result.maxPoints }}</span>
+                                <span class="visually-hidden">points</span>
+                                {% endif %}
+                                {% elif result.status == "failed" %}
+                                <span class="badge feedback-label text-bg-danger">Failed</span>
+                                {% if result.maxPoints %}
+                                <span class="badge rounded-pill text-bg-danger">{{ result.points }} / {{ result.maxPoints }}</span>
+                                <span class="visually-hidden">points</span>
+                                {% endif %}
+                                {% elif result.status == "error" %}
+                                <span class="badge feedback-label text-bg-warning">Error</span>
+                                {% if result.maxPoints %}
+                                <span class="badge rounded-pill text-bg-warning">{{ result.points }} / {{ result.maxPoints }}</span>
+                                <span class="visually-hidden">points</span>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </button>
+                </h5>
+                <div id="result{{ result_group_loop.index }}-{{ test_result_loop.index }}" class="accordion-collapse collapse{% if result.status != "passed" %} show{% endif %}">
+                    <div class="accordion-body">
+                        {% block result_panel scoped %}
+                        <div class="pre-wrap">
+                            {% if result.header %}
+                            <p>{{ result.header }}</p>
+                            {% endif %}
 
-    {% for result in result_group.testResults %}
-    {% set test_result_loop = loop %}
+                            {% if result.testOutput %}
+                            {% if not result.iotesterData %}
+                            <pre>{{ result.testOutput|e }}</pre>
+                            {% elif result.status == "error" %}
+                            <pre>{{ result.testOutput|e }}</pre>
+                            <p>Feedback:</p>
+                            {% endif %}
+                            {% endif %}
 
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h5 class="panel-text pull-left">
-                <a data-toggle="collapse"
-                    href="#result{{ result_group_loop.index }}-{{ test_result_loop.index }}">{{ result.title }}</a>
-            </h5>
-            <div class="panel-annotation">
-                {% if result.status == "passed" %}
-                <span class="label feedback-label color-passed pull-right">Success</span>
-                {% if result.maxPoints %}
-                <span class="badge color-passed pull-right">{{ result.points }} / {{ result.maxPoints }}</span>
-                <span class="sr-only">points</span>
-                {% endif %}
-                {% elif result.status == "failed" %}
-                <span class="label feedback-label color-failed pull-right">Failed</span>
-                {% if result.maxPoints %}
-                <span class="badge color-failed pull-right">{{ result.points }} / {{ result.maxPoints }}</span>
-                <span class="sr-only">points</span>
-                {% endif %}
-                {% elif result.status == "error" %}
-                <span class="label feedback-label color-error pull-right">Error</span>
-                {% if result.maxPoints %}
-                <span class="badge color-error pull-right">{{ result.points }} / {{ result.maxPoints }}</span>
-                <span class="sr-only">points</span>
-                {% endif %}
-                {% endif %}
-            </div>
-        </div>
-        <div id="result{{ result_group_loop.index }}-{{ test_result_loop.index }}"
-             class="collapse{% if result.status != "passed" %} in{% endif %}">
-            {% block result_panel scoped %}
-            <div class="panel-body pre-wrap">
+                            {% if result.iotesterData %}
+                            {% if result.iotesterData.warning %}
+                            <pre>{{ result.iotesterData.warning }}</pre>
+                            {% endif %}
+                            {% if result.iotesterData.feedback %}
+                            <pre>{{ result.iotesterData.feedback }}</pre>
+                            {% endif %}
+                            {% if result.iotesterData.customFeedback %}
+                            <pre>{{ result.iotesterData.customFeedback }}</pre>
+                            {% endif %}
+                            {% endif %}
 
-                {% if result.header %}
-                <p>{{ result.header }}</p>
-                {% endif %}
+                            {% block result_panel_after_output scoped %}
+                            {% endblock %}
 
-                {% if result.testOutput %}
-                {% if not result.iotesterData %}
-                <pre>{{ result.testOutput|e }}</pre>
-                {% elif result.status == "error" %}
-                <pre>{{ result.testOutput|e }}</pre>
-                <p>Feedback:</p>
-                {% endif %}
-                {% endif %}
+                            {% if result.runningTime %}
+                            <div class="text-muted mt-3">Running time: {{ "%.3f"|format(result.runningTime) }} s.</div>
+                            {% endif %}
 
-                {% if result.iotesterData %}
-                {% if result.iotesterData.warning %}
-                <pre>{{ result.iotesterData.warning }}</pre>
-                {% endif %}
-                {% if result.iotesterData.feedback %}
-                <pre>{{ result.iotesterData.feedback }}</pre>
-                {% endif %}
-                {% if result.iotesterData.customFeedback %}
-                <pre>{{ result.iotesterData.customFeedback }}</pre>
-                {% endif %}
-                {% endif %}
+                            {% if result.status == "error" %}
+                            <button class="btn btn-info mt-3" type="button" data-bs-toggle="collapse" data-bs-target="#traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}" aria-expanded="false" aria-controls="traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}">
+                                Show traceback
+                            </button>
+                            <div class="collapse mt-2" id="traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}">
+                                <pre>{{ result.fullTestOutput|e }}</pre>
+                            </div>
+                            {% endif %}
 
-                {% block result_panel_after_output scoped %}
-                {% endblock %}
-
-                {% if result.runningTime %}
-                <div class="grader-info">Running time: {{ "%.3f"|format(result.runningTime) }} s.</div>
-                {% endif %}
-
-                {% if result.status == "error" %}
-                <button type="button" class="btn btn-info btn-traceback" data-toggle="collapse" data-target="#traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}">
-                  Show traceback</button>
-                <div id="traceback{{ result_group_loop.index }}-{{ test_result_loop.index }}" class="collapse">
-                    <pre>{{ result.fullTestOutput|e }}</pre>
+                            {% if result.footer %}
+                            <p>{{ result.footer }}</p>
+                            {% endif %}
+                        </div>
+                        {% endblock %}
+                    </div>
                 </div>
-                {% endif %}
-
-                {% if result.footer %}
-                <p>{{ result.footer }}</p>
-                {% endif %}
-
             </div>
-            {% endblock %}
-
+            {% endfor %}
         </div>
     </div>
-    {% endfor %}
-</div>
 
-{% if result_group.fullOutput %}
-<div class="panel panel-default full-test-output">
-    <div class="panel-heading">
-        <h5 class="panel-text pull-left">
-            <a data-toggle="collapse" href="#full-test-output{{ result_group_loop.index }}">
-                Full terminal output for {{ result_group.title }}</a>
-        </h5>
-        <div class="panel-annotation">
-            <span class="label feedback-label label-info pull-right">Info</span>
-        </div>
-    </div>
-    <div id="full-test-output{{ result_group_loop.index }}" class="panel-body pre-wrap collapse">
-        <pre>{{ result_group.fullOutput|e }}</pre>
-    </div>
-</div>
-{% endif %}
-
-{% endfor %}
-
-{% if warningMessages %}
-<div class="warning-messages">
-    {% for warning in warningMessages %}
-    {% set warnings_loop = loop %}
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h5>
-                <a data-toggle="collapse"
-                   href="#warning-message{{ warnings_loop.index }}"
-                   class="label label-info">Graderutils message</a>
+    {% if result_group.fullOutput %}
+    <div class="accordion spaced-accordion mt-5">
+        <div class="accordion-item">
+            <h5 class="accordion-header">
+                <button class="accordion-button collapsed overflow-visible bg-body-tertiary" type="button" data-bs-toggle="collapse" data-bs-target="#full-test-output{{ result_group_loop.index }}" aria-expanded="true" aria-controls="full-test-output{{ result_group_loop.index }}">
+                    <div class="w-100 d-flex justify-content-between align-items-center">
+                        <span class="panel-title">Full terminal output for {{ result_group.title }}</span>
+                        <div class="d-flex flex-nowrap gap-2 mx-3">
+                            <span class="badge feedback-label text-bg-info">Success</span>
+                        </div>
+                    </div>
+                </button>
             </h5>
-        </div>
-        <div id="warning-message{{ warnings_loop.index }}" class="panel-body pre-wrap collapse in">
-            <pre>{{ warning|e }}</pre>
+            <div id="full-test-output{{ result_group_loop.index }}" class="accordion-collapse collapse">
+                <div class="accordion-body pre-wrap">
+                    <pre>{{ result_group.fullOutput|e }}</pre>
+                </div>
+            </div>
         </div>
     </div>
+    {% endif %}
+
     {% endfor %}
+
+    {% if warningMessages %}
+    <div class="accordion spaced-accordion mt-5">
+        {% for warning in warningMessages %}
+        {% set warnings_loop = loop %}
+        <div class="accordion-item">
+            <h5 class="accordion-header">
+                <button class="accordion-button collapsed overflow-visible bg-body-tertiary" type="button" data-bs-toggle="collapse" data-bs-target="#warning-message{{ warnings_loop.index }}" aria-expanded="true" aria-controls="warning-message{{ warnings_loop.index }}">
+                    <div class="w-100 d-flex justify-content-between align-items-center">
+                        <span class="badge text-bg-info">Graderutils message</span>
+                    </div>
+                </button>
+            </h5>
+            <div id="warning-message{{ warnings_loop.index }}" class="accordion-collapse collapse">
+                <div class="accordion-body pre-wrap">
+                    <pre>{{ warning|e }}</pre>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
-{% endif %}
 
 {% block feedback_end %}
 {% endblock %}

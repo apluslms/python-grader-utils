@@ -14,7 +14,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 SCHEMA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "schemas"))
 
 
-def build_schemas(version="v1_3"):
+def build_schemas(version="v1_4"):
     """
     Build all feedback schemas and the graderutils test_config schema.
     """

@@ -16,6 +16,7 @@ from graderutils import GraderUtilsError
 from graderutils import remote
 from graderutils.diff_match_patch import diff_match_patch
 from graderutils.graderunittest import result_or_timeout
+from graderutils.remote import RPCImport
 from graderutils.remote import GraderConnClosedError
 from graderutils.remote import GraderImportError
 from graderutils.remote import GraderIOError
@@ -702,6 +703,7 @@ def _verify_permissions(name, whitelist, blacklist):
 
 
 def _get_import(module_name, model):
+    module = None
     if model:
         # Inserting model_path to sys.path allows the model to import other modules from model_path
         sys.path.insert(0, model_path)
@@ -710,16 +712,17 @@ def _get_import(module_name, model):
         spec = importlib.util.spec_from_file_location(module_name, path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-    else:
+    elif remote.conn:
         # Rpyc does not execute student answer in a separate process when using spec like above.
         # This imports student answer from student_path using rpyc.
+        path = os.path.join(student_path, module_name + ".py")
+        for meta_path_finder in sys.meta_path:
+            if type(meta_path_finder) is RPCImport:
+                meta_path_finder.find_module(module_name, path)
+                module = meta_path_finder.create_module(None)
+    else:
+        # Does not work with rpyc, but is needed when rpyc is not used
         module = importlib.import_module(module_name)
-        # Alternative code that works with rpyc:
-        #path = os.path.join(student_path, module_name + ".py")
-        #for meta_path_finder in sys.meta_path:
-        #   if type(meta_path_finder) is RPCImport: # from graderutils.remote import RPCImport
-        #       meta_path_finder.find_module(module_name, path)
-        #       return meta_path_finder.create_module(None)
     return module
 
 

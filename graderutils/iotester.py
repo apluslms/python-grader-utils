@@ -999,13 +999,8 @@ class IOTester:
     def _iotester_import(self, name, globals=None, locals=None, fromlist=(), level=0):
         module_name = name.split('.')[0] # Imported module name
         # Get importing module name
-        frame = inspect.stack()[1]
-        module = inspect.getmodule(frame[0])
-        if module is None:
-            # In case that inspect.getmodule fails to guess the module
-            importer = os.path.splitext(os.path.basename(inspect.getfile(frame[0])))[0]
-        else:
-            importer = module.__name__
+        caller_frame = sys._getframe(1)
+        importer = caller_frame.f_globals.get('__name__', '__main__')
         module_path = os.path.abspath(module_name + ".py")
 
         if module_name == "graderutils":
@@ -1067,10 +1062,10 @@ class IOTester:
             if remote.conn and importer == "rpyc.core.protocol":
                 # Using find_spec causes a RecursionError with rpyc, so we use find_loader instead
                 #spec = remote.conn._importlib.util.find_spec(name)
-                loader = remote.conn._importlib.find_loader(name)
+                loader = remote.conn._importlib.find_loader(name) # Deprecated but works
             else:
                 #spec = importlib.util.find_spec(name)
-                loader = importlib.find_loader(name)
+                loader = importlib.find_loader(name) # Deprecated but works
             found = loader is not None
             if found:
                 msg_grader_import = MSG_GRADER_IMPORT.format(module_name)
